@@ -32,7 +32,7 @@ sequenceDiagram
 - 查看 Embedding 维度、输入和批量限制。
 - 查看生命周期、字段级 runtime/metadata/unsupported 标记、adapter mapping 与证据来源。
 - 主目录卡片和详情页按 `search-index.json` 的 `manufacturer_logo` 显示同源 SVG 厂家标识；低置信度提升项同时显示“上游观测 · 未官方核验”。
-- 浏览 models.dev 2026 收录路线，按厂家和名称筛选；路线卡片显示同源 SVG logo、收录日期、路由类型和上游限额提示，并明确标注“未官方核验”。
+- 浏览尚未纳入主目录的 models.dev 2026 收录路线，按厂家和名称筛选；页面以 `provider + canonical + API ID` 精确去重，不重复显示上方已有的 offering。路线卡片显示同源 SVG logo、收录日期、路由类型和上游限额提示，并明确标注“未官方核验”。
 
 页面不展示或加载 API Key、私有 Base URL、环境、权重、负载均衡或其他 tenant deployment 数据。证据 URL 仅作为可点击链接出现，页面初始化和搜索不会请求厂商网站。
 

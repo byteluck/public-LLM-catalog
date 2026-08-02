@@ -8,22 +8,22 @@
         "br": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.css.br",
           "path": "assets/catalog.css.br",
-          "sha256": "20caf7859bce40e244a2936d7bd3db8e0e92cf41c0441a1a2d8dedea71ca69fa",
-          "size": 4045
+          "sha256": "507dba5eae70fa5c40dec71ec5939d0bbf8e2d2ee08df4205fa7ac1fe2668ab1",
+          "size": 4050
         },
         "gzip": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.css.gz",
           "path": "assets/catalog.css.gz",
-          "sha256": "ee94e41748fd684d516f86db6d58bae1cbc43d82fb416fa2a6816fe357f66a61",
-          "size": 4744
+          "sha256": "64ee0b3ab09dc22874ca19b239fd33cb41ae3ac3699df757a30154c45deddab5",
+          "size": 4746
         }
       },
-      "etag": "\"44ed3fc851d83e1c6eb745e04897a3075f4f457d68edc6f67dad8467132ca9b1\"",
+      "etag": "\"908790dcbedaff5689b21155e4687bda26e1b31ab24103af012c18835c5c5198\"",
       "immutable_cache_control": "public, max-age=31536000, immutable",
       "immutable_path": "versioned/2026.08.3/assets/catalog.css",
       "path": "assets/catalog.css",
-      "sha256": "44ed3fc851d83e1c6eb745e04897a3075f4f457d68edc6f67dad8467132ca9b1",
-      "size": 23186
+      "sha256": "908790dcbedaff5689b21155e4687bda26e1b31ab24103af012c18835c5c5198",
+      "size": 23181
     },
     {
       "cache_control": "public, max-age=300, must-revalidate",
@@ -32,22 +32,22 @@
         "br": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.js.br",
           "path": "assets/catalog.js.br",
-          "sha256": "e9cd37a12940cfb9b009d0473d05baaae243b2251c853a388767c57086a41b7e",
-          "size": 8500
+          "sha256": "44f8776ba0e3f41247019d2cc691bcdf4196964defbc65664bcc6adfa3bfe3c7",
+          "size": 8655
         },
         "gzip": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.js.gz",
           "path": "assets/catalog.js.gz",
-          "sha256": "07b90596c35dbaf1c0b5020c1587d9000652fe43dd77dfb7fb263a92629970d7",
-          "size": 10038
+          "sha256": "8a8f45df8f339313880bfa328838cdd14f797fdf9ee7838da31b6ee303a6fed1",
+          "size": 10207
         }
       },
-      "etag": "\"92655f20cd1d1a6236f28e2ae45032bad346e2a3068cb14a59f172de176184c9\"",
+      "etag": "\"a97ba865a4ecb034a347c30e39796ffb0c97ecbba1c4c86031a73f73c9d2bb02\"",
       "immutable_cache_control": "public, max-age=31536000, immutable",
       "immutable_path": "versioned/2026.08.3/assets/catalog.js",
       "path": "assets/catalog.js",
-      "sha256": "92655f20cd1d1a6236f28e2ae45032bad346e2a3068cb14a59f172de176184c9",
-      "size": 37163
+      "sha256": "a97ba865a4ecb034a347c30e39796ffb0c97ecbba1c4c86031a73f73c9d2bb02",
+      "size": 37932
     },
     {
       "cache_control": "public, max-age=300, must-revalidate",
@@ -776,22 +776,22 @@
         "br": {
           "immutable_path": "versioned/2026.08.3/index.html.br",
           "path": "index.html.br",
-          "sha256": "f6bb0bc212e0fdb5b7400031b588015c87fbd9a5d8c1f299ae73a2333392fee8",
-          "size": 2532
+          "sha256": "464d041733d5c6471b1f9e0f65e6cc46a4ef3e540841b708d2958b9f2582db13",
+          "size": 2550
         },
         "gzip": {
           "immutable_path": "versioned/2026.08.3/index.html.gz",
           "path": "index.html.gz",
-          "sha256": "d6207b94664816931a6795450894a9678e5fa37b05f632969328ebfc450351c7",
-          "size": 3367
+          "sha256": "b0ddb6a6aeab32c3ac1c8eebadabe5fa4d5ac5ed7429265fe6f0382e50bddd28",
+          "size": 3392
         }
       },
-      "etag": "\"b834adfda39d92167a8c09d9d48f4fb16f29469105479555ec6628bfb2974574\"",
+      "etag": "\"4717ecde3dcefac4a59269017d1ef7b26225c74094924fac2230cbaccf7e9c8a\"",
       "immutable_cache_control": "public, max-age=31536000, immutable",
       "immutable_path": "versioned/2026.08.3/index.html",
       "path": "index.html",
-      "sha256": "b834adfda39d92167a8c09d9d48f4fb16f29469105479555ec6628bfb2974574",
-      "size": 10344
+      "sha256": "4717ecde3dcefac4a59269017d1ef7b26225c74094924fac2230cbaccf7e9c8a",
+      "size": 10402
     },
     {
       "cache_control": "public, max-age=300, must-revalidate",

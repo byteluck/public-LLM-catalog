@@ -2,7 +2,7 @@
 
 ## 冻结快照与边界
 
-`upstream/models-dev-2026.json` 是 2026-08-02 冻结的上游快照：从 models.dev 的 `models.json` 中筛选 `created >= 2026-01-01`，得到 **101 条模型/路由记录、29 个 provider ID**。完整快照随构建发布为 `dist/models-dev-2026.json`，页面下方的“2026 年上游收录与路线”区域可按厂家和名称浏览。
+`upstream/models-dev-2026.json` 是 2026-08-02 冻结的上游快照：从 models.dev 的 `models.json` 中筛选 `created >= 2026-01-01`，得到 **101 条模型/路由记录、29 个 provider ID**。完整快照随构建发布为 `dist/models-dev-2026.json`；页面下方的“2026 年未纳入目录的上游路线”区域只显示未出现在主目录的记录，可按厂家和名称浏览。
 
 `models_dev_created_at` 是 models.dev 目录的收录时间，**不是**厂商官方 `release_date`。因此任何由此快照提升的 canonical 和 offering 都将生命周期发布日期保留为 `unknown`；不从收录时间推导状态、弃用时间或替代项。
 
@@ -24,6 +24,8 @@
 - 所有提升文档的 evidence 都是 `source_type: "upstream_aggregator"`、`confidence: "low"`。没有任何 `runtime_effective: true` 字段。
 - `offering.protocols: "unknown"` 时，`src/runtime.ts` 会拒绝 Chat/Embedding 装配；即使 Agent Policy 提供 `temperature`、`top_p`、`top_k` 也不会发送。
 - 免费、路由器和别名路线不生成 canonical 或 offering，仍只显示在上游区，避免把一个路由当成模型或厂商 API。
+
+页面通过 `provider_id + canonical_slug + api_model_id` 与主目录 offering 精确比对；已提升的 79 条直连记录只在主目录显示，不在下方上游区重复渲染。当前下方区域保留 22 条未纳入目录的路线。
 
 提升脚本只创建缺失的模型、offering 和 provider 文档；已有且不同的 model/offering 会失败，已有 provider（例如 OpenAI）保留原有官方资料，不能被聚合源覆盖。随后必须运行完整校验、构建和人工评审。
 

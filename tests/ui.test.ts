@@ -123,6 +123,36 @@ describe("CDN 静态浏览界面", () => {
     expect(await readFile(join(outputDirectory, "assets/logos/qwen.svg"), "utf8")).toMatch(/^\s*<svg\b/u);
   });
 
+  test("上游区排除已经在主目录展示的同一 offering", async () => {
+    const [index, snapshot] = await Promise.all([
+      readJson<{
+        items: Array<{ provider_id: string; canonical_id: string; api_model_id: string }>;
+      }>(join(outputDirectory, "search-index.json")),
+      readJson<{
+        models: Array<{ provider_id: string; canonical_slug: string; api_model_id: string; route_kind: string }>;
+      }>(join(REPOSITORY_ROOT, "upstream/models-dev-2026.json")),
+    ]);
+    const catalogOfferingKeys = new Set(
+      index.items.map((item) => `${item.provider_id}\u0000${item.canonical_id}\u0000${item.api_model_id}`),
+    );
+    const unlisted = snapshot.models.filter(
+      (item) => !catalogOfferingKeys.has(`${item.provider_id}\u0000${item.canonical_slug}\u0000${item.api_model_id}`),
+    );
+
+    expect(unlisted).toHaveLength(22);
+    expect(unlisted.every((item) => item.route_kind !== "direct")).toBe(true);
+    expect(sourceJavaScript).toContain("unlistedModelsDevCandidates");
+    expect(sourceJavaScript).toContain("state.catalogOfferingKeys.has(modelsDevCandidateKey(item))");
+    expect(sourceHtml).toContain("未纳入目录的上游路线");
+  });
+
+  test("模型卡片采用紧凑尺寸，避免目录列表过于拥挤", () => {
+    expect(sourceCss).toContain("min-height: 258px");
+    expect(sourceCss).toContain("font-size: clamp(20px, 2vw, 28px)");
+    expect(sourceCss).toContain("min-height: 278px");
+    expect(sourceCss).toContain("font-size: clamp(19px, 1.7vw, 25px)");
+  });
+
   test("models.dev 候选快照和厂家 logo 进入同一 manifest", async () => {
     const candidate = manifest.files.find((file) => file.path === "models-dev-2026.json");
     const sourceSnapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(

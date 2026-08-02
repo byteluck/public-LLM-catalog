@@ -321,7 +321,7 @@ footer {
 .section-heading h2,
 .method h2 {
   margin: 0;
-  font-size: clamp(38px, 5.5vw, 70px);
+  font-size: clamp(34px, 4.8vw, 60px);
   letter-spacing: -0.055em;
   line-height: 1;
 }
@@ -416,7 +416,7 @@ footer {
 .model-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 14px;
 }
 
 .upstream-explorer {
@@ -428,7 +428,7 @@ footer {
   max-width: 860px;
   margin: -4px 0 28px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .upstream-note code {
@@ -489,14 +489,14 @@ footer {
 .candidate-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 14px;
 }
 
 .candidate-card {
   display: flex;
-  min-height: 330px;
+  min-height: 278px;
   flex-direction: column;
-  padding: 20px;
+  padding: 16px;
   border: 1px solid var(--ink);
   border-radius: var(--radius);
   background: var(--paper-bright);
@@ -505,30 +505,30 @@ footer {
 
 .candidate-card:hover {
   z-index: 1;
-  box-shadow: 8px 8px 0 var(--ink);
-  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 var(--ink);
+  transform: translate(-2px, -2px);
 }
 
 .candidate-card-header {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 8px 10px;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 6px 8px;
   align-items: center;
-  min-height: 36px;
-  padding-bottom: 14px;
+  min-height: 30px;
+  padding-bottom: 11px;
   border-bottom: 1px solid var(--line);
 }
 
 .candidate-logo {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   color: var(--ink);
 }
 
 .candidate-provider {
   overflow: hidden;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-overflow: ellipsis;
@@ -540,30 +540,30 @@ footer {
   grid-column: 1 / -1;
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 8px;
 }
 
 .candidate-title {
-  margin: 20px 0 0;
-  font-size: clamp(22px, 2vw, 30px);
+  margin: 16px 0 0;
+  font-size: clamp(19px, 1.7vw, 25px);
   letter-spacing: -0.045em;
   line-height: 1.1;
 }
 
 .candidate-card > .api-id {
-  margin-top: 9px;
+  margin-top: 7px;
 }
 
 .candidate-card > .chip-row {
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .candidate-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
   margin: auto 0 0;
-  padding-top: 20px;
+  padding-top: 16px;
 }
 
 .candidate-facts .fact {
@@ -572,24 +572,24 @@ footer {
 }
 
 .candidate-facts dt {
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .candidate-facts dd {
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .candidate-footer {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-top: 18px;
-  padding-top: 13px;
+  gap: 6px 11px;
+  margin-top: 14px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .candidate-unverified {
@@ -600,7 +600,7 @@ footer {
 .model-card {
   position: relative;
   display: flex;
-  min-height: 310px;
+  min-height: 258px;
   flex-direction: column;
   padding: 0;
   overflow: hidden;
@@ -615,18 +615,18 @@ footer {
 .model-card:focus-visible {
   z-index: 1;
   outline: 0;
-  box-shadow: 8px 8px 0 var(--ink);
-  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 var(--ink);
+  transform: translate(-2px, -2px);
 }
 
 .card-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 16px;
+  padding: 10px 13px;
   border-bottom: 1px solid var(--line);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -652,8 +652,8 @@ footer {
 }
 
 .catalog-logo {
-  width: 19px;
-  height: 19px;
+  width: 17px;
+  height: 17px;
   flex: none;
   color: var(--ink);
 }
@@ -684,23 +684,23 @@ footer {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 24px 22px 20px;
+  padding: 18px 18px 16px;
 }
 
 .card-title {
   display: block;
   margin: 0;
-  font-size: clamp(25px, 2.5vw, 34px);
+  font-size: clamp(20px, 2vw, 28px);
   letter-spacing: -0.045em;
   line-height: 1.08;
 }
 
 .api-id {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   overflow-wrap: anywhere;
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .modality-row,
@@ -712,18 +712,18 @@ footer {
 
 .modality-row {
   margin-top: auto;
-  padding-top: 26px;
+  padding-top: 18px;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  min-height: 25px;
-  padding: 2px 9px;
+  min-height: 23px;
+  padding: 2px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: white;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .detail-section > .chip-row + .chip-row,
@@ -736,23 +736,23 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
-  padding-top: 15px;
+  margin-top: 14px;
+  padding-top: 11px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .card-arrow {
   color: var(--ink);
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .state-label {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -1357,7 +1357,7 @@ dialog::backdrop {
   }
 
   .model-card {
-    min-height: 280px;
+    min-height: 238px;
   }
 
   .facts-grid,

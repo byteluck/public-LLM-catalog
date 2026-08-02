@@ -60,6 +60,7 @@ const state = {
   manifest: null,
   items: [],
   filtered: [],
+  catalogOfferingKeys: new Set(),
   providerShards: new Map(),
   providerLoads: new Map(),
   modelsDevCandidates: [],
@@ -394,6 +395,20 @@ function matchesModelsDevSearch(item, query) {
     .some((value) => normalizeSearch(value).includes(query));
 }
 
+function catalogOfferingKey(item) {
+  return `${item.provider_id}\u0000${item.canonical_id}\u0000${item.api_model_id}`;
+}
+
+function modelsDevCandidateKey(item) {
+  return `${item.provider_id}\u0000${item.canonical_slug}\u0000${item.api_model_id}`;
+}
+
+function unlistedModelsDevCandidates() {
+  return state.modelsDevCandidates.filter(
+    (item) => !state.catalogOfferingKeys.has(modelsDevCandidateKey(item)),
+  );
+}
+
 function candidateLogo(provider) {
   const logo = createElement("img", "candidate-logo");
   logo.src = new URL(provider.logo_path, BASE_URL).toString();
@@ -458,19 +473,22 @@ function modelsDevCandidateCard(item) {
 
 function applyModelsDevFilters() {
   const query = normalizeSearch(elements.modelsDevSearch.value);
-  state.filteredModelsDevCandidates = state.modelsDevCandidates.filter(
+  const unlistedCandidates = unlistedModelsDevCandidates();
+  state.filteredModelsDevCandidates = unlistedCandidates.filter(
     (item) =>
       matchesModelsDevSearch(item, query) &&
       (elements.modelsDevProvider.value === "" || item.provider_id === elements.modelsDevProvider.value),
   );
   elements.modelsDevGrid.replaceChildren(...state.filteredModelsDevCandidates.map(modelsDevCandidateCard));
-  elements.modelsDevResultCount.textContent = `显示 ${state.filteredModelsDevCandidates.length} / ${state.modelsDevCandidates.length} 个候选`;
+  elements.modelsDevResultCount.textContent = `显示 ${state.filteredModelsDevCandidates.length} / ${unlistedCandidates.length} 条未纳入目录的路线`;
   elements.modelsDevEmpty.hidden = state.filteredModelsDevCandidates.length !== 0;
 }
 
 function populateModelsDevProviderFilter() {
   const current = elements.modelsDevProvider.value;
+  const unlistedProviderIds = new Set(unlistedModelsDevCandidates().map((item) => item.provider_id));
   const providers = [...state.modelsDevProviders.values()]
+    .filter((provider) => unlistedProviderIds.has(provider.provider_id))
     .sort((left, right) => left.name.localeCompare(right.name, "zh-CN"));
   elements.modelsDevProvider.replaceChildren(new Option("全部厂家", ""));
   for (const provider of providers) {
@@ -629,6 +647,7 @@ async function loadCatalog() {
       throw new Error("搜索索引与 manifest 版本不一致");
     }
     state.items = index.items;
+    state.catalogOfferingKeys = new Set(state.items.map(catalogOfferingKey));
     renderMetrics(index);
     populateProviderFilter();
     applyFilters();
