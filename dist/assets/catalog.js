@@ -2,6 +2,7 @@ const BASE_URL = new URL("./", window.location.href);
 const CACHE_PREFIX = "public-llm-catalog:";
 const MANIFEST_CACHE_KEY = `${CACHE_PREFIX}manifest`;
 const SUPPORTED_SCHEMA_MAJOR = 2;
+const SUPPORTED_SCHEMA_VERSION = "2.2.0";
 
 const labels = {
   kind: { chat: "Chat", embedding: "Embedding" },
@@ -25,6 +26,7 @@ const labels = {
     openai_responses: "OpenAI Responses",
     anthropic_messages: "Anthropic Messages",
     embeddings: "Embeddings",
+    unknown: "未核验",
   },
   agentCapability: {
     streaming: "流式输出",
@@ -47,6 +49,10 @@ const labels = {
   },
   confidence: { high: "高", medium: "中", low: "低", unknown: "未知" },
   domesticAccess: { true: "可访问", false: "不可访问", unknown: "未知" },
+  verification: {
+    officially_verified: "已官方核验",
+    upstream_observation: "上游观测 · 未官方核验",
+  },
   modelsDevRoute: { direct: "直连记录", free: "免费路由", router: "路由器", alias: "别名路由" },
 };
 
@@ -154,6 +160,7 @@ function assertManifest(value) {
     typeof value.schema_version !== "string" ||
     typeof value.catalog_version !== "string" ||
     typeof value.generated_at !== "string" ||
+    typeof value.minimum_consumer_schema_version !== "string" ||
     !Array.isArray(value.files)
   ) {
     throw new Error("manifest 结构无效");
@@ -178,7 +185,31 @@ function assertManifest(value) {
       `当前浏览界面最高支持 Schema ${SUPPORTED_SCHEMA_MAJOR}.x，目录为 ${value.schema_version}`,
     );
   }
+  if (compareSchemaVersions(SUPPORTED_SCHEMA_VERSION, value.minimum_consumer_schema_version) < 0) {
+    throw new Error(
+      `当前浏览界面支持到 Schema ${SUPPORTED_SCHEMA_VERSION}，目录要求 ${value.minimum_consumer_schema_version}`,
+    );
+  }
   return value;
+}
+
+function compareSchemaVersions(left, right) {
+  const parse = (value) => {
+    const parts = value.split(".").map(Number);
+    if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part) || part < 0)) {
+      throw new Error(`schema_version 无效: ${value}`);
+    }
+    return parts;
+  };
+  const leftParts = parse(left);
+  const rightParts = parse(right);
+  for (let index = 0; index < 3; index += 1) {
+    const difference = leftParts[index] - rightParts[index];
+    if (difference !== 0) {
+      return difference;
+    }
+  }
+  return 0;
 }
 
 async function fetchManifest() {
@@ -373,6 +404,19 @@ function candidateLogo(provider) {
   return logo;
 }
 
+function manufacturerLogo(item, className) {
+  if (typeof item.manufacturer_logo !== "string") {
+    return null;
+  }
+  const logo = createElement("img", className);
+  logo.src = new URL(item.manufacturer_logo, BASE_URL).toString();
+  logo.alt = `${providerName(item)} logo`;
+  logo.loading = "lazy";
+  logo.decoding = "async";
+  logo.referrerPolicy = "no-referrer";
+  return logo;
+}
+
 function modelsDevCandidateCard(item) {
   const provider = state.modelsDevProviders.get(item.provider_id);
   const card = createElement("article", "candidate-card");
@@ -452,6 +496,7 @@ async function loadModelsDevCandidates() {
     state.modelsDevProviders = new Map(snapshot.providers.map((provider) => [provider.provider_id, provider]));
     populateModelsDevProviderFilter();
     applyModelsDevFilters();
+    applyFilters();
     elements.modelsDevLoading.hidden = true;
   } catch (error) {
     elements.modelsDevLoading.hidden = true;
@@ -480,10 +525,18 @@ function cardFor(item) {
   card.setAttribute("aria-label", `查看 ${item.name} 的能力详情`);
 
   const top = createElement("span", "card-topline");
+  const provider = createElement("span", "card-provider");
+  append(provider, manufacturerLogo(item, "catalog-logo"), createElement("span", "", providerName(item)));
   append(
     top,
-    createElement("span", "", providerName(item)),
-    createElement("span", `kind-label ${item.kind}`, labels.kind[item.kind] ?? item.kind),
+    provider,
+    append(
+      createElement("span", "card-badges"),
+      item.verification_status === "upstream_observation"
+        ? createElement("span", "verification-label", labels.verification[item.verification_status])
+        : null,
+      createElement("span", `kind-label ${item.kind}`, labels.kind[item.kind] ?? item.kind),
+    ),
   );
 
   const body = createElement("span", "card-body");
@@ -665,8 +718,10 @@ function renderIdentity(provider, model, offering, item) {
     createElement("code", "", provider.name),
   );
   const titleRow = createElement("div", "detail-title-row");
+  const titleGroup = createElement("div", "detail-heading");
   const heading = createElement("h2", "", offering.name);
   heading.id = "dialog-title";
+  append(titleGroup, manufacturerLogo(item, "detail-logo"), heading);
   const copy = createElement("button", "copy-button", "复制 API ID");
   copy.type = "button";
   copy.addEventListener("click", async () => {
@@ -681,7 +736,7 @@ function renderIdentity(provider, model, offering, item) {
       elements.live.textContent = "浏览器未允许复制，请手动选择 API ID。";
     }
   });
-  append(titleRow, heading, copy);
+  append(titleRow, titleGroup, copy);
 
   const identity = section("身份与供应商 Offering");
   identity.append(factGrid([
@@ -691,8 +746,12 @@ function renderIdentity(provider, model, offering, item) {
     fact("供应商", `${provider.name} (${provider.provider_id})`),
     fact("模型系列", model.family),
     fact("别名", item.aliases.length > 0 ? item.aliases.join("、") : "无"),
+    fact("核验状态", labels.verification[item.verification_status] ?? "未知"),
     fact("国内直连", labels.domesticAccess[String(provider.domestic_access)] ?? "未知"),
-    fact("API Key", provider.api_key_required ? "需要" : "不需要"),
+    fact(
+      "API Key",
+      provider.api_key_required === true ? "需要" : provider.api_key_required === false ? "不需要" : "未知",
+    ),
     fact("供应商状态", labels.status[provider.status] ?? provider.status),
   ]));
   append(fragment, kicker, titleRow, identity);
@@ -702,7 +761,8 @@ function renderIdentity(provider, model, offering, item) {
 function renderProtocolsAndLimits(offering) {
   const protocolSection = section("协议、模态与限额");
   const protocolChips = createElement("div", "chip-row");
-  protocolChips.append(...offering.protocols.map((value) => chip(labels.protocol[value] ?? value)));
+  const protocols = offering.protocols === "unknown" ? ["unknown"] : offering.protocols;
+  protocolChips.append(...protocols.map((value) => chip(labels.protocol[value] ?? value)));
   const modalityChips = createElement("div", "chip-row");
   modalityChips.append(
     ...offering.modalities.input_modalities.map((value) => chip(`输入 · ${labels.modality[value] ?? value}`)),

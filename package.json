@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "probe": "tsx scripts/probe.ts",
     "preview": "npm run build && tsx scripts/preview.ts",
+    "promote:models-dev-2026": "tsx scripts/promote-models-dev-2026.ts --write",
     "publish": "tsx scripts/publish.ts",
     "sync": "tsx scripts/sync-upstreams.ts && tsx scripts/sync-models-dev-2026.ts",
     "test": "vitest run",

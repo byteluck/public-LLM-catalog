@@ -25,13 +25,13 @@
 每周 workflow 运行 `npm run sync`：
 
 - models.dev、LiteLLM 等聚合源只输出标准化候选。
-- `scripts/sync-models-dev-2026.ts` 另外冻结 `created >= 2026-01-01` 的 models.dev 候选和厂家 logo；它们仍停留在 `upstream/`，不自动提升为 canonical/offering。
+- `scripts/sync-models-dev-2026.ts` 另外冻结 `created >= 2026-01-01` 的 models.dev 候选和厂家 logo；同步结果仍停留在 `upstream/`，不自动提升为 canonical/offering。
 - 需要 Key 的官方模型列表从 CI Secret 读取；未配置 Key 时跳过并保留旧候选。
 - 限制每个响应大小和超时，所有待写结果计算完成后再原子替换。
 - `upstream/review.json` 标出与当前权威目录冲突、能力退化、限额下降和候选删除。
 - 自动化分支只提交 `upstream/`，不会生成或提交 `catalog/`、`dist/`。
 
-维护者随后回到官方来源逐字段复核，手工形成独立目录 PR。不能在同步 PR 上把 candidate 自动提升为权威事实。
+维护者随后回到官方来源逐字段复核，手工形成独立目录 PR。不能在同步 PR 上把 candidate 自动提升为权威事实。当前已提升的 2026 直连记录是例外的、显式执行的低置信度观察导入：运行 `npm run promote:models-dev-2026` 仅创建缺失文档，并把协议/端点/运行时能力保留为 `unknown`；它仍需要独立审查和完整契约测试，不能替代官方复核。
 
 ## 冲突策略
 

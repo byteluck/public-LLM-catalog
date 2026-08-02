@@ -24,6 +24,8 @@
           "aliases",
           "kind",
           "status",
+          "verification_status",
+          "manufacturer_logo",
           "input_modalities",
           "output_modalities"
         ],
@@ -42,6 +44,15 @@
           },
           "kind": { "enum": ["chat", "embedding"] },
           "status": { "enum": ["preview", "active", "deprecated", "retired", "unknown"] },
+          "verification_status": {
+            "enum": ["officially_verified", "upstream_observation"]
+          },
+          "manufacturer_logo": {
+            "oneOf": [
+              { "type": "string", "pattern": "^assets/logos/[A-Za-z0-9._-]+\\.svg$" },
+              { "type": "null" }
+            ]
+          },
           "input_modalities": {
             "type": "array",
             "minItems": 1,

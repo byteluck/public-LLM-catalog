@@ -70,6 +70,9 @@ describe("目录约束", () => {
     const catalog = structuredClone(await loadSourceCatalog(REPOSITORY_ROOT));
     const offering = catalog.offerings.find((item) => item.offering_id === "openai/gpt-5.5")!;
     offering.status = "deprecated";
+    if (!Array.isArray(offering.protocols)) {
+      throw new Error("测试基准 offering 的 protocols 必须为已验证数组");
+    }
     offering.protocols.push("embeddings");
     offering.limits.max_context_tokens = 2_000_000;
     offering.modalities.output_modalities.push("audio");

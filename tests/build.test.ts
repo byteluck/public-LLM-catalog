@@ -34,14 +34,14 @@ describe("确定性静态构建", () => {
 
   test("manifest 的大小、SHA-256、版本路径与压缩文件均可验证", async () => {
     const manifest = await readJson<Manifest>(join(first, "manifest.json"));
-    expect(await readFile(join(first, "versioned/2026.08.2/manifest.json"))).toEqual(
+    expect(await readFile(join(first, "versioned/2026.08.3/manifest.json"))).toEqual(
       await readFile(join(first, "manifest.json")),
     );
-    expect(manifest.catalog_version).toBe("2026.08.2");
-    expect(manifest.previous_catalog_version).toBe("2026.08.1");
-    expect(manifest.schema_version).toBe("2.1.0");
-    expect(manifest.minimum_consumer_schema_version).toBe("2.1.0");
-    expect(manifest.immutable_base_path).toBe("versioned/2026.08.2/");
+    expect(manifest.catalog_version).toBe("2026.08.3");
+    expect(manifest.previous_catalog_version).toBe("2026.08.2");
+    expect(manifest.schema_version).toBe("2.2.0");
+    expect(manifest.minimum_consumer_schema_version).toBe("2.2.0");
+    expect(manifest.immutable_base_path).toBe("versioned/2026.08.3/");
     for (const file of manifest.files) {
       const source = await readFile(join(first, file.path));
       const immutable = await readFile(join(first, file.immutable_path));
@@ -66,11 +66,11 @@ describe("确定性静态构建", () => {
     expect(plan.objects.at(-1)?.key).toBe("catalog/manifest.json");
     expect(plan.objects).toContainEqual(
       expect.objectContaining({
-        key: "catalog/versioned/2026.08.2/manifest.json",
+        key: "catalog/versioned/2026.08.3/manifest.json",
         cacheControl: expect.stringContaining("immutable"),
       }),
     );
-    expect(plan.objects[0]?.key).toContain("catalog/versioned/2026.08.2/");
+    expect(plan.objects[0]?.key).toContain("catalog/versioned/2026.08.3/");
     expect(plan.objects.some((item) => item.contentEncoding === "gzip")).toBe(true);
     expect(plan.objects.some((item) => item.contentEncoding === "br")).toBe(true);
     expect(
@@ -92,7 +92,7 @@ describe("确定性静态构建", () => {
       await readFile(join(first, "manifest.json")),
     );
     expect(
-      await readFile(join(destination, "catalog/versioned/2026.08.2/catalog.json.br")),
-    ).toEqual(await readFile(join(first, "versioned/2026.08.2/catalog.json.br")));
+      await readFile(join(destination, "catalog/versioned/2026.08.3/catalog.json.br")),
+    ).toEqual(await readFile(join(first, "versioned/2026.08.3/catalog.json.br")));
   });
 });

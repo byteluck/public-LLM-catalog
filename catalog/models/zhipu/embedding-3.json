@@ -1,6 +1,6 @@
 {
   "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
-  "schema_version": "2.1.0",
+  "schema_version": "2.2.0",
   "canonical_id": "zhipu/embedding-3",
   "manufacturer_id": "zhipu",
   "name": "Embedding-3",

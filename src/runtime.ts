@@ -107,7 +107,7 @@ export function filterGenerationSettings(
   protocol: Protocol,
   layers: GenerationLayers,
 ): FilteredParameters {
-  if (!offering.protocols.includes(protocol)) {
+  if (offering.protocols === "unknown" || !offering.protocols.includes(protocol)) {
     throw new Error(`offering ${offering.offering_id} 不支持协议 ${protocol}`);
   }
   const merged = mergeGenerationSettings(layers);
@@ -343,7 +343,11 @@ export function buildEmbeddingRuntimePlan(input: {
   batchSize?: number;
 }): EmbeddingRuntimePlan {
   const { offering, deployment, dimension, batchSize } = input;
-  if (!offering.protocols.includes("embeddings") || offering.embedding === null) {
+  if (
+    offering.protocols === "unknown" ||
+    !offering.protocols.includes("embeddings") ||
+    offering.embedding === null
+  ) {
     throw new Error(`offering ${offering.offering_id} 不是 Embedding offering`);
   }
   if (dimension !== undefined && (!Number.isInteger(dimension) || dimension <= 0)) {

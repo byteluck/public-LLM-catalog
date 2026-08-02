@@ -631,6 +631,45 @@ footer {
   text-transform: uppercase;
 }
 
+.card-provider,
+.card-badges,
+.detail-heading {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.card-provider > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-badges {
+  flex: none;
+  justify-content: end;
+}
+
+.catalog-logo {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  color: var(--ink);
+}
+
+.verification-label {
+  max-width: 148px;
+  overflow: hidden;
+  color: var(--accent-dark);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
 .kind-label {
   padding: 3px 8px;
   border-radius: 999px;
@@ -943,6 +982,17 @@ dialog::backdrop {
   font-size: clamp(38px, 7vw, 68px);
   letter-spacing: -0.06em;
   line-height: 1;
+}
+
+.detail-heading {
+  gap: 16px;
+}
+
+.detail-logo {
+  width: clamp(42px, 8vw, 68px);
+  height: clamp(42px, 8vw, 68px);
+  flex: none;
+  color: var(--ink);
 }
 
 .copy-button {

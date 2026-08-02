@@ -26,7 +26,7 @@ npm run preview
 - `catalog/models/`：canonical model，描述模型本身的能力事实。
 - `catalog/providers/` 与 `catalog/offerings/`：供应商公开 API 标识、协议、限制和状态。
 - `catalog/aliases/`：公开别名映射；私有模型标识应由租户部署 override 映射。
-- `upstream/models-dev-2026.json`：models.dev 2026 收录候选和厂家 Logo 元数据，仅供发现与人工复核，不是权威能力事实。
+- `upstream/models-dev-2026.json`：models.dev 2026 收录快照和厂家 Logo 元数据。其直连记录可经显式、可重复的人工提升进入目录，但始终保留低置信度来源和 `unknown` 运行时能力；免费、路由和别名记录只留在上游浏览区。
 - `upstream/logos/`：随 CDN 发布的 SVG 厂家图标；缺少可靠源时使用明确标记的中性占位图。
 - API Key、私有 Base URL、环境、权重和负载均衡等 tenant deployment 数据禁止进入本仓库。
 - `temperature`、`top_p`、`top_k` 只记录供应商 offering 是否支持、范围、官方默认值和协议映射，不保存业务默认运行值。
@@ -37,6 +37,7 @@ npm run preview
 npm run validate          # Schema、引用、证据、唯一性、别名和安全校验
 npm run build             # 确定性生成 dist/ 与内置快照
 npm run preview           # 构建并在本机启动纯静态预览（仅开发用途）
+npm run promote:models-dev-2026 # 显式提升当前冻结快照的直连记录（不会由 CI 自动执行）
 npm run check:determinism # 连续构建并比较全部字节和哈希
 npm run probe -- <URL>    # 探测国内静态目录（也可用环境变量）
 npm run publish -- --help # 生成/执行对象存储同步计划
@@ -45,6 +46,6 @@ npm run check             # lint、typecheck、测试、校验和确定性构建
 
 ## 初始覆盖
 
-当前覆盖 FDE 默认值和契约测试出现的四类配置：GPT-5.5（聊天）、GLM-5.2（推理/工具）、GLM-4.6V（多模态）和 Embedding-3。不能从官方来源可靠确认的字段均保留为 `unknown`；这四个示例不构成推荐或可用性承诺。
+当前目录保留 FDE 默认值和契约测试出现的四类已核验配置：GPT-5.5（聊天）、GLM-5.2（推理/工具）、GLM-4.6V（多模态）和 Embedding-3。另有 models.dev 冻结快照中的 79 条直连记录，以低置信度“上游观测”形式进入 canonical/provider/offering 三层；它们的协议、端点、采样、Agent 与推理能力均为 `unknown`，不能作为可调用或可用性承诺。
 
-models.dev 的 2026 候选单独显示在网页下方，当前冻结快照包含 101 条收录记录和 29 家厂家。`created` 只表示上游目录收录时间，不等同于官方发布日期；详情见[同步说明](docs/models-dev-2026.md)。
+models.dev 的 2026 上游区仍显示完整的 101 条收录/路由记录和 29 家厂家，并在主目录卡片和详情页复用同源 SVG 厂家标识。`created` 只表示上游目录收录时间，不等同于官方发布日期；详情见[同步说明](docs/models-dev-2026.md)。

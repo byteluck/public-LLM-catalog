@@ -40,6 +40,10 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceHtml).toContain("models-dev-explorer");
     expect(sourceJavaScript).toContain('fetchVerifiedJson("models-dev-2026.json")');
     expect(sourceJavaScript).toContain("candidateLogo");
+    expect(sourceJavaScript).toContain("manufacturerLogo");
+    expect(sourceJavaScript).toContain("detail-logo");
+    expect(sourceJavaScript).toContain("SUPPORTED_SCHEMA_VERSION");
+    expect(sourceJavaScript).toContain("minimum_consumer_schema_version");
     expect(sourceHtml).not.toMatch(/(?:href|src)=["']https?:\/\//u);
     expect(sourceCss).not.toMatch(/url\(["']?https?:\/\//u);
   });
@@ -80,12 +84,12 @@ describe("CDN 静态浏览界面", () => {
       expect(descriptor).toMatchObject({
         path,
         content_type: contentType,
-        immutable_path: `versioned/2026.08.2/${path}`,
+        immutable_path: `versioned/2026.08.3/${path}`,
       });
       expect(descriptor?.encodings.gzip.path).toBe(`${path}.gz`);
       expect(descriptor?.encodings.br.path).toBe(`${path}.br`);
       expect(await readFile(join(outputDirectory, path))).toEqual(
-        await readFile(join(outputDirectory, `versioned/2026.08.2/${path}`)),
+        await readFile(join(outputDirectory, `versioned/2026.08.3/${path}`)),
       );
     }
     expect(manifest.files.find((file) => file.path === "index.html")?.cache_control).toContain(
@@ -98,7 +102,25 @@ describe("CDN 静态浏览界面", () => {
       join(outputDirectory, "search-index.json"),
     );
     expect(index.items.every((item) => typeof item.provider_name === "string")).toBe(true);
+    expect(index.items.every((item) => "verification_status" in item && "manufacturer_logo" in item)).toBe(true);
     expect(index.items.every((item) => !("capabilities" in item) && !("evidence" in item))).toBe(true);
+  });
+
+  test("已提升的 2026 模型在主目录索引中绑定同源厂家 logo", async () => {
+    const index = await readJson<{
+      items: Array<{
+        offering_id: string;
+        verification_status: string;
+        manufacturer_logo: string | null;
+      }>;
+    }>(join(outputDirectory, "search-index.json"));
+    const qwen = index.items.find((item) => item.offering_id === "qwen/qwen3.6-27b-20260422");
+    expect(qwen).toMatchObject({
+      offering_id: "qwen/qwen3.6-27b-20260422",
+      verification_status: "upstream_observation",
+      manufacturer_logo: "assets/logos/qwen.svg",
+    });
+    expect(await readFile(join(outputDirectory, "assets/logos/qwen.svg"), "utf8")).toMatch(/^\s*<svg\b/u);
   });
 
   test("models.dev 候选快照和厂家 logo 进入同一 manifest", async () => {

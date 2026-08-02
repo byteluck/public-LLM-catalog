@@ -2,14 +2,14 @@
 
 ## 边界与原则
 
-本项目把“可公开验证的模型事实”和“某租户如何调用模型”严格分开。目录只生成静态 JSON，不包含数据库、查询服务或常驻进程。上游格式均先进入候选区，不直接成为本项目的权威格式。
+本项目把“可公开验证的模型事实”和“某租户如何调用模型”严格分开。目录只生成静态 JSON，不包含数据库、查询服务或常驻进程。上游格式先进入候选区；只有显式、可重复的人工提升才会生成目录文档，且不会把聚合源观察值误写成可运行能力。
 
 | 数据域 | 目录位置 | 负责内容 | 明确禁止 |
 | --- | --- | --- | --- |
 | canonical model | `catalog/models/{manufacturer}/{model}.json` | 制造商、系列、生命周期、模型级模态与能力事实 | provider API 标识、价格、业务采样默认值、密钥和私有地址 |
 | provider offering | `catalog/offerings/{provider}/{model-id}.json` | API 模型标识、协议、供应商限额、三态能力、参数支持/范围/官方默认值/协议映射 | Agent Policy、租户覆盖、业务默认值 |
 | tenant deployment | 三个业务项目自身的受控配置 | 私有 Base URL、API Key、环境端点、负载均衡和部署别名覆盖 | 进入本仓库、CI 产物、日志或公开 CDN |
-| upstream candidate | `upstream/models-dev-2026.json` 与 `upstream/logos/` | 2026 收录候选、上游提示和厂家图标来源 | 直接覆盖 canonical/offering、作为运行时事实或携带租户配置 |
+| upstream candidate | `upstream/models-dev-2026.json` 与 `upstream/logos/` | 2026 收录候选、上游提示和厂家图标来源 | 在同步任务中直接覆盖 canonical/offering、作为运行时事实或携带租户配置 |
 
 所有能力布尔值都是 `true | false | "unknown"`。`false` 只能表达来源明确证明“不支持”；证据不足必须用 `unknown`。
 
@@ -91,7 +91,7 @@ flowchart LR
   Filter --> Adapter
 ```
 
-上游同步工作流只允许修改 `upstream/` 候选区并创建 PR。候选冲突、能力从 `true` 降为 `false`、限额下降或模型消失都会要求人工审核；它们不能直接修改 `catalog/` 或已发布版本。
+上游同步工作流只允许修改 `upstream/` 候选区并创建 PR。候选冲突、能力从 `true` 降为 `false`、限额下降或模型消失都会要求人工审核；它们不能直接修改 `catalog/` 或已发布版本。当前冻结快照的直连记录是一次明确人工提升：`scripts/promote-models-dev-2026.ts --write` 仅创建缺失的 canonical/provider/offering 文档，遇到已有不同模型或 offering 会失败，已有 provider 文档则保留。所有此类文档保留 `upstream_aggregator`、`confidence: low` 和运行时 `unknown`，后续只能以官方证据收紧或提升字段。
 
 ## 权威源与生成物
 
@@ -101,8 +101,8 @@ flowchart LR
 - `dist/index.html` 与 `dist/assets/`：无框架、无境外运行时依赖的目录浏览界面；全部资源同样进入 manifest、哈希、压缩和版本化流程。
 - `dist/catalog.json`：全量聚合目录。
 - `dist/providers/{provider}.json`：按供应商分片。
-- `dist/search-index.json`：不带大段证据正文的轻量检索索引。
-- `dist/models-dev-2026.json`：models.dev 2026 收录候选快照；首页单独读取，不混入权威 search index。
+- `dist/search-index.json`：不带大段证据正文的轻量检索索引；包含 `verification_status` 与同源 `manufacturer_logo` 路径，供卡片与详情页关联厂家标识。
+- `dist/models-dev-2026.json`：models.dev 2026 收录候选快照；首页单独读取，保留未提升的免费、路由器和别名路线。
 - `dist/assets/logos/{provider}.svg`：随 manifest、哈希、gzip/brotli 和不可变版本发布的厂家图标或明确标记的中性占位图。
 - `dist/versioned/{catalog_version}/...`：包含该版本 manifest 的一年不可变缓存路径。
 - `snapshots/catalog.json`：随消费端发布的、经过相同校验的内置快照。

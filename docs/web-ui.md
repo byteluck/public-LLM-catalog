@@ -31,7 +31,8 @@ sequenceDiagram
 - 查看 temperature、top_p、top_k 的“是否支持、范围、官方默认、协议映射”；页面明确说明这些不是租户运行默认值。
 - 查看 Embedding 维度、输入和批量限制。
 - 查看生命周期、字段级 runtime/metadata/unsupported 标记、adapter mapping 与证据来源。
-- 浏览 models.dev 2026 收录候选，按厂家和名称筛选；候选卡片显示同源 SVG logo、收录日期、路由类型和上游限额提示，并明确标注“未官方核验”。
+- 主目录卡片和详情页按 `search-index.json` 的 `manufacturer_logo` 显示同源 SVG 厂家标识；低置信度提升项同时显示“上游观测 · 未官方核验”。
+- 浏览 models.dev 2026 收录路线，按厂家和名称筛选；路线卡片显示同源 SVG logo、收录日期、路由类型和上游限额提示，并明确标注“未官方核验”。
 
 页面不展示或加载 API Key、私有 Base URL、环境、权重、负载均衡或其他 tenant deployment 数据。证据 URL 仅作为可点击链接出现，页面初始化和搜索不会请求厂商网站。
 
@@ -47,7 +48,7 @@ sequenceDiagram
 
 ## 发布约束
 
-- 浏览资产进入 manifest 后，发布契约为 Schema `2.1.0`；相较 `2.0.x` 增加 SVG 内容类型和 models.dev 候选资产，旧消费端应继续使用旧缓存/内置快照，升级解析器后再切换。
+- 浏览资产进入 manifest 后，发布契约为 Schema `2.2.0`；相较 `2.1.x` 增加可显式为 `unknown` 的 provider/offering 协议与端点表示，以及搜索索引的厂家 logo/核验状态，旧消费端应继续使用旧缓存/内置快照，升级解析器后再切换。
 - 必须整体发布 `dist/`，不能只上传 JSON；HTML/CSS/JS 也在 manifest、gzip/brotli 和不可变版本树中。
 - CDN prefix 根路径必须把 `index.html` 作为默认文档。
 - 必须使用 HTTPS。浏览器依赖 Web Crypto 校验 SHA-256，生产 HTTP 页面不属于支持的部署形态。

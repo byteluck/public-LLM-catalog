@@ -408,7 +408,7 @@ export function validateIdentityAndReferences(catalog: SourceCatalog): Validatio
           issue("lifecycle_status_mismatch", file, "/status", "offering.status 与 lifecycle.status 不一致"),
         );
       }
-      const isEmbeddingOffering = offering.protocols.includes("embeddings");
+      const isEmbeddingOffering = Array.isArray(offering.protocols) && offering.protocols.includes("embeddings");
       if (
         (canonical.kind === "embedding" && (!isEmbeddingOffering || offering.embedding === null)) ||
         (canonical.kind === "chat" && (isEmbeddingOffering || offering.embedding !== null))
@@ -459,11 +459,13 @@ export function validateIdentityAndReferences(catalog: SourceCatalog): Validatio
     if (provider === undefined) {
       issues.push(issue("missing_provider", file, "/provider_id", "offering 引用了不存在的 provider"));
     } else {
-      for (const protocol of offering.protocols) {
-        if (!provider.protocols.includes(protocol)) {
-          issues.push(
-            issue("provider_protocol_mismatch", file, "/protocols", `provider 未声明协议 ${protocol}`),
-          );
+      if (Array.isArray(offering.protocols) && Array.isArray(provider.protocols)) {
+        for (const protocol of offering.protocols) {
+          if (!provider.protocols.includes(protocol)) {
+            issues.push(
+              issue("provider_protocol_mismatch", file, "/protocols", `provider 未声明协议 ${protocol}`),
+            );
+          }
         }
       }
     }

@@ -22,29 +22,29 @@
     "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
     "provider_id": { "$ref": "common.schema.json#/$defs/identifier" },
     "name": { "type": "string", "minLength": 1 },
-    "website": { "type": "string", "format": "uri" },
+    "website": { "$ref": "common.schema.json#/$defs/unknown_uri" },
     "domestic_access": { "$ref": "common.schema.json#/$defs/tri_state" },
     "api_key_required": { "$ref": "common.schema.json#/$defs/tri_state" },
     "status": { "enum": ["active", "migration", "deprecated", "retired", "unknown"] },
-    "protocols": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": { "$ref": "common.schema.json#/$defs/protocol" }
-    },
+    "protocols": { "$ref": "common.schema.json#/$defs/unknown_protocols" },
     "public_base_urls": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["protocol", "url", "region"],
-        "properties": {
-          "protocol": { "$ref": "common.schema.json#/$defs/protocol" },
-          "url": { "type": "string", "format": "uri" },
-          "region": { "type": "string", "minLength": 1 }
-        }
-      }
+      "oneOf": [
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["protocol", "url", "region"],
+            "properties": {
+              "protocol": { "$ref": "common.schema.json#/$defs/protocol" },
+              "url": { "type": "string", "format": "uri" },
+              "region": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        { "const": "unknown" }
+      ]
     },
     "evidence": {
       "type": "array",

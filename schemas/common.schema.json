@@ -39,12 +39,29 @@
         { "const": "unknown" }
       ]
     },
+    "unknown_uri": {
+      "oneOf": [
+        { "type": "string", "format": "uri" },
+        { "const": "unknown" }
+      ]
+    },
     "protocol": {
       "enum": [
         "openai_chat_completions",
         "openai_responses",
         "anthropic_messages",
         "embeddings"
+      ]
+    },
+    "unknown_protocols": {
+      "oneOf": [
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/protocol" }
+        },
+        { "const": "unknown" }
       ]
     },
     "modality": {

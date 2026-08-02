@@ -1,0 +1,171 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
+  "aliases": [],
+  "canonical_id": "google/gemma-4-31b-it-20260402",
+  "capabilities": {
+    "agent": {
+      "json_schema": "unknown",
+      "parallel_tool_calls": "unknown",
+      "stream_usage": "unknown",
+      "streaming": "unknown",
+      "strict_tools": "unknown",
+      "structured_output": "unknown",
+      "system_message": "unknown",
+      "tool_call": "unknown",
+      "tool_choice": "unknown"
+    },
+    "reasoning": {
+      "budget_tokens": "unknown",
+      "effort_values": [
+        "unknown"
+      ],
+      "interleaved_reasoning": "unknown",
+      "modes": [
+        "unknown"
+      ],
+      "protocol_fields": {},
+      "supported": "unknown"
+    }
+  },
+  "embedding": null,
+  "evidence": [
+    {
+      "confidence": "low",
+      "notes": "仅记录 models.dev 直连条目 google/gemma-4-31b-it（上游收录日期 2026-04-02）。该日期不是官方发布日期；未核验运行时能力、协议或请求模型标识。",
+      "redistribution": "attribution_required",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "source_id": "models-dev-2026-observation",
+      "source_type": "upstream_aggregator",
+      "source_url": "https://models.dev/models.json",
+      "verified_at": "2026-08-02T00:00:00Z"
+    }
+  ],
+  "family": "unknown",
+  "field_annotations": {
+    "/aliases": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/canonical_id": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/capabilities/*": {
+      "adapter_mapping": "capability-aware Chat adapter / DeepAgent admission",
+      "metadata_only": false,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": "仅有 models.dev 聚合记录，未取得厂商官方运行时文档；不得据此自动装配 Agent 或发送参数。"
+    },
+    "/embedding": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/family": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/kind": {
+      "adapter_mapping": "FDE modelType role-admission gate",
+      "metadata_only": false,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": "仅有 models.dev 聚合记录，未取得厂商官方运行时文档；不得据此自动装配 Agent 或发送参数。"
+    },
+    "/lifecycle/*": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/limits/*": {
+      "adapter_mapping": "runtime token-limit guard",
+      "metadata_only": false,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": "仅有 models.dev 聚合记录，未取得厂商官方运行时文档；不得据此自动装配 Agent 或发送参数。"
+    },
+    "/manufacturer_id": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/modalities/*": {
+      "adapter_mapping": "FDE role/content validation",
+      "metadata_only": false,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": "仅有 models.dev 聚合记录，未取得厂商官方运行时文档；不得据此自动装配 Agent 或发送参数。"
+    },
+    "/name": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    }
+  },
+  "kind": "chat",
+  "lifecycle": {
+    "deprecated_at": "unknown",
+    "last_updated": "unknown",
+    "release_date": "unknown",
+    "replacement": "unknown",
+    "status": "unknown"
+  },
+  "limits": {
+    "max_context_tokens": 262144,
+    "max_input_tokens": "unknown",
+    "max_output_tokens": 16384
+  },
+  "manufacturer_id": "google",
+  "modalities": {
+    "input_modalities": [
+      "image",
+      "text",
+      "video"
+    ],
+    "output_modalities": [
+      "text"
+    ]
+  },
+  "name": "Google: Gemma 4 31B",
+  "schema_version": "2.2.0"
+}

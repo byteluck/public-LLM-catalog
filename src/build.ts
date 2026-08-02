@@ -39,6 +39,8 @@ interface SearchIndexItem {
   aliases: string[];
   kind: "chat" | "embedding";
   status: string;
+  verification_status: "officially_verified" | "upstream_observation";
+  manufacturer_logo: string | null;
   input_modalities: string[];
   output_modalities: string[];
 }
@@ -103,9 +105,15 @@ function aliasNames(aliasSets: AliasSet[], offering: Offering): string[] {
     .sort((left, right) => left.localeCompare(right, "en"));
 }
 
-function searchIndex(source: SourceCatalog): Record<string, unknown> {
+function searchIndex(
+  source: SourceCatalog,
+  modelsDevCandidates: ModelsDevCandidates,
+): Record<string, unknown> {
   const models = new Map(source.models.map((model) => [model.canonical_id, model]));
   const providers = new Map(source.providers.map((provider) => [provider.provider_id, provider]));
+  const logoPaths = new Map(
+    modelsDevCandidates.providers.map((provider) => [provider.provider_id, provider.logo_path]),
+  );
   const items = source.offerings.map((offering): SearchIndexItem => {
     const model = models.get(offering.canonical_id);
     if (model === undefined) {
@@ -128,6 +136,13 @@ function searchIndex(source: SourceCatalog): Record<string, unknown> {
       ),
       kind: model.kind,
       status: offering.status,
+      verification_status: [...model.evidence, ...offering.evidence].some((source) =>
+        source.source_type.startsWith("official_"),
+      )
+        ? "officially_verified"
+        : "upstream_observation",
+      manufacturer_logo:
+        logoPaths.get(model.manufacturer_id) ?? logoPaths.get(offering.provider_id) ?? null,
       input_modalities: offering.modalities.input_modalities,
       output_modalities: offering.modalities.output_modalities,
     };
@@ -259,7 +274,7 @@ export async function buildToDirectory(
     contents: stableJson(aggregate),
     contentType: JSON_CONTENT_TYPE,
   });
-  const generatedSearchIndex = searchIndex(source);
+  const generatedSearchIndex = searchIndex(source, modelsDevCandidates);
   const searchIssues = validateWith(
     validators.searchIndex,
     generatedSearchIndex,

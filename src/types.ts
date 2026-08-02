@@ -115,12 +115,12 @@ export interface PublicBaseUrl {
 export interface Provider extends AnnotatedDocument {
   provider_id: string;
   name: string;
-  website: string;
+  website: string | Unknown;
   domestic_access: TriState;
   api_key_required: TriState;
   status: "active" | "migration" | "deprecated" | "retired" | Unknown;
-  protocols: Protocol[];
-  public_base_urls: PublicBaseUrl[];
+  protocols: Protocol[] | Unknown;
+  public_base_urls: PublicBaseUrl[] | Unknown;
 }
 
 export interface ParameterRange {
@@ -145,7 +145,7 @@ export interface Offering extends AnnotatedDocument {
   name: string;
   status: "preview" | "active" | "deprecated" | "retired" | Unknown;
   lifecycle: Lifecycle;
-  protocols: Protocol[];
+  protocols: Protocol[] | Unknown;
   limits: TokenLimits;
   modalities: Modalities;
   capabilities: {

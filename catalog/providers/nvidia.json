@@ -1,0 +1,98 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/provider.schema.json",
+  "api_key_required": "unknown",
+  "domestic_access": "unknown",
+  "evidence": [
+    {
+      "confidence": "low",
+      "notes": "仅由 models.dev 2026 直连记录发现；未据此确认厂商官网、协议、公开 Base URL、鉴权或国内可访问性。",
+      "redistribution": "attribution_required",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "source_id": "models-dev-2026-observation",
+      "source_type": "upstream_aggregator",
+      "source_url": "https://models.dev/models.json",
+      "verified_at": "2026-08-02T00:00:00Z"
+    }
+  ],
+  "field_annotations": {
+    "/api_key_required": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/domestic_access": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/name": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/protocols": {
+      "adapter_mapping": "provider adapter selection",
+      "metadata_only": false,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": "仅有 models.dev 聚合记录，未取得供应商官方协议或端点资料；不得生成租户部署或自动选择 adapter。"
+    },
+    "/provider_id": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/public_base_urls": {
+      "adapter_mapping": "tenant deployment endpoint resolver",
+      "metadata_only": false,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": "仅有 models.dev 聚合记录，未取得供应商官方协议或端点资料；不得生成租户部署或自动选择 adapter。"
+    },
+    "/status": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    },
+    "/website": {
+      "adapter_mapping": null,
+      "metadata_only": true,
+      "runtime_effective": false,
+      "source_ids": [
+        "models-dev-2026-observation"
+      ],
+      "unsupported_reason": null
+    }
+  },
+  "name": "NVIDIA",
+  "protocols": "unknown",
+  "provider_id": "nvidia",
+  "public_base_urls": "unknown",
+  "schema_version": "2.2.0",
+  "status": "unknown",
+  "website": "unknown"
+}
