@@ -9,6 +9,7 @@
 | canonical model | `catalog/models/{manufacturer}/{model}.json` | 制造商、系列、生命周期、模型级模态与能力事实 | provider API 标识、价格、业务采样默认值、密钥和私有地址 |
 | provider offering | `catalog/offerings/{provider}/{model-id}.json` | API 模型标识、协议、供应商限额、三态能力、参数支持/范围/官方默认值/协议映射 | Agent Policy、租户覆盖、业务默认值 |
 | tenant deployment | 三个业务项目自身的受控配置 | 私有 Base URL、API Key、环境端点、负载均衡和部署别名覆盖 | 进入本仓库、CI 产物、日志或公开 CDN |
+| upstream candidate | `upstream/models-dev-2026.json` 与 `upstream/logos/` | 2026 收录候选、上游提示和厂家图标来源 | 直接覆盖 canonical/offering、作为运行时事实或携带租户配置 |
 
 所有能力布尔值都是 `true | false | "unknown"`。`false` 只能表达来源明确证明“不支持”；证据不足必须用 `unknown`。
 
@@ -20,6 +21,7 @@ flowchart LR
     Official["官方文档与官方模型列表 API"]
     Aggregators["models.dev / LiteLLM 等聚合源"]
     Candidate["upstream/ 候选快照与冲突报告"]
+    Logos["models.dev 候选与 Logo 快照"]
     Review["人工复核字段级证据"]
   end
 
@@ -57,7 +59,9 @@ flowchart LR
 
   Official --> Candidate
   Aggregators --> Candidate
+  Aggregators --> Logos
   Candidate --> Review
+  Logos --> Build
   Review --> Canonical
   Review --> Provider
   Review --> Offering
@@ -98,6 +102,8 @@ flowchart LR
 - `dist/catalog.json`：全量聚合目录。
 - `dist/providers/{provider}.json`：按供应商分片。
 - `dist/search-index.json`：不带大段证据正文的轻量检索索引。
+- `dist/models-dev-2026.json`：models.dev 2026 收录候选快照；首页单独读取，不混入权威 search index。
+- `dist/assets/logos/{provider}.svg`：随 manifest、哈希、gzip/brotli 和不可变版本发布的厂家图标或明确标记的中性占位图。
 - `dist/versioned/{catalog_version}/...`：包含该版本 manifest 的一年不可变缓存路径。
 - `snapshots/catalog.json`：随消费端发布的、经过相同校验的内置快照。
 

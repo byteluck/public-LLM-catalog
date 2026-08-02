@@ -2,7 +2,7 @@
 
 本仓库维护供应商中立、版本化、机器可读的公开模型能力事实，并生成可直接发布到国内对象存储/CDN 的静态 JSON 和同源浏览界面。打开 CDN 根地址即可搜索和查看模型详情；运行时不依赖数据库，也不直接访问 GitHub、models.dev、LiteLLM 或国外厂商站点。
 
-> 当前为首个目录版本。参见[架构说明](docs/architecture.md)、[浏览界面](docs/web-ui.md)、[Schema 语义](docs/schema-reference.md)、[候选来源矩阵](docs/source-matrix.md)、[国内部署](docs/deployment-cn.md)、[现有项目审计与集成边界](docs/audit-and-integration.md)和[维护流程](docs/operations.md)。
+> 当前为首个目录版本。参见[架构说明](docs/architecture.md)、[浏览界面](docs/web-ui.md)、[Schema 语义](docs/schema-reference.md)、[候选来源矩阵](docs/source-matrix.md)、[models.dev 2026 候选与 Logo](docs/models-dev-2026.md)、[国内部署](docs/deployment-cn.md)、[现有项目审计与集成边界](docs/audit-and-integration.md)和[维护流程](docs/operations.md)。
 
 ## 快速开始
 
@@ -26,6 +26,8 @@ npm run preview
 - `catalog/models/`：canonical model，描述模型本身的能力事实。
 - `catalog/providers/` 与 `catalog/offerings/`：供应商公开 API 标识、协议、限制和状态。
 - `catalog/aliases/`：公开别名映射；私有模型标识应由租户部署 override 映射。
+- `upstream/models-dev-2026.json`：models.dev 2026 收录候选和厂家 Logo 元数据，仅供发现与人工复核，不是权威能力事实。
+- `upstream/logos/`：随 CDN 发布的 SVG 厂家图标；缺少可靠源时使用明确标记的中性占位图。
 - API Key、私有 Base URL、环境、权重和负载均衡等 tenant deployment 数据禁止进入本仓库。
 - `temperature`、`top_p`、`top_k` 只记录供应商 offering 是否支持、范围、官方默认值和协议映射，不保存业务默认运行值。
 
@@ -44,3 +46,5 @@ npm run check             # lint、typecheck、测试、校验和确定性构建
 ## 初始覆盖
 
 当前覆盖 FDE 默认值和契约测试出现的四类配置：GPT-5.5（聊天）、GLM-5.2（推理/工具）、GLM-4.6V（多模态）和 Embedding-3。不能从官方来源可靠确认的字段均保留为 `unknown`；这四个示例不构成推荐或可用性承诺。
+
+models.dev 的 2026 候选单独显示在网页下方，当前冻结快照包含 101 条收录记录和 29 家厂家。`created` 只表示上游目录收录时间，不等同于官方发布日期；详情见[同步说明](docs/models-dev-2026.md)。

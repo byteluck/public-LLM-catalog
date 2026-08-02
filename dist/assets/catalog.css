@@ -419,6 +419,184 @@ footer {
   gap: 18px;
 }
 
+.upstream-explorer {
+  padding-top: 0;
+  border-top: 1px solid var(--line);
+}
+
+.upstream-note {
+  max-width: 860px;
+  margin: -4px 0 28px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.upstream-note code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: var(--unknown);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.upstream-filters {
+  display: grid;
+  grid-template-columns: minmax(270px, 2fr) minmax(170px, 1fr);
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 34px;
+  padding: 20px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background: rgb(250 248 242 / 82%);
+  backdrop-filter: blur(8px);
+}
+
+.upstream-filters label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.upstream-filters select,
+.upstream-filters input {
+  width: 100%;
+  min-height: 45px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: 0;
+  background: white;
+  font-size: 14px;
+}
+
+.upstream-filters select {
+  padding: 0 34px 0 12px;
+}
+
+.upstream-filters input {
+  padding: 0 12px 0 8px;
+}
+
+.upstream-filters select:focus,
+.upstream-filters input:focus,
+.upstream-filters .search-control:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgb(199 243 107 / 55%);
+}
+
+.candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.candidate-card {
+  display: flex;
+  min-height: 330px;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper-bright);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.candidate-card:hover {
+  z-index: 1;
+  box-shadow: 8px 8px 0 var(--ink);
+  transform: translate(-3px, -3px);
+}
+
+.candidate-card-header {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: center;
+  min-height: 36px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.candidate-logo {
+  width: 28px;
+  height: 28px;
+  color: var(--ink);
+}
+
+.candidate-provider {
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.candidate-logo-status {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+
+.candidate-title {
+  margin: 20px 0 0;
+  font-size: clamp(22px, 2vw, 30px);
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+}
+
+.candidate-card > .api-id {
+  margin-top: 9px;
+}
+
+.candidate-card > .chip-row {
+  margin-top: 18px;
+}
+
+.candidate-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: auto 0 0;
+  padding-top: 20px;
+}
+
+.candidate-facts .fact {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.candidate-facts dt {
+  font-size: 10px;
+}
+
+.candidate-facts dd {
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.candidate-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 18px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.candidate-unverified {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
 .model-card {
   position: relative;
   display: flex;
@@ -1007,7 +1185,15 @@ dialog::backdrop {
     grid-column: span 3;
   }
 
+  .upstream-filters .search-field {
+    grid-column: auto;
+  }
+
   .model-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .candidate-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1042,6 +1228,10 @@ dialog::backdrop {
   }
 
   .filters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .upstream-filters {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -1106,7 +1296,9 @@ dialog::backdrop {
   }
 
   .filters,
-  .model-grid {
+  .model-grid,
+  .upstream-filters,
+  .candidate-grid {
     grid-template-columns: 1fr;
   }
 

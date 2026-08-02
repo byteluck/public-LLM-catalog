@@ -14,6 +14,7 @@ import type {
   Offering,
   ParameterCapability,
   Provider,
+  ModelsDevCandidates,
   SourceCatalog,
   ValidationIssue,
 } from "./types.js";
@@ -29,6 +30,7 @@ const SCHEMA_IDS = {
   release: "https://llm-catalog.example.cn/schemas/release.schema.json",
   searchIndex: "https://llm-catalog.example.cn/schemas/search-index.schema.json",
   upstreamConfig: "https://llm-catalog.example.cn/schemas/upstream-config.schema.json",
+  modelsDevCandidates: "https://llm-catalog.example.cn/schemas/models-dev-candidates.schema.json",
 } as const;
 
 const TECHNICAL_ROOT_FIELDS = new Set(["$schema", "schema_version", "evidence", "field_annotations"]);
@@ -61,6 +63,7 @@ interface Validators {
   release: ValidateFunction;
   searchIndex: ValidateFunction;
   upstreamConfig: ValidateFunction;
+  modelsDevCandidates: ValidateFunction;
 }
 
 function issue(
@@ -96,6 +99,7 @@ export async function createValidators(root: string): Promise<Validators> {
     release: get(SCHEMA_IDS.release),
     searchIndex: get(SCHEMA_IDS.searchIndex),
     upstreamConfig: get(SCHEMA_IDS.upstreamConfig),
+    modelsDevCandidates: get(SCHEMA_IDS.modelsDevCandidates),
   };
 }
 
@@ -595,10 +599,11 @@ export async function validateSourceCatalog(root: string): Promise<{
   issues: ValidationIssue[];
   validators: Validators;
 }> {
-  const [catalog, validators, upstreamConfig] = await Promise.all([
+  const [catalog, validators, upstreamConfig, modelsDevCandidates] = await Promise.all([
     loadSourceCatalog(root),
     createValidators(root),
     readJson<unknown>(join(root, "catalog", "upstreams.json")),
+    readJson<ModelsDevCandidates>(join(root, "upstream", "models-dev-2026.json")),
   ]);
   const issues: ValidationIssue[] = [];
 
@@ -606,6 +611,25 @@ export async function validateSourceCatalog(root: string): Promise<{
   issues.push(
     ...schemaIssues(validators.upstreamConfig, upstreamConfig, "catalog/upstreams.json"),
   );
+  issues.push(
+    ...schemaIssues(
+      validators.modelsDevCandidates,
+      modelsDevCandidates,
+      "upstream/models-dev-2026.json",
+    ),
+  );
+  const candidateIds = new Set<string>();
+  for (const [index, candidate] of modelsDevCandidates.models.entries()) {
+    const path = `/models/${index}`;
+    if (candidateIds.has(candidate.candidate_id)) {
+      issues.push(issue("duplicate_candidate_id", "upstream/models-dev-2026.json", `${path}/candidate_id`, "models.dev candidate_id 重复"));
+    }
+    candidateIds.add(candidate.candidate_id);
+    if (!modelsDevCandidates.providers.some((provider) => provider.provider_id === candidate.provider_id)) {
+      issues.push(issue("missing_candidate_provider", "upstream/models-dev-2026.json", `${path}/provider_id`, "models.dev candidate 引用了不存在的 provider"));
+    }
+  }
+  issues.push(...scanForTenantData(modelsDevCandidates, "upstream/models-dev-2026.json"));
 
   for (const model of catalog.models) {
     const file = `catalog/models/${model.canonical_id}.json`;

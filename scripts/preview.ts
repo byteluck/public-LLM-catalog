@@ -22,6 +22,8 @@ function contentType(path: string): string {
       return "text/css; charset=utf-8";
     case ".js":
       return "text/javascript; charset=utf-8";
+    case ".svg":
+      return "image/svg+xml; charset=utf-8";
     default:
       return "application/json; charset=utf-8";
   }

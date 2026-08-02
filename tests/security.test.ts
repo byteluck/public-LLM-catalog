@@ -1,3 +1,6 @@
+import { readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
+
 import { describe, expect, test } from "vitest";
 
 import { loadSourceCatalog } from "../src/load.js";
@@ -39,5 +42,17 @@ describe("公开目录安全边界", () => {
     expect(
       scanForTenantData({ api_key_required: true, url: "https://open.bigmodel.cn/api/paas/v4" }),
     ).toEqual([]);
+  });
+
+  test("models.dev logo 只包含静态 SVG，不引入脚本或外部资源", async () => {
+    const logoDirectory = join(REPOSITORY_ROOT, "upstream", "logos");
+    const files = (await readdir(logoDirectory)).filter((file) => file.endsWith(".svg"));
+    const snapshot = await readJson<{ providers: unknown[] }>(join(REPOSITORY_ROOT, "upstream/models-dev-2026.json"));
+    expect(files.length).toBeGreaterThanOrEqual(snapshot.providers.length + 1);
+    for (const file of files) {
+      const svg = await readFile(join(logoDirectory, file), "utf8");
+      expect(svg).toMatch(/^\s*<svg\b[\s\S]*<\/svg>\s*$/u);
+      expect(svg).not.toMatch(/<script\b|<foreignObject\b|\son[a-z]+\s*=|(?:href|xlink:href)\s*=\s*["']https?:/iu);
+    }
   });
 });

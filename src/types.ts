@@ -199,6 +199,53 @@ export interface AggregatedCatalog {
   aliases: AliasSet[];
 }
 
+export type ModelsDevLogoStatus = "dedicated" | "mapped" | "fallback";
+
+export interface ModelsDevCandidateProvider {
+  provider_id: string;
+  name: string;
+  logo_path: string;
+  logo_source_url: string;
+  logo_status: ModelsDevLogoStatus;
+  logo_source_provider_id: string;
+}
+
+export interface ModelsDevCandidate {
+  candidate_id: string;
+  provider_id: string;
+  api_model_id: string;
+  canonical_slug: string;
+  name: string;
+  models_dev_created_at: string;
+  route_kind: "direct" | "free" | "router" | "alias";
+  verification_status: "unverified";
+  input_modalities: Modality[];
+  output_modalities: Modality[];
+  context_length: number | Unknown;
+  max_output_tokens: number | Unknown;
+  supported_parameters: string[];
+  source_url: string;
+}
+
+export interface ModelsDevCandidates {
+  $schema: string;
+  schema_version: string;
+  source: {
+    source_id: string;
+    source_url: string;
+    retrieved_at: string;
+    source_revision: string;
+  };
+  filter: {
+    field: "created";
+    since: string;
+    comparison: ">=";
+    semantics: "models.dev catalog created timestamp; not an official release-date assertion";
+  };
+  providers: ModelsDevCandidateProvider[];
+  models: ModelsDevCandidate[];
+}
+
 export interface EncodingDescriptor {
   path: string;
   immutable_path: string;
@@ -210,7 +257,8 @@ export type StaticContentType =
   | "application/json; charset=utf-8"
   | "text/html; charset=utf-8"
   | "text/css; charset=utf-8"
-  | "text/javascript; charset=utf-8";
+  | "text/javascript; charset=utf-8"
+  | "image/svg+xml; charset=utf-8";
 
 export interface ManifestFile {
   path: string;

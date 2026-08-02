@@ -10,6 +10,8 @@ export interface ProbeResult {
   providerShards: number;
   searchItems: number;
   siteFiles: number;
+  modelsDevItems: number;
+  logoAssets: number;
 }
 
 function urlAt(base: URL, path: string): URL {
@@ -135,6 +137,8 @@ export async function probeCatalog(input: {
   let searchItems = 0;
   let providerShards = 0;
   let siteFiles = 0;
+  let modelsDevItems = 0;
+  let logoAssets = 0;
   for (const file of manifest.files) {
     const bytes = await fetchBytesWithCache(
       urlAt(base, file.path),
@@ -182,6 +186,17 @@ export async function probeCatalog(input: {
         throw new Error(formatValidationIssues(issues));
       }
     }
+    if (file.path === "models-dev-2026.json") {
+      const parsed = JSON.parse(new TextDecoder().decode(bytes)) as unknown;
+      const issues = validateWith(validators.modelsDevCandidates, parsed, file.path);
+      if (issues.length > 0) {
+        throw new Error(formatValidationIssues(issues));
+      }
+      modelsDevItems = (parsed as { models: unknown[] }).models.length;
+    }
+    if (file.path.startsWith("assets/logos/") && file.path.endsWith(".svg")) {
+      logoAssets += 1;
+    }
     if (
       file.path === "index.html" ||
       file.path === "assets/catalog.css" ||
@@ -190,8 +205,8 @@ export async function probeCatalog(input: {
       siteFiles += 1;
     }
   }
-  if (searchItems === 0 || providerShards === 0 || siteFiles !== 3) {
-    throw new Error("搜索索引、provider 分片或站点文件不完整");
+  if (searchItems === 0 || providerShards === 0 || siteFiles !== 3 || modelsDevItems === 0 || logoAssets === 0) {
+    throw new Error("搜索索引、provider 分片、候选快照、logo 或站点文件不完整");
   }
   return {
     baseUrl: base.toString(),
@@ -201,5 +216,7 @@ export async function probeCatalog(input: {
     providerShards,
     searchItems,
     siteFiles,
+    modelsDevItems,
+    logoAssets,
   };
 }

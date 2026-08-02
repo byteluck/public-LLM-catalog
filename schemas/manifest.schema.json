@@ -42,8 +42,8 @@
           "encodings"
         ],
         "properties": {
-          "path": { "type": "string", "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))[^/].*\\.(?:json|html|css|js)$" },
-          "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/(?!.*(?:^|/)\\.\\.(?:/|$)).*\\.(?:json|html|css|js)$" },
+          "path": { "type": "string", "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))[^/].*\\.(?:json|html|css|js|svg)$" },
+          "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/(?!.*(?:^|/)\\.\\.(?:/|$)).*\\.(?:json|html|css|js|svg)$" },
           "size": { "type": "integer", "minimum": 1 },
           "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "etag": { "type": "string", "pattern": "^\"[a-f0-9]{64}\"$" },
@@ -54,7 +54,8 @@
               "application/json; charset=utf-8",
               "text/html; charset=utf-8",
               "text/css; charset=utf-8",
-              "text/javascript; charset=utf-8"
+              "text/javascript; charset=utf-8",
+              "image/svg+xml; charset=utf-8"
             ]
           },
           "encodings": {
@@ -67,8 +68,8 @@
                 "additionalProperties": false,
                 "required": ["path", "immutable_path", "size", "sha256"],
                 "properties": {
-                  "path": { "type": "string", "pattern": "\\.(?:json|html|css|js)\\.gz$" },
-                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.(?:json|html|css|js)\\.gz$" },
+                  "path": { "type": "string", "pattern": "\\.(?:json|html|css|js|svg)\\.gz$" },
+                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.(?:json|html|css|js|svg)\\.gz$" },
                   "size": { "type": "integer", "minimum": 1 },
                   "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
                 }
@@ -78,8 +79,8 @@
                 "additionalProperties": false,
                 "required": ["path", "immutable_path", "size", "sha256"],
                 "properties": {
-                  "path": { "type": "string", "pattern": "\\.(?:json|html|css|js)\\.br$" },
-                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.(?:json|html|css|js)\\.br$" },
+                  "path": { "type": "string", "pattern": "\\.(?:json|html|css|js|svg)\\.br$" },
+                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.(?:json|html|css|js|svg)\\.br$" },
                   "size": { "type": "integer", "minimum": 1 },
                   "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
                 }

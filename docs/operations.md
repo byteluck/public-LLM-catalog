@@ -25,6 +25,7 @@
 每周 workflow 运行 `npm run sync`：
 
 - models.dev、LiteLLM 等聚合源只输出标准化候选。
+- `scripts/sync-models-dev-2026.ts` 另外冻结 `created >= 2026-01-01` 的 models.dev 候选和厂家 logo；它们仍停留在 `upstream/`，不自动提升为 canonical/offering。
 - 需要 Key 的官方模型列表从 CI Secret 读取；未配置 Key 时跳过并保留旧候选。
 - 限制每个响应大小和超时，所有待写结果计算完成后再原子替换。
 - `upstream/review.json` 标出与当前权威目录冲突、能力退化、限额下降和候选删除。
@@ -62,5 +63,6 @@
 - [ ] `catalog_version` 未复用已有不同内容。
 - [ ] 国内对象存储版本对象先上传，manifest 最后上传。
 - [ ] CDN prefix 根路径返回 `index.html`，HTML/CSS/JS Content-Type 正确且没有境外运行时资源。
+- [ ] `models-dev-2026.json` 与厂家 SVG 的 Content-Type、哈希、不可变路径和占位 logo 状态均通过 probe。
 - [ ] 至少一个国内 runner 的完整 probe 通过。
 - [ ] 回滚版本和内置快照已确认可用。

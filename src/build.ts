@@ -3,11 +3,12 @@ import { homedir, tmpdir } from "node:os";
 import { basename, dirname, join, parse, relative, resolve, sep } from "node:path";
 import { copyFile, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 
-import { sha256, stableJson } from "./json.js";
+import { readJson, sha256, stableJson } from "./json.js";
 import { assertValidSourceCatalog, createValidators, formatValidationIssues, validateWith } from "./validate.js";
 import type {
   AggregatedCatalog,
   AliasSet,
+  ModelsDevCandidates,
   Manifest,
   ManifestFile,
   Offering,
@@ -19,6 +20,7 @@ import type {
 const CURRENT_CACHE_CONTROL = "public, max-age=300, must-revalidate";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const JSON_CONTENT_TYPE = "application/json; charset=utf-8" as const;
+const SVG_CONTENT_TYPE = "image/svg+xml; charset=utf-8" as const;
 
 interface LogicalFile {
   contents: string;
@@ -152,6 +154,15 @@ function safeOutputDirectory(directory: string, repositoryRoot: string): void {
   }
 }
 
+function assertSafeSvg(contents: string, path: string): void {
+  if (!/^\s*<svg\b[\s\S]*<\/svg>\s*$/u.test(contents)) {
+    throw new Error(`logo 不是完整 SVG 文档: ${path}`);
+  }
+  if (/<script\b|<foreignObject\b|\son[a-z]+\s*=|(?:href|xlink:href)\s*=\s*["']https?:/iu.test(contents)) {
+    throw new Error(`logo 包含不允许的活动内容或外部引用: ${path}`);
+  }
+}
+
 async function writeBytes(filePath: string, value: string | Uint8Array): Promise<void> {
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, value);
@@ -226,6 +237,17 @@ export async function buildToDirectory(
   safeOutputDirectory(outputDirectory, repositoryRoot);
   const source = await assertValidSourceCatalog(repositoryRoot);
   const validators = await createValidators(repositoryRoot);
+  const modelsDevCandidates = await readJson<ModelsDevCandidates>(
+    join(repositoryRoot, "upstream", "models-dev-2026.json"),
+  );
+  const candidateIssues = validateWith(
+    validators.modelsDevCandidates,
+    modelsDevCandidates,
+    "upstream/models-dev-2026.json",
+  );
+  if (candidateIssues.length > 0) {
+    throw new Error(`models.dev 候选快照 Schema 校验失败:\n${formatValidationIssues(candidateIssues)}`);
+  }
   const aggregate = aggregateCatalog(source);
   const generatedIssues = validateWith(validators.catalog, aggregate, "dist/catalog.json");
   if (generatedIssues.length > 0) {
@@ -250,6 +272,22 @@ export async function buildToDirectory(
     contents: stableJson(generatedSearchIndex),
     contentType: JSON_CONTENT_TYPE,
   });
+  logicalFiles.set("models-dev-2026.json", {
+    contents: stableJson(modelsDevCandidates),
+    contentType: JSON_CONTENT_TYPE,
+  });
+  for (const provider of sortBy(modelsDevCandidates.providers, (item) => item.provider_id)) {
+    if (!/^assets\/logos\/[A-Za-z0-9._-]+\.svg$/u.test(provider.logo_path)) {
+      throw new Error(`models.dev logo 路径不安全: ${provider.logo_path}`);
+    }
+    const sourceLogoPath = join(repositoryRoot, "upstream", "logos", `${provider.provider_id}.svg`);
+    const logoContents = await readFile(sourceLogoPath, "utf8");
+    assertSafeSvg(logoContents, sourceLogoPath);
+    logicalFiles.set(provider.logo_path, {
+      contents: logoContents,
+      contentType: SVG_CONTENT_TYPE,
+    });
+  }
   for (const provider of sortBy(source.providers, (item) => item.provider_id)) {
     const shardPath = `providers/${provider.provider_id}.json`;
     const shard = providerShard(source, provider);

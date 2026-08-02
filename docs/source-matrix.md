@@ -4,7 +4,7 @@
 
 | 来源 | 覆盖范围 | 机器可读 | 国内可访问性 | 更新频率 | 许可与再分发 | 可验证字段 | API Key |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [models.dev](https://models.dev/) / [仓库](https://github.com/anomalyco/models.dev) | 多供应商模型、限额、模态、能力、价格等聚合信息 | 是，公开 [`api.json`](https://models.dev/api.json)；仓库也是结构化数据 | 跨境站点/GitHub，不保证稳定；禁止作为业务运行时依赖 | 社区持续更新，无发布 SLA | 仓库为 [MIT](https://raw.githubusercontent.com/anomalyco/models.dev/main/LICENSE)，再分发需保留许可声明；具体厂商事实仍需官方复核 | 候选 ID、上下文/输出限额、模态、工具/推理提示 | 否 |
+| [models.dev](https://models.dev/) / [仓库](https://github.com/anomalyco/models.dev) | 多供应商模型、限额、模态、能力、价格和厂家 logo 聚合信息 | 是，公开 [`models.json`](https://models.dev/models.json)、[`api.json`](https://models.dev/api.json) 与 [`logos/{provider}.svg`](https://models.dev/logos/openai.svg)；仓库也是结构化数据 | 跨境站点/GitHub，不保证稳定；禁止作为业务运行时依赖 | 社区持续更新，无发布 SLA | 仓库为 [MIT](https://raw.githubusercontent.com/anomalyco/models.dev/main/LICENSE)，再分发需保留许可声明；具体厂商事实和商标仍需官方复核 | 候选 ID、`created` 收录时间、上下文/输出限额、模态、工具/推理提示、logo 路径 | 否 |
 | [LiteLLM model map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) | 多供应商路由、价格、token 限额和部分能力 | 是，单个 JSON 文件 | GitHub Raw 为跨境来源，不保证稳定 | 随仓库持续更新，无数据 SLA | 主仓库采用 [MIT](https://github.com/BerriAI/litellm/blob/main/LICENSE)；应保留许可并复核仓库内例外目录，不把其格式当权威 | 候选 provider/model、context/output、部分 function/reasoning/schema 标记 | 否 |
 | [ModelScope Hub](https://github.com/modelscope/modelscope_hub) / [API-Inference](https://modelscope.cn/docs/model-service/API-Inference/intro) | 开源模型卡、文件、任务、推理服务 | Hub SDK/OpenAPI 可读；不存在统一覆盖所有模型能力的完整权威表 | 国内服务，适合 CI 采集与链接证据 | 模型作者与平台持续更新，无统一频率 | SDK 代码许可与每个模型卡/权重许可不同；模型事实再分发必须逐模型核对 | 模型身份、任务/模态、模型卡声明、推理端点状态 | 公开元数据通常否；推理通常是 |
 | [Gitee AI](https://ai.gitee.com/) / [Serverless API](https://ai.gitee.com/docs/openapi/v1) | 国内托管模型、Serverless API 与模型卡 | 有 OpenAPI/服务接口；未发现无需鉴权的完整标准化能力转储 | 国内服务 | 平台持续更新，无公开目录 SLA | [Gitee 服务条款](https://gitee.com/terms) 未视为本目录取得整库再分发授权；仅摘录必要事实并保留来源，生产前复核 | API 标识、服务状态、接口协议、模型卡事实 | 文档否；推理/服务列表通常是 |
@@ -29,6 +29,6 @@
 
 ## 当前自动候选源
 
-`catalog/upstreams.json` 当前启用 models.dev、LiteLLM、DeepSeek `/models` 和 MiniMax `/v1/models`。前两者免密，后两者缺少 CI Secret 时安全跳过并保留上一次候选。同步脚本限制响应大小和 60 秒超时，先完成全部抓取与审查计算，再原子写入候选文件；任一无密钥以外的异常都会令任务失败，因此不会留下半次同步结果。
+`catalog/upstreams.json` 当前启用 models.dev、LiteLLM、DeepSeek `/models` 和 MiniMax `/v1/models`。另有 `scripts/sync-models-dev-2026.ts` 从公开 `models.json` 生成 2026 候选和 logo 快照。前两者免密，后两者缺少 CI Secret 时安全跳过并保留上一次候选。同步脚本限制响应大小和 60 秒超时，先完成全部抓取与审查计算，再原子写入候选文件；任一无密钥以外的异常都会令任务失败，因此不会留下半次同步结果。
 
 阿里百炼、方舟、混元、智谱、ModelScope、Gitee AI 和 Moonshot 暂未自动抓取：它们目前作为人工复核官方来源，待获得稳定、条款明确且字段语义可验证的接口后再增加 adapter。新增 adapter 只能输出候选格式，不能绕过 Schema、字段级证据和人工评审。

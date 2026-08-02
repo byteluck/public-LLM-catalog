@@ -47,6 +47,7 @@ const labels = {
   },
   confidence: { high: "高", medium: "中", low: "低", unknown: "未知" },
   domesticAccess: { true: "可访问", false: "不可访问", unknown: "未知" },
+  modelsDevRoute: { direct: "直连记录", free: "免费路由", router: "路由器", alias: "别名路由" },
 };
 
 const state = {
@@ -55,6 +56,9 @@ const state = {
   filtered: [],
   providerShards: new Map(),
   providerLoads: new Map(),
+  modelsDevCandidates: [],
+  modelsDevProviders: new Map(),
+  filteredModelsDevCandidates: [],
   offline: false,
 };
 
@@ -89,6 +93,14 @@ const elements = {
   grid: byId("model-grid"),
   empty: byId("empty-state"),
   emptyReset: byId("empty-reset-button"),
+  modelsDevSearch: byId("models-dev-search"),
+  modelsDevProvider: byId("models-dev-provider-filter"),
+  modelsDevResultCount: byId("models-dev-result-count"),
+  modelsDevLoading: byId("models-dev-loading"),
+  modelsDevError: byId("models-dev-error"),
+  modelsDevErrorMessage: byId("models-dev-error-message"),
+  modelsDevGrid: byId("models-dev-grid"),
+  modelsDevEmpty: byId("models-dev-empty"),
   dialog: byId("model-dialog"),
   dialogClose: byId("dialog-close"),
   dialogContent: byId("dialog-content"),
@@ -339,6 +351,116 @@ function matchesSearch(item, query) {
   ].some((value) => normalizeSearch(value).includes(query));
 }
 
+function modelsDevProviderName(providerId) {
+  return state.modelsDevProviders.get(providerId)?.name ?? providerId;
+}
+
+function matchesModelsDevSearch(item, query) {
+  if (query === "") {
+    return true;
+  }
+  return [item.name, item.api_model_id, item.canonical_slug, item.provider_id, modelsDevProviderName(item.provider_id), ...item.supported_parameters]
+    .some((value) => normalizeSearch(value).includes(query));
+}
+
+function candidateLogo(provider) {
+  const logo = createElement("img", "candidate-logo");
+  logo.src = new URL(provider.logo_path, BASE_URL).toString();
+  logo.alt = `${provider.name} logo`;
+  logo.loading = "lazy";
+  logo.decoding = "async";
+  logo.referrerPolicy = "no-referrer";
+  return logo;
+}
+
+function modelsDevCandidateCard(item) {
+  const provider = state.modelsDevProviders.get(item.provider_id);
+  const card = createElement("article", "candidate-card");
+  const header = createElement("div", "candidate-card-header");
+  if (provider !== undefined) {
+    append(header, candidateLogo(provider), createElement("span", "candidate-provider", provider.name));
+    const logoStatus = provider.logo_status === "dedicated"
+      ? "models.dev 专属 logo"
+      : provider.logo_status === "mapped"
+        ? `映射 logo · ${provider.logo_source_provider_id}`
+        : "通用占位 logo";
+    header.append(createElement("span", "candidate-logo-status", logoStatus));
+  }
+  const title = createElement("h3", "candidate-title", item.name);
+  const apiId = createElement("code", "api-id", item.api_model_id);
+  const chips = createElement("div", "chip-row");
+  for (const modality of item.input_modalities) {
+    chips.append(chip(`输入 · ${labels.modality[modality] ?? modality}`));
+  }
+  for (const modality of item.output_modalities) {
+    chips.append(chip(`输出 · ${labels.modality[modality] ?? modality}`));
+  }
+  const facts = createElement("dl", "candidate-facts");
+  facts.append(
+    fact("models.dev 收录", displayDate(item.models_dev_created_at)),
+    fact("路由", labels.modelsDevRoute[item.route_kind] ?? item.route_kind),
+    fact("上下文", displayTokens(item.context_length)),
+    fact("最大输出", displayTokens(item.max_output_tokens)),
+  );
+  const footer = createElement("div", "candidate-footer");
+  append(
+    footer,
+    createElement("span", "candidate-unverified", "未官方核验"),
+    createElement("span", "candidate-parameter-count", `${item.supported_parameters.length} 个上游参数提示`),
+  );
+  append(card, header, title, apiId, chips, facts, footer);
+  return card;
+}
+
+function applyModelsDevFilters() {
+  const query = normalizeSearch(elements.modelsDevSearch.value);
+  state.filteredModelsDevCandidates = state.modelsDevCandidates.filter(
+    (item) =>
+      matchesModelsDevSearch(item, query) &&
+      (elements.modelsDevProvider.value === "" || item.provider_id === elements.modelsDevProvider.value),
+  );
+  elements.modelsDevGrid.replaceChildren(...state.filteredModelsDevCandidates.map(modelsDevCandidateCard));
+  elements.modelsDevResultCount.textContent = `显示 ${state.filteredModelsDevCandidates.length} / ${state.modelsDevCandidates.length} 个候选`;
+  elements.modelsDevEmpty.hidden = state.filteredModelsDevCandidates.length !== 0;
+}
+
+function populateModelsDevProviderFilter() {
+  const current = elements.modelsDevProvider.value;
+  const providers = [...state.modelsDevProviders.values()]
+    .sort((left, right) => left.name.localeCompare(right.name, "zh-CN"));
+  elements.modelsDevProvider.replaceChildren(new Option("全部厂家", ""));
+  for (const provider of providers) {
+    elements.modelsDevProvider.append(new Option(provider.name, provider.provider_id));
+  }
+  elements.modelsDevProvider.value = providers.some((provider) => provider.provider_id === current) ? current : "";
+}
+
+async function loadModelsDevCandidates() {
+  elements.modelsDevLoading.hidden = false;
+  elements.modelsDevError.hidden = true;
+  try {
+    const snapshot = await fetchVerifiedJson("models-dev-2026.json");
+    if (
+      snapshot?.filter?.field !== "created" ||
+      snapshot?.filter?.since !== "2026-01-01" ||
+      !Array.isArray(snapshot.models) ||
+      !Array.isArray(snapshot.providers)
+    ) {
+      throw new Error("models.dev 候选快照筛选条件或结构无效");
+    }
+    state.modelsDevCandidates = snapshot.models;
+    state.modelsDevProviders = new Map(snapshot.providers.map((provider) => [provider.provider_id, provider]));
+    populateModelsDevProviderFilter();
+    applyModelsDevFilters();
+    elements.modelsDevLoading.hidden = true;
+  } catch (error) {
+    elements.modelsDevLoading.hidden = true;
+    elements.modelsDevError.hidden = false;
+    elements.modelsDevErrorMessage.textContent = error instanceof Error ? error.message : "候选快照暂时无法读取。";
+    elements.modelsDevResultCount.textContent = "候选加载失败";
+  }
+}
+
 function applyFilters() {
   const query = normalizeSearch(elements.search.value);
   state.filtered = state.items.filter(
@@ -457,6 +579,7 @@ async function loadCatalog() {
     renderMetrics(index);
     populateProviderFilter();
     applyFilters();
+    await loadModelsDevCandidates();
     elements.loading.hidden = true;
     const requestedModel = new URL(window.location.href).searchParams.get("model");
     const requestedItem = state.items.find((item) => item.offering_id === requestedModel);
@@ -832,6 +955,8 @@ elements.filters.addEventListener("reset", () => {
 });
 elements.reset.addEventListener("click", resetFilters);
 elements.emptyReset.addEventListener("click", resetFilters);
+elements.modelsDevSearch.addEventListener("input", applyModelsDevFilters);
+elements.modelsDevProvider.addEventListener("change", applyModelsDevFilters);
 elements.retry.addEventListener("click", () => {
   void loadCatalog();
 });

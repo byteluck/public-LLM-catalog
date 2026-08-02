@@ -37,6 +37,9 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceHtml).toContain('href="./assets/catalog.css"');
     expect(sourceHtml).toContain('src="./assets/catalog.js"');
     expect(sourceHtml).toContain("connect-src 'self'");
+    expect(sourceHtml).toContain("models-dev-explorer");
+    expect(sourceJavaScript).toContain('fetchVerifiedJson("models-dev-2026.json")');
+    expect(sourceJavaScript).toContain("candidateLogo");
     expect(sourceHtml).not.toMatch(/(?:href|src)=["']https?:\/\//u);
     expect(sourceCss).not.toMatch(/url\(["']?https?:\/\//u);
   });
@@ -77,12 +80,12 @@ describe("CDN 静态浏览界面", () => {
       expect(descriptor).toMatchObject({
         path,
         content_type: contentType,
-        immutable_path: `versioned/2026.08.1/${path}`,
+        immutable_path: `versioned/2026.08.2/${path}`,
       });
       expect(descriptor?.encodings.gzip.path).toBe(`${path}.gz`);
       expect(descriptor?.encodings.br.path).toBe(`${path}.br`);
       expect(await readFile(join(outputDirectory, path))).toEqual(
-        await readFile(join(outputDirectory, `versioned/2026.08.1/${path}`)),
+        await readFile(join(outputDirectory, `versioned/2026.08.2/${path}`)),
       );
     }
     expect(manifest.files.find((file) => file.path === "index.html")?.cache_control).toContain(
@@ -96,5 +99,19 @@ describe("CDN 静态浏览界面", () => {
     );
     expect(index.items.every((item) => typeof item.provider_name === "string")).toBe(true);
     expect(index.items.every((item) => !("capabilities" in item) && !("evidence" in item))).toBe(true);
+  });
+
+  test("models.dev 候选快照和厂家 logo 进入同一 manifest", async () => {
+    const candidate = manifest.files.find((file) => file.path === "models-dev-2026.json");
+    const sourceSnapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(
+      join(REPOSITORY_ROOT, "upstream/models-dev-2026.json"),
+    );
+    expect(candidate?.content_type).toBe("application/json; charset=utf-8");
+    expect(manifest.files.filter((file) => file.content_type === "image/svg+xml; charset=utf-8")).toHaveLength(sourceSnapshot.providers.length);
+    const snapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(
+      join(outputDirectory, "models-dev-2026.json"),
+    );
+    expect(snapshot.models).toHaveLength(sourceSnapshot.models.length);
+    expect(snapshot.providers).toHaveLength(sourceSnapshot.providers.length);
   });
 });

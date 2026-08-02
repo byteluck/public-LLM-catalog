@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/models-dev-candidates.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "source",
+    "filter",
+    "providers",
+    "models"
+  ],
+  "properties": {
+    "$schema": { "const": "https://llm-catalog.example.cn/schemas/models-dev-candidates.schema.json" },
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "source_url", "retrieved_at", "source_revision"],
+      "properties": {
+        "source_id": { "$ref": "common.schema.json#/$defs/identifier" },
+        "source_url": { "type": "string", "format": "uri" },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "source_revision": { "type": "string", "minLength": 1, "maxLength": 200 }
+      }
+    },
+    "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "since", "comparison", "semantics"],
+      "properties": {
+        "field": { "const": "created" },
+        "since": { "type": "string", "format": "date" },
+        "comparison": { "const": ">=" },
+        "semantics": { "const": "models.dev catalog created timestamp; not an official release-date assertion" }
+      }
+    },
+    "providers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider_id",
+          "name",
+          "logo_path",
+          "logo_source_url",
+          "logo_status",
+          "logo_source_provider_id"
+        ],
+        "properties": {
+          "provider_id": { "$ref": "common.schema.json#/$defs/identifier" },
+          "name": { "type": "string", "minLength": 1 },
+          "logo_path": { "type": "string", "pattern": "^assets/logos/[A-Za-z0-9._-]+\\.svg$" },
+          "logo_source_url": { "type": "string", "format": "uri" },
+          "logo_status": { "enum": ["dedicated", "mapped", "fallback"] },
+          "logo_source_provider_id": {
+            "anyOf": [
+              { "$ref": "common.schema.json#/$defs/identifier" },
+              { "const": "default" }
+            ]
+          }
+        }
+      }
+    },
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "provider_id",
+          "api_model_id",
+          "canonical_slug",
+          "name",
+          "models_dev_created_at",
+          "route_kind",
+          "verification_status",
+          "input_modalities",
+          "output_modalities",
+          "context_length",
+          "max_output_tokens",
+          "supported_parameters",
+          "source_url"
+        ],
+        "properties": {
+          "candidate_id": { "type": "string", "minLength": 1, "maxLength": 260 },
+          "provider_id": { "$ref": "common.schema.json#/$defs/identifier" },
+          "api_model_id": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "canonical_slug": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "name": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "models_dev_created_at": { "type": "string", "format": "date" },
+          "route_kind": { "enum": ["direct", "free", "router", "alias"] },
+          "verification_status": { "const": "unverified" },
+          "input_modalities": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "common.schema.json#/$defs/modality" }
+          },
+          "output_modalities": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "common.schema.json#/$defs/modality" }
+          },
+          "context_length": { "$ref": "common.schema.json#/$defs/unknown_integer" },
+          "max_output_tokens": { "$ref": "common.schema.json#/$defs/unknown_integer" },
+          "supported_parameters": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "source_url": { "type": "string", "format": "uri" }
+        }
+      }
+    }
+  }
+}

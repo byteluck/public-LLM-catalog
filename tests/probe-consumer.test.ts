@@ -37,6 +37,9 @@ function contentType(path: string): string {
   if (path.endsWith(".js") || path.includes(".js.")) {
     return "text/javascript; charset=utf-8";
   }
+  if (path.endsWith(".svg") || path.includes(".svg.")) {
+    return "image/svg+xml; charset=utf-8";
+  }
   return "application/json; charset=utf-8";
 }
 
@@ -140,20 +143,25 @@ describe("国内静态地址与消费缓存", () => {
       repositoryRoot: REPOSITORY_ROOT,
       allowHttp: true,
     });
+    const candidateSnapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(
+      join(REPOSITORY_ROOT, "upstream/models-dev-2026.json"),
+    );
     expect(result).toMatchObject({
-      catalogVersion: "2026.08.1",
+      catalogVersion: "2026.08.2",
       homepage: true,
-      logicalFiles: 7,
+      logicalFiles: 8 + candidateSnapshot.providers.length,
       providerShards: 2,
       searchItems: 4,
       siteFiles: 3,
+      modelsDevItems: candidateSnapshot.models.length,
+      logoAssets: candidateSnapshot.providers.length,
     });
   });
 
   test("版本未变化时只重新请求小型 manifest，不重复下载 catalog", async () => {
     const snapshot = await readJson<AggregatedCatalog>(join(distDirectory, "catalog.json"));
     const cache = new MemoryCache();
-    const catalogPath = "versioned/2026.08.1/catalog.json";
+    const catalogPath = "versioned/2026.08.2/catalog.json";
     const before = requestCounts.get(catalogPath) ?? 0;
     const currentPathBefore = requestCounts.get("catalog.json") ?? 0;
     const first = await refreshCatalog({
@@ -161,7 +169,7 @@ describe("国内静态地址与消费缓存", () => {
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "2.0.0",
+      supportedSchemaVersion: "2.1.0",
     });
     const afterFirst = requestCounts.get(catalogPath) ?? 0;
     const second = await refreshCatalog({
@@ -169,7 +177,7 @@ describe("国内静态地址与消费缓存", () => {
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "2.0.0",
+      supportedSchemaVersion: "2.1.0",
     });
     const afterSecond = requestCounts.get(catalogPath) ?? 0;
     expect(first.source).toBe("download");
@@ -187,7 +195,7 @@ describe("国内静态地址与消费缓存", () => {
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "2.0.0",
+      supportedSchemaVersion: "2.1.0",
     });
     const unavailableFetch: typeof fetch = () => Promise.reject(new Error("network unavailable"));
     const cached = await refreshCatalog({
@@ -195,7 +203,7 @@ describe("国内静态地址与消费缓存", () => {
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "2.0.0",
+      supportedSchemaVersion: "2.1.0",
       fetchImplementation: unavailableFetch,
     });
     expect(cached).toMatchObject({ source: "cache", catalogDownloaded: false });
@@ -212,7 +220,7 @@ describe("国内静态地址与消费缓存", () => {
 
   test("消费端 Schema 版本不足时不下载新目录并回退内置快照", async () => {
     const snapshot = await readJson<AggregatedCatalog>(join(distDirectory, "catalog.json"));
-    const before = requestCounts.get("versioned/2026.08.1/catalog.json") ?? 0;
+    const before = requestCounts.get("versioned/2026.08.2/catalog.json") ?? 0;
     const result = await refreshCatalog({
       baseUrl,
       cache: new MemoryCache(),
@@ -225,6 +233,6 @@ describe("国内静态地址与消费缓存", () => {
       catalogDownloaded: false,
       diagnostic: expect.stringContaining("低于目录要求"),
     });
-    expect(requestCounts.get("versioned/2026.08.1/catalog.json") ?? 0).toBe(before);
+    expect(requestCounts.get("versioned/2026.08.2/catalog.json") ?? 0).toBe(before);
   });
 });

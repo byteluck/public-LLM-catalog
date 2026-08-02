@@ -86,7 +86,8 @@ npm run --silent publish -- --provider oss --prefix public-llm-catalog > publish
 | `manifest.json` | `no-cache, max-age=0, must-revalidate` | `application/json; charset=utf-8` | 无 |
 | `index.html` | `no-cache, max-age=0, must-revalidate` | `text/html; charset=utf-8` | 无 |
 | 当前 CSS / JS | `public, max-age=300, must-revalidate` | `text/css; charset=utf-8` / `text/javascript; charset=utf-8` | 无 |
-| 当前逻辑 JSON | `public, max-age=300, must-revalidate` | `application/json; charset=utf-8` | 无 |
+| 当前逻辑 JSON（含 `models-dev-2026.json`） | `public, max-age=300, must-revalidate` | `application/json; charset=utf-8` | 无 |
+| 当前厂家 Logo SVG | `public, max-age=300, must-revalidate` | `image/svg+xml; charset=utf-8` | 无 |
 | 当前 `.gz` / `.br` | 同对应逻辑文件 | 同对应逻辑文件 | `gzip` / `br` |
 | `versioned/{version}/...` | `public, max-age=31536000, immutable` | 同上 | 按 sidecar 设置 |
 
@@ -124,6 +125,7 @@ CATALOG_PROBE_BASE_URLS='https://cdn-a.example.cn/catalog/,https://cdn-b.example
 - 不可变版本路径内容一致并带 `immutable`。
 - gzip/brotli sidecar 存在且 Content-Encoding 正确。
 - 搜索索引和 provider 分片非空。
+- models.dev 2026 候选快照 Schema 正确，厂家 SVG 均可下载、哈希匹配且无外部运行时依赖。
 
 `.github/workflows/publish.yml` 把上传和探测拆成两个 job。`probe-cn` 明确要求带 `self-hosted`、`linux`、`cn-network` 标签的中国大陆 runner；不能用境外 GitHub-hosted runner 冒充国内网络验收。
 
@@ -135,7 +137,7 @@ CATALOG_PROBE_BASE_URLS='https://cdn-a.example.cn/catalog/,https://cdn-b.example
 ai.llm.public-model-catalog.base-url=https://cdn.example.cn/public-llm-catalog/
 ```
 
-不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为运行时 fallback。业务刷新过程只先请求 manifest；版本未变不下载 `catalog.json`。网络、Schema 或哈希失败时继续使用最后成功缓存，没有缓存才加载随应用打包的 `snapshots/catalog.json`。浏览界面则先加载更小的 search index，并仅在打开模型详情时读取对应 provider 分片；它不会请求全量 `catalog.json`。
+不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为运行时 fallback。业务刷新过程只先请求 manifest；版本未变不下载 `catalog.json`。网络、Schema 或哈希失败时继续使用最后成功缓存，没有缓存才加载随应用打包的 `snapshots/catalog.json`。浏览界面则先加载更小的 search index，再加载候选快照；仅在打开模型详情时读取对应 provider 分片；它不会请求全量 `catalog.json`。
 
 ## 凭据与回滚
 

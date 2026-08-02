@@ -158,6 +158,45 @@
         </div>
       </section>
 
+      <section id="models-dev-explorer" class="explorer upstream-explorer" aria-labelledby="models-dev-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">MODELS.DEV · 2026 INTAKE</p>
+            <h2 id="models-dev-title">2026 年新收录候选</h2>
+          </div>
+          <p id="models-dev-result-count" class="result-count">正在读取候选…</p>
+        </div>
+        <p class="upstream-note">
+          以下记录按 models.dev 的 <code>created ≥ 2026-01-01</code> 筛选，表示上游目录收录时间，不等同于厂商官方发布日期；能力字段保持上游候选状态，未自动写入权威目录。
+        </p>
+        <div class="upstream-filters">
+          <label class="search-field">
+            <span>搜索候选名称或 API ID</span>
+            <span class="search-control">
+              <span aria-hidden="true">⌕</span>
+              <input id="models-dev-search" type="search" autocomplete="off" placeholder="例如：Gemini、Qwen、reasoning…">
+            </span>
+          </label>
+          <label>
+            <span>厂家</span>
+            <select id="models-dev-provider-filter">
+              <option value="">全部厂家</option>
+            </select>
+          </label>
+        </div>
+        <div id="models-dev-loading" class="loading-state" role="status">
+          <span class="loading-bar" aria-hidden="true"></span>
+          <p>正在下载并校验 models.dev 候选快照…</p>
+        </div>
+        <div id="models-dev-error" class="error-state" hidden>
+          <p id="models-dev-error-message">候选快照暂时无法读取。</p>
+        </div>
+        <div id="models-dev-grid" class="candidate-grid" aria-live="polite"></div>
+        <div id="models-dev-empty" class="empty-state" hidden>
+          <p>没有符合当前条件的候选模型。</p>
+        </div>
+      </section>
+
       <section class="method" aria-labelledby="method-title">
         <div>
           <p class="eyebrow">HOW TO READ</p>
