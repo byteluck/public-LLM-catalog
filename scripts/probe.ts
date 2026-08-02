@@ -14,6 +14,7 @@ for (const baseUrl of urls) {
     baseUrl,
     repositoryRoot: REPOSITORY_ROOT,
     allowHttp: process.argv.includes("--allow-http"),
+    parentOrigin: process.env.CATALOG_PROBE_PARENT_ORIGIN,
   });
   console.log(JSON.stringify(result));
 }

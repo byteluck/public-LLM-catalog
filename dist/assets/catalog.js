@@ -1,8 +1,18 @@
+import {
+  createCatalogErrorMessage,
+  createCatalogReadyMessage,
+  createCatalogSelectionMessage,
+  resolveCatalogEmbedContext,
+} from "./catalog-embed.js";
+
 const BASE_URL = new URL("./", window.location.href);
 const CACHE_PREFIX = "public-llm-catalog:";
 const MANIFEST_CACHE_KEY = `${CACHE_PREFIX}manifest`;
 const SUPPORTED_SCHEMA_MAJOR = 2;
 const SUPPORTED_SCHEMA_VERSION = "2.4.0";
+const embedContext = resolveCatalogEmbedContext(window.location.href, document.referrer);
+
+document.documentElement.classList.toggle("catalog-picker-mode", embedContext !== null);
 
 const labels = {
   kind: { chat: "Chat", embedding: "Embedding" },
@@ -142,6 +152,13 @@ function createElement(tagName, className, text) {
 function append(parent, ...children) {
   parent.append(...children.filter((child) => child !== null));
   return parent;
+}
+
+function notifyEmbedParent(message) {
+  if (embedContext === null || window.parent === window) {
+    return;
+  }
+  window.parent.postMessage(message, embedContext.parentOrigin);
 }
 
 function safeGet(key) {
@@ -756,6 +773,9 @@ async function loadCatalog() {
     renderModelsDevSync(modelsDevSync);
     populateProviderFilter();
     applyFilters();
+    if (embedContext !== null) {
+      notifyEmbedParent(createCatalogReadyMessage(embedContext, state.manifest, state.items.length));
+    }
     await loadModelsDevCandidates();
     elements.loading.hidden = true;
     const requestedModel = new URL(window.location.href).searchParams.get("model");
@@ -768,6 +788,13 @@ async function loadCatalog() {
     elements.error.hidden = false;
     elements.errorMessage.textContent = error instanceof Error ? error.message : "目录暂时无法读取。";
     elements.resultCount.textContent = "加载失败";
+    if (embedContext !== null) {
+      notifyEmbedParent(createCatalogErrorMessage(
+        embedContext,
+        "catalog_load_failed",
+        error instanceof Error ? error.message : "目录暂时无法读取。",
+      ));
+    }
   }
 }
 
@@ -881,6 +908,47 @@ function renderIdentity(provider, model, offering, item) {
   ]));
   append(fragment, kicker, titleRow, identity);
   return fragment;
+}
+
+function renderPickerAction(provider, model, offering, item) {
+  if (embedContext === null) {
+    return null;
+  }
+  const wrapper = createElement("section", "picker-action");
+  const copy = createElement("div", "picker-action-copy");
+  append(
+    copy,
+    createElement("strong", "", "用于创建租户模型配置"),
+    createElement(
+      "p",
+      "",
+      "只回传公开目录身份与能力；Base URL、API Key、环境和权重仍在业务系统中填写。",
+    ),
+  );
+  const button = createElement("button", "picker-select-button", "使用此模型");
+  button.type = "button";
+  const blocked =
+    offering.status === "retired" || item.verification_status === "official_route_unavailable";
+  if (blocked) {
+    button.disabled = true;
+    button.textContent = "该路线不可用于新建";
+  } else {
+    button.addEventListener("click", () => {
+      const descriptor = descriptorFor(`providers/${provider.provider_id}.json`);
+      notifyEmbedParent(createCatalogSelectionMessage(embedContext, {
+        descriptor,
+        item,
+        manifest: state.manifest,
+        model,
+        offering,
+        provider,
+      }));
+      button.textContent = "已发送到创建表单";
+      elements.live.textContent = `已选择 ${offering.name}`;
+    });
+  }
+  append(wrapper, copy, button);
+  return wrapper;
 }
 
 function renderProtocolsAndLimits(offering) {
@@ -1161,6 +1229,7 @@ async function openDetail(item, updateUrl = true) {
     append(
       content,
       renderIdentity(shard.provider, model, offering, item),
+      renderPickerAction(shard.provider, model, offering, item),
       renderProtocolsAndLimits(offering),
       renderAgentCapabilities(offering),
       renderReasoning(offering),

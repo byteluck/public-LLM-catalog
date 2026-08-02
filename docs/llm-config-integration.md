@@ -4,16 +4,16 @@
 
 `LlmConfig` 中的“从公开目录创建”不应继续被理解为“复制几个模板字段”，而应改成：**前端从可配置的静态目录地址选择一个经过版本校验的 provider offering，为它创建一条租户 deployment，并把两者的绑定关系持久化**。
 
-公开目录负责模型事实；`pro-lowcode-platform-front` 直接读取公司 CDN 或客户私有化部署的同一份静态目录，负责哈希校验、缓存、选择与展示；`baiteda-app` 只保存目录绑定和租户配置，不再出站抓取目录；FDE 只消费保存后经过 capability 过滤的运行时配置。任何一层都不直接依赖 models.dev、GitHub 或国外厂商站点。
+公开目录负责模型事实，并在 iframe 内完成 manifest/分片哈希校验、缓存、搜索和详情展示；`pro-lowcode-platform-front` 只负责承载 iframe、校验 postMessage 的 origin/source/session 和把公开选择投影到表单；`baiteda-app` 只保存目录绑定和租户配置，不再出站抓取目录；FDE 只消费保存后经过 capability 过滤的运行时配置。任何运行时层都不直接依赖 models.dev、GitHub 或国外厂商站点。
 
-推荐新增独立配置 `VUE_APP_LLM_CATALOG_BASE_URL`，例如公司环境使用 `https://fe-resource.baiteda.com/LLM_catalog/`，客户环境可以改成内网 HTTPS 地址或同源 `/LLM_catalog/`。不要把目录地址继续硬编码到 Java，也不要只从通用 `VUE_APP_CDN_PATH` 拼接，因为客户可能把公共前端资源和模型目录部署在不同位置。
+前端使用已有 `VUE_APP_CDN_PATH` 作为可替换 CDN origin，并新增 `VUE_APP_LLM_CATALOG_PATH=/LLM_catalog/index.html` 承载目录页面路径。公司默认组合为 `https://fe-resource.baiteda.com/LLM_catalog/index.html`；客户私有化部署只需把 CDN path 指向客户内网静态资源域名，或使用同源地址。两个值同时进入 `window.__APP_ENV__`，方便安装包在部署阶段覆盖；不要把目录地址写进 Java。
 
 边界按目标拆分如下：
 
 | 能力 | 是否只做前端 | 说明 |
 | --- | --- | --- |
-| 浏览、搜索、筛选、Logo、详情、证据跳转 | 是 | 浏览器直读静态目录，不需要后端 API |
-| manifest 检查、分片下载、SHA-256、浏览器缓存 | 是 | 静态目录客户端完成；请求不带平台凭据 |
+| 浏览、搜索、筛选、Logo、详情、证据跳转 | 是 | iframe 复用目录同源 UI，不需要后端 API |
+| manifest 检查、分片下载、SHA-256、浏览器缓存 | 是 | iframe 内的目录页面完成；请求不带平台凭据 |
 | 只把目录字段临时预填进创建表单 | 是 | 可以最先上线，但保存后不能追踪目录版本或能力变化 |
 | 保存模型、私有 Base URL/API Key、权限、连通性测试 | 否 | 这些是 tenant deployment，继续走现有后端 |
 | 保存 catalog binding、恢复编辑状态、增量升级比较 | 否 | 前端负责比较，后端至少持久化绑定身份和版本 |
@@ -22,19 +22,19 @@
 
 ## 本次审计基线
 
-2026-08-02 按以下工作树的当前 HEAD 重新审计；目标文件相对各自 HEAD 没有未提交差异，未修改两个现有仓库：
+2026-08-02 按以下 HEAD 重新审计；本次联动实现修改目录仓库与 `pro-lowcode-platform-front`，`baiteda-app` 只读审计、未修改：
 
 | 仓库 | HEAD | 审计范围 |
 | --- | --- | --- |
-| `pro-lowcode-platform-front` | `aebd62c62b8bbf7b282869d4f972375c13ec8946` | `src/views/LlmConfig/`、`src/services/llmConfigService.ts` |
-| `baiteda-app` | `11a5b04316ae106a04d63156cae3fb1c36d07657` | 公开目录服务、模型保存 DTO/PO/VO、保存与下发逻辑 |
-| 本目录仓库 | `0b59cead71da82a2a71d63d59fbfbb26a5729bf3` | Schema `2.4.0`、目录版本 `2026.08.5` 的 manifest、搜索索引和 provider 分片 |
+| `pro-lowcode-platform-front` | `2f514d4c14f754efc9e0d967fc73bb0e840c41ba` | `src/views/LlmConfig/`、`src/services/llmConfigService.ts`、环境注入 |
+| `baiteda-app` | `e32efc42d96663f0dfe29958e5eb5d21f0030c7c` | 公开目录服务、模型保存 DTO/PO/VO、保存与下发逻辑 |
+| 本目录仓库 | `fc01eb6ef074b0edce29e01d054c26daaa35a419` | Schema `2.4.0`、目标目录版本 `2026.08.6` 的 manifest、搜索索引、provider 分片与 iframe 协议 |
 
 公司 CDN 地址在审计时可打开，返回目录版本 `2026.08.5`、Schema `2.4.0`、83 条 offering，且 `Access-Control-Allow-Origin: *` 允许前端跨域读取。但当前线上 `manifest.json`、`index.html` 和未版本化 JSON 被错误设置为 `Cache-Control: max-age=31536000,immutable`；部分压缩响应还没有 ETag。正式接入增量更新前必须按[国内部署说明](deployment-cn.md)修正，否则浏览器可能长期拿不到新 manifest，国内探测也会失败。
 
 ## 当前链路与问题
 
-当前已经有一个可见入口，但链路仍是：
+本次修改前已经有一个可见入口，但链路是：
 
 ```mermaid
 flowchart LR
@@ -72,11 +72,10 @@ flowchart LR
   end
 
   subgraph Front["LlmConfig"]
-    Config["VUE_APP_LLM_CATALOG_BASE_URL"]
-    Client["静态目录客户端"]
-    Cache["浏览器已验证缓存"]
-    Picker["目录选择器"]
-    Detail["能力与证据详情"]
+    Config["CDN_PATH + LLM_CATALOG_PATH"]
+    Frame["sandbox iframe"]
+    Guard["origin/source/session 校验"]
+    Projection["公开能力白名单投影"]
     Editor["模型部署编辑器"]
   end
 
@@ -94,17 +93,14 @@ flowchart LR
     Adapter["Chat / Embedding adapter"]
   end
 
-  Config --> Client
-  Manifest --> Client
-  Index --> Client
-  Shard --> Client
-  Client --> Cache
-  Client --> Offering
-  Cache --> Picker
-  Cache --> Detail
-  Picker --> Detail
-  Offering --> Editor
-  Detail --> Editor
+  Config --> Frame
+  Manifest --> Frame
+  Index --> Frame
+  Shard --> Frame
+  Offering --> Frame
+  Frame -- "postMessage(selection)" --> Guard
+  Guard --> Projection
+  Projection --> Editor
   Editor --> Validate
   Validate --> Binding
   Validate --> Deployment
@@ -122,7 +118,7 @@ flowchart LR
 
 ### 1. 进入目录选择器
 
-保留现有“从公开目录创建”按钮。弹窗通过前端静态目录客户端读取轻量搜索索引，显示：
+保留现有“从公开目录创建”按钮。弹窗用 sandbox iframe 打开配置后的目录页面；目录页面自身读取并校验轻量搜索索引，显示：
 
 - 厂家 Logo、供应商、模型名称和 API model ID；
 - Chat / Embedding、输入输出模态、生命周期和核验状态；
@@ -197,18 +193,17 @@ flowchart LR
 
 ## 前端静态目录消费
 
-前端新增独立的 `PublicLlmCatalogClient`，使用浏览器原生 `fetch` 和 Web Crypto；它不复用带鉴权拦截器的 `FetchService`，避免把 token、tenant header 或 cookie 发往静态目录域名。
+父页面不再重复实现目录下载器。`getLegacyEnv('VUE_APP_CDN_PATH')` 与 `getLegacyEnv('VUE_APP_LLM_CATALOG_PATH')` 组合出 iframe URL；目录页面继续使用浏览器原生 fetch/Web Crypto 完成 manifest、索引、分片和缓存状态机。这样公司 CDN 与客户内网部署复用完全相同的目录产物和 UI。
 
-1. 用 `getLegacyEnv('VUE_APP_LLM_CATALOG_BASE_URL')` 读取目录根地址，并统一补末尾 `/`。
-2. 每次打开选择器先以 `cache: 'no-cache'` 请求小型 `manifest.json`，检查 Schema、`minimum_consumer_schema_version` 和目录版本。
-3. 版本未变化时读取浏览器中已经按 SHA-256 验证的 search index，不重复下载。
-4. 版本变化时按 manifest 的 `immutable_path` 下载 `search-index.json`，校验 size 和 SHA-256 后才原子切换本地缓存。
-5. 用户打开详情时才下载对应 provider 分片，完成相同校验后解析 offering、canonical、provider 和 alias。
-6. 缓存键必须同时包含规范化 base URL、目录版本和内容 SHA-256，避免公司 CDN 与客户内网目录互相串缓存。
-7. manifest 暂时不可用时使用该 base URL 的最后验证缓存；没有缓存时仍允许点击原有“新增模型”创建 unlinked 模型，不能让目录故障阻塞已有配置。
-8. 所有目录请求使用 `credentials: 'omit'`，不附带业务 API header；证据站点只作为用户主动点击的链接，不在加载时请求。
+1. 父页面为每次打开生成不可预测的 `session_id`，把 `embed=picker`、协议版本、`parent_origin` 和 session 放入 iframe 查询参数。
+2. iframe 校验 `parent_origin` 是 HTTP(S) origin，且与 `document.referrer` 的 origin 一致；不匹配时退化为只浏览，不发送消息。
+3. iframe 只用 `window.parent.postMessage(message, parentOrigin)` 精确发送，不使用 `*`。
+4. 父页面同时校验 `event.origin`、`event.source === iframe.contentWindow`、channel、协议版本和 session；任一不匹配都静默丢弃。
+5. `catalog.selection` 只含 schema/catalog 版本、provider/canonical/offering/API ID、协议、模态、三类限额、三态 Agent/推理摘要、Embedding 维度和 provider 分片 SHA-256。它不含 Base URL、API Key、环境、权重、租户或证据正文。
+6. 父页面重新按白名单解析 payload，丢弃所有额外字段；目录 `unknown` 保持 unknown，目录 token 上限只展示，不写入租户运行参数。
+7. iframe/manifest 暂时不可用时，“新增模型”仍可手工创建；已有配置与运行时完全不依赖 iframe 在线。
 
-前端构建时可以从 `.env` 注入该值。若私有化安装包希望在**不重新构建前端**的情况下改变目录地址，还需把 `VUE_APP_LLM_CATALOG_BASE_URL` 加入 `index.html` 的 `window.__APP_ENV__`，继续通过现有 `getLegacyEnv` 读取；只写 `.env` 属于构建期配置，不是部署后的动态配置。
+`.env` 默认增加 `VUE_APP_LLM_CATALOG_PATH=/LLM_catalog/index.html`。`VUE_APP_CDN_PATH` 和该 path 同时注入 `window.__APP_ENV__`，私有化安装包可以在部署阶段替换，不要求业务后端感知目录地址。
 
 ## 后端边界
 
@@ -220,6 +215,8 @@ flowchart LR
 - `ai.llm.public-model-catalog.*` 配置；
 - 前端 `llmConfigService.ts` 中对应的 authenticated API 方法和旧扁平 Template 类型。
 
+删除要按发布顺序进行：先发布不再调用该 API 的前端与支持 postMessage v1 的目录产物，确认所有目标客户环境已完成切换，再删除后端 endpoint/service/BO/VO/config。前后端灰度期间保留旧 endpoint 不会影响新链路；反过来先删后端会让尚未升级的前端失效。
+
 不要删除 `saveModel`、`updateModel`、`queryModelDetail`、连通性测试或端点能力探测；它们处理的是 tenant deployment，而不是公开目录。
 
 如果目录只用于本次表单预填，删除上述链路后确实可以只改前端，但保存完成后仍会丢失目录版本与 offering 身份，也无法做增量升级或让运行时读取细粒度能力。完整目标仍需给现有保存 DTO/PO/VO 增加 catalog binding；这是持久化改造，不需要后端访问 CDN。
@@ -230,18 +227,19 @@ flowchart LR
 
 ## 建议前端契约
 
-静态目录客户端至少提供以下方法，`LlmConfig/index.vue` 不直接拼 manifest 或 provider JSON：
+跨仓库协议固定为 v1；`LlmConfig/index.vue` 不直接拼 manifest/provider JSON，也不接受任意 postMessage 对象：
 
 ```ts
-interface PublicLlmCatalogClient {
-  refresh(): Promise<CatalogRefreshResult>
-  search(query: CatalogSearchQuery): CatalogSearchResult
-  getOffering(catalogVersion: string, offeringId: string): Promise<CatalogOfferingDetail>
-  compareBinding(binding: CatalogBinding): Promise<CatalogBindingDiff>
+interface CatalogMessageEnvelope<T> {
+  channel: 'com.baiteda.public-llm-catalog'
+  protocol_version: 1
+  session_id: string
+  type: 'catalog.ready' | 'catalog.selection' | 'catalog.error'
+  payload: T
 }
 ```
 
-`refresh()` 返回 `download | cache` 来源、版本、生成/收集/核验时间和非敏感诊断；`getOffering()` 只返回通过 manifest size/SHA-256 校验的详情。搜索、筛选、分页和准入状态都在当前浏览器内完成，不再调用 baiteda 搜索接口。
+目录端实现位于 `web/catalog-embed.js`，父页面白名单解析实现位于 `src/views/LlmConfig/publicCatalogBridge.ts`。两端契约测试共同断言 exact origin/source/session、`unknown` 保留、token 上限不预填以及消息不含 tenant/secret 字段。
 
 ### 保存
 
@@ -253,7 +251,7 @@ interface PublicLlmCatalogClient {
   "model": "tenant-gateway-glm",
   "catalog_binding": {
     "catalog_schema_version": "2.4.0",
-    "catalog_version": "2026.08.5",
+    "catalog_version": "2026.08.6",
     "provider_id": "zhipu",
     "canonical_id": "zhipu/glm-5.2",
     "offering_id": "zhipu/glm-5.2",
@@ -320,13 +318,12 @@ interface PublicLlmCatalogClient {
 
 | 文件 | 变更 |
 | --- | --- |
-| `.env*`、`index.html` | 增加 `VUE_APP_LLM_CATALOG_BASE_URL` 的构建期/可选部署期入口；复用现有 `src/config/legacy-env.ts#getLegacyEnv`，无需修改该工具；空值时只隐藏或禁用目录入口，不影响手工新增 |
-| `src/services/publicLlmCatalogService.ts`（新增） | 原生 fetch + Web Crypto 实现 manifest/index/shard、版本缓存、CORS 错误诊断和本地搜索；绝不挂业务鉴权 header |
-| `src/services/llmConfigService.ts` | 删除 `searchPublicModelTemplates` 和旧扁平 Template 类型；Save/Detail 类型增加 catalog binding、三态和 runtime override |
-| `src/views/LlmConfig/index.vue` | 目录列表显示 Logo/版本/核验时间；选中后加载详情；新增只读绑定区、绑定状态、协议选择、三限额分离和升级提示 |
-| `src/views/LlmConfig/publicCatalogBinding.ts`（新增） | 集中实现类型派生、alias/override 判定、保存 payload 和 unknown 保留，避免逻辑继续堆在单个 Vue 文件中 |
+| `.env`、`index.html`、`public/index.html` | 增加 `VUE_APP_LLM_CATALOG_PATH=/LLM_catalog/index.html`；与现有 `VUE_APP_CDN_PATH` 一起注入 `window.__APP_ENV__` |
+| `src/services/llmConfigService.ts` | 删除 `searchPublicModelTemplates` 和旧扁平 Template 类型；保留 save/detail/端点探测 |
+| `src/views/LlmConfig/index.vue` | iframe 弹窗承载完整目录 UI；监听 v1 postMessage；选择后打开现有 deployment 编辑器 |
+| `src/views/LlmConfig/publicCatalogBridge.ts`（新增） | URL/session、origin/source 校验、消息白名单解析、类型/协议/细粒度能力的保守映射；unknown 不转 false，三类限额不混用 |
 | `src/views/LlmConfig/modelCapabilityAssistant.ts` | 端点探测只生成 tenant override 候选；删除把公开目录扁平模板直接写进运行字段的职责 |
-| contract/unit tests | 覆盖环境地址、`credentials: omit`、无 token header、哈希、版本缓存、私有 ID override、unknown 不转 false、目录限额不预填和不可用回退 |
+| contract/unit tests | 覆盖私有 CDN 拼接、source/origin/session、消息额外字段丢弃、unknown 不转 false、目录限额不预填和旧后端 API 不再调用 |
 
 ### baiteda-app
 
@@ -349,10 +346,11 @@ FDE 的构造器映射仍按[现有项目参数审计与集成计划](audit-and-
 ## 推荐上线顺序
 
 1. **修正 CDN**：把当前 manifest/index/HTML 的长 immutable 缓存改为声明值；确认跨域 GET/HEAD/OPTIONS、ETag/暴露头和国内探测通过。
-2. **前端直读**：增加环境变量和静态目录客户端，完成搜索、Logo、详情、哈希、版本缓存与私有化 base URL；同时删除后端旧目录搜索链路。
-3. **绑定可追踪**：数据库和 Save/Detail API 增加 catalog binding；前端保存目录版本、offering、哈希、协议与私有 ID mapping。此阶段高级运行参数仍不可编辑。
-4. **运行时闭环**：按需保存白名单 capability snapshot，baiteda Resource VO 与 FDE 同时接入 `max_input_tokens`、细粒度能力和三层参数过滤，逐字段增加构造器契约测试。
-5. **增量升级**：前端比较固定版本与最新版本，增加 breaking diff、deprecated/replacement 迁移与历史版本保留策略。
+2. **iframe 联动**：发布带 picker/postMessage v1 的目录产物，再发布增加路径变量和桥接层的前端；确认灰度环境不再调用旧 API。
+3. **删除旧抓取**：所有目标前端完成切换后，删除后端 models.dev/GitHub 抓取、搜索 endpoint 和旧 BO/VO/config。
+4. **绑定可追踪**：数据库和 Save/Detail API 增加 catalog binding；前端保存目录版本、offering、哈希、协议与私有 ID mapping。此阶段高级运行参数仍不可编辑。
+5. **运行时闭环**：按需保存白名单 capability snapshot，baiteda Resource VO 与 FDE 同时接入 `max_input_tokens`、细粒度能力和三层参数过滤，逐字段增加构造器契约测试。
+6. **增量升级**：前端比较固定版本与最新版本，增加 breaking diff、deprecated/replacement 迁移与历史版本保留策略。
 
 第一批联动不应同时开放 temperature/top_p/top_k。先把“选了谁、绑定哪个版本、实际调用什么 ID、unknown 如何处理”闭环做对，再按运行时契约逐个开放参数。
 

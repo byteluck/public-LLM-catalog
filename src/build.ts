@@ -378,6 +378,7 @@ export async function buildToDirectory(
   const siteFiles: Array<[string, string, StaticContentType, string | undefined]> = [
     ["index.html", "web/index.html", "text/html; charset=utf-8", "no-cache, max-age=0, must-revalidate"],
     ["assets/catalog.css", "web/catalog.css", "text/css; charset=utf-8", undefined],
+    ["assets/catalog-embed.js", "web/catalog-embed.js", "text/javascript; charset=utf-8", undefined],
     ["assets/catalog.js", "web/catalog.js", "text/javascript; charset=utf-8", undefined],
   ];
   for (const [outputPath, sourcePath, contentType, cacheControl] of siteFiles) {

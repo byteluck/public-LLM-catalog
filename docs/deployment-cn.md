@@ -101,7 +101,7 @@ npm run --silent publish -- --provider oss --prefix public-llm-catalog > publish
 - 不对已经压缩的 `.gz`/`.br` 再压缩。
 - HTTPS 域名、证书和 DNS 均在中国大陆可访问；如面向公众按要求完成备案。
 - 不把不存在的 `.json` 重写成 `index.html`，目录不是 SPA。
-- 若模型管理前端与目录同源，不需要 CORS；若前端按环境变量跨域直读目录，允许 `GET`、`HEAD`、`OPTIONS`，公开数据可返回 `Access-Control-Allow-Origin: *`（或列出允许的前端域名），且不要启用 credentials。建议暴露 `ETag`、`Cache-Control`、`Content-Length`、`Content-Type`，所有压缩变体都必须保留可重新验证的 ETag。
+- iframe 导航及 iframe 内的同源 JSON 请求不依赖父页面 CORS；为独立机器消费者或未来直接 JSON 消费仍可允许 `GET`、`HEAD`、`OPTIONS`，公开数据返回 `Access-Control-Allow-Origin: *`（或列出允许 origin）且不要启用 credentials。建议暴露 `ETag`、`Cache-Control`、`Content-Length`、`Content-Type`，所有压缩变体都必须保留可重新验证的 ETag。
 - 如通过内容协商自动选择编码，仍保留显式 sidecar URL供探测，并正确设置 `Vary: Accept-Encoding`。
 
 ## 国内网络探测
@@ -118,10 +118,18 @@ npm run probe -- https://cdn.example.cn/public-llm-catalog/
 CATALOG_PROBE_BASE_URLS='https://cdn-a.example.cn/catalog/,https://cdn-b.example.cn/catalog/' npm run probe
 ```
 
+模型管理页跨域嵌入时同时设置父页面 origin：
+
+```bash
+CATALOG_PROBE_PARENT_ORIGIN=https://ai.example.cn \
+  npm run probe -- https://cdn.example.cn/public-llm-catalog/
+```
+
 探测会校验：
 
 - manifest 可打开、Schema 正确、可重新验证且 `If-None-Match` 得到 304。
 - CDN 根地址可直接打开且内容/类型/哈希与 `index.html` 一致。
+- 首页未被 `X-Frame-Options` 或 CSP `frame-ancestors` 阻止配置的父页面嵌入。
 - 全量目录、搜索索引和所有 provider 分片可下载，大小/内容 SHA-256 与 manifest 一致。
 - 不可变版本路径内容一致并带 `immutable`。
 - gzip/brotli sidecar 存在且 Content-Encoding 正确。
@@ -132,15 +140,16 @@ CATALOG_PROBE_BASE_URLS='https://cdn-a.example.cn/catalog/,https://cdn-b.example
 
 ## 前端消费配置
 
-模型管理前端使用独立的目录根地址，不从通用 CDN 路径隐式拼接。例如公司环境：
+模型管理前端使用已有 CDN origin 与独立目录页面 path。例如公司环境：
 
 ```dotenv
-VUE_APP_LLM_CATALOG_BASE_URL=https://fe-resource.baiteda.com/LLM_catalog/
+VUE_APP_CDN_PATH=https://fe-resource.baiteda.com
+VUE_APP_LLM_CATALOG_PATH=/LLM_catalog/index.html
 ```
 
-客户私有化部署可以设置为内网 HTTPS 地址或同源 `/LLM_catalog/`。`.env` 是构建期配置；如果同一前端安装包需要部署后切换地址，还要把同名变量注入现有 `window.__APP_ENV__`，由前端统一读取。空值或目录不可用时只关闭“从公开目录创建”，原有手工新增和已保存模型不能受影响。
+客户私有化部署把 `VUE_APP_CDN_PATH` 设置为客户内网 HTTPS 静态资源 origin，目录仍可保持相同 path；也可以用同源相对 CDN path。两个变量都注入现有 `window.__APP_ENV__`，可由安装包部署模板覆盖。空值或目录不可用时只影响“从公开目录创建”，原有手工新增和已保存模型不能受影响。
 
-不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为 fallback。浏览器每次刷新只先请求 manifest；版本未变不下载 search index，只有打开模型详情时才读取对应 provider 分片。网络、Schema 或哈希失败时继续使用该 base URL 下的最后验证缓存；没有缓存时回退到手工创建。`baiteda-app` 不保存目录根地址，也不访问 CDN；它只接收并校验模型保存请求中的目录绑定和可选白名单能力快照。
+不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为 fallback。iframe 内的目录页面每次刷新只先请求 manifest；版本未变不下载 search index，只有打开模型详情时才读取对应 provider 分片。CDN 不得返回 `X-Frame-Options: DENY/SAMEORIGIN`，HTTP CSP 如设置 `frame-ancestors`，必须显式允许模型管理前端的 origin。网络、Schema 或哈希失败时继续使用该目录 origin 下的最后验证缓存；没有缓存时回退到手工创建。`baiteda-app` 不保存目录地址，也不访问 CDN。
 
 ## 凭据与回滚
 

@@ -5,6 +5,7 @@ import { createValidators, formatValidationIssues, validateWith } from "./valida
 export interface ProbeResult {
   baseUrl: string;
   catalogVersion: string;
+  embeddable: boolean;
   homepage: boolean;
   logicalFiles: number;
   providerShards: number;
@@ -33,6 +34,45 @@ function requireHeader(response: Response, name: string, url: URL): string {
     throw new Error(`${url} 缺少 ${name} 响应头`);
   }
   return value;
+}
+
+async function checkHomepageEmbedding(url: URL, parentOrigin?: string): Promise<void> {
+  const response = await fetch(url, { method: "HEAD" });
+  if (!response.ok) {
+    throw new Error(`${url} HEAD HTTP ${response.status}`);
+  }
+  const xFrameOptions = response.headers.get("x-frame-options")?.trim().toLowerCase();
+  if (xFrameOptions === "deny") {
+    throw new Error(`${url} 的 X-Frame-Options=DENY 阻止目录选择器嵌入`);
+  }
+  if (
+    xFrameOptions === "sameorigin" &&
+    parentOrigin !== undefined &&
+    new URL(parentOrigin).origin !== url.origin
+  ) {
+    throw new Error(`${url} 的 X-Frame-Options=SAMEORIGIN 阻止配置的跨域父页面`);
+  }
+
+  const contentSecurityPolicy = response.headers.get("content-security-policy");
+  const frameAncestors = contentSecurityPolicy?.match(/(?:^|;)\s*frame-ancestors\s+([^;]+)/iu)?.[1];
+  if (frameAncestors === undefined) {
+    return;
+  }
+  const sources = frameAncestors.trim().split(/\s+/u);
+  if (sources.includes("'none'")) {
+    throw new Error(`${url} 的 CSP frame-ancestors 'none' 阻止目录选择器嵌入`);
+  }
+  if (parentOrigin === undefined) {
+    return;
+  }
+  const parent = new URL(parentOrigin).origin;
+  const allowed =
+    sources.includes("*") ||
+    sources.includes(parent) ||
+    (sources.includes("'self'") && parent === url.origin);
+  if (!allowed) {
+    throw new Error(`${url} 的 CSP frame-ancestors 未允许父页面 ${parent}`);
+  }
 }
 
 async function fetchBytesWithCache(
@@ -81,6 +121,7 @@ export async function probeCatalog(input: {
   baseUrl: string;
   repositoryRoot: string;
   allowHttp?: boolean;
+  parentOrigin?: string;
 }): Promise<ProbeResult> {
   const base = new URL(input.baseUrl);
   if (base.protocol !== "https:" && input.allowHttp !== true) {
@@ -109,6 +150,7 @@ export async function probeCatalog(input: {
   if (homepageFile === undefined) {
     throw new Error("manifest 缺少 index.html，CDN 无法提供目录浏览首页");
   }
+  await checkHomepageEmbedding(urlAt(base, ""), input.parentOrigin);
   await fetchBytesWithCache(
     urlAt(base, ""),
     homepageFile.sha256,
@@ -210,6 +252,7 @@ export async function probeCatalog(input: {
     if (
       file.path === "index.html" ||
       file.path === "assets/catalog.css" ||
+      file.path === "assets/catalog-embed.js" ||
       file.path === "assets/catalog.js"
     ) {
       siteFiles += 1;
@@ -218,7 +261,7 @@ export async function probeCatalog(input: {
   if (
     searchItems === 0 ||
     providerShards === 0 ||
-    siteFiles !== 3 ||
+    siteFiles !== 4 ||
     modelsDevItems === 0 ||
     reviewedOfferings === 0 ||
     logoAssets === 0
@@ -228,6 +271,7 @@ export async function probeCatalog(input: {
   return {
     baseUrl: base.toString(),
     catalogVersion: manifest.catalog_version,
+    embeddable: true,
     homepage: true,
     logicalFiles: manifest.files.length,
     providerShards,

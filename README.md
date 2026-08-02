@@ -16,9 +16,10 @@ npm run preview
 
 本地打开 `http://127.0.0.1:4173/` 可浏览目录。生产环境把 `dist/` 整体发布到对象存储/CDN，并将 `index.html` 配置为目录根路径的默认文档。浏览器和业务消费端都先读取 `manifest.json`；目录版本未变化时不下载完整目录，业务消费端不可用时回退到 `snapshots/catalog.json`。
 
-生成物同时服务两类消费者：
+生成物同时服务三类消费者：
 
 - 人员访问 CDN 根地址，通过纯静态页面搜索、筛选并查看字段级详情。
+- 模型管理前端以 iframe picker 打开同一页面，通过带 origin/source/session 校验的 postMessage 选择 offering。
 - 程序从 `manifest.json`、`catalog.json` 或 provider 分片读取机器可验证的 JSON。
 
 ## 数据边界

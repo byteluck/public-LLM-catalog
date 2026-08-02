@@ -143,18 +143,20 @@ describe("国内静态地址与消费缓存", () => {
       baseUrl,
       repositoryRoot: REPOSITORY_ROOT,
       allowHttp: true,
+      parentOrigin: new URL(baseUrl).origin,
     });
     const candidateSnapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(
       join(REPOSITORY_ROOT, "upstream/models-dev-2026.json"),
     );
     const catalog = await loadSourceCatalog(REPOSITORY_ROOT);
     expect(result).toMatchObject({
-      catalogVersion: "2026.08.5",
+      catalogVersion: "2026.08.6",
+      embeddable: true,
       homepage: true,
-      logicalFiles: 7 + catalog.providers.length + candidateSnapshot.providers.length,
+      logicalFiles: 8 + catalog.providers.length + candidateSnapshot.providers.length,
       providerShards: catalog.providers.length,
       searchItems: catalog.offerings.length,
-      siteFiles: 3,
+      siteFiles: 4,
       modelsDevItems: candidateSnapshot.models.length,
       reviewedOfferings: 79,
       logoAssets: candidateSnapshot.providers.length,
@@ -164,7 +166,7 @@ describe("国内静态地址与消费缓存", () => {
   test("版本未变化时只重新请求小型 manifest，不重复下载 catalog", async () => {
     const snapshot = await readJson<AggregatedCatalog>(join(distDirectory, "catalog.json"));
     const cache = new MemoryCache();
-    const catalogPath = "versioned/2026.08.5/catalog.json";
+    const catalogPath = "versioned/2026.08.6/catalog.json";
     const before = requestCounts.get(catalogPath) ?? 0;
     const currentPathBefore = requestCounts.get("catalog.json") ?? 0;
     const first = await refreshCatalog({
@@ -223,7 +225,7 @@ describe("国内静态地址与消费缓存", () => {
 
   test("消费端 Schema 版本不足时不下载新目录并回退内置快照", async () => {
     const snapshot = await readJson<AggregatedCatalog>(join(distDirectory, "catalog.json"));
-    const before = requestCounts.get("versioned/2026.08.5/catalog.json") ?? 0;
+    const before = requestCounts.get("versioned/2026.08.6/catalog.json") ?? 0;
     const result = await refreshCatalog({
       baseUrl,
       cache: new MemoryCache(),
@@ -236,6 +238,6 @@ describe("国内静态地址与消费缓存", () => {
       catalogDownloaded: false,
       diagnostic: expect.stringContaining("低于目录要求"),
     });
-    expect(requestCounts.get("versioned/2026.08.5/catalog.json") ?? 0).toBe(before);
+    expect(requestCounts.get("versioned/2026.08.6/catalog.json") ?? 0).toBe(before);
   });
 });

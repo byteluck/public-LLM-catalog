@@ -40,6 +40,12 @@ sequenceDiagram
 
 页面不展示或加载 API Key、私有 Base URL、环境、权重、负载均衡或其他 tenant deployment 数据。证据 URL 仅作为可点击链接出现，页面初始化和搜索不会请求厂商网站。
 
+## iframe 选择模式
+
+业务前端用 `embed=picker&protocol_version=1&parent_origin=...&session_id=...` 打开同一 `index.html` 时，页面隐藏首页介绍、上游路线和页脚，保留紧凑搜索、卡片和详情。用户在详情中点击“使用此模型”后，页面以 channel `com.baiteda.public-llm-catalog` 向精确的 `parent_origin` 发送 `catalog.selection`。
+
+目录端会核对 parent origin、referrer origin 与 session；父页面还必须核对 `event.origin`、`event.source`、channel、版本和 session。消息只投影公开 identity、协议、模态、限额、三态能力、Embedding 摘要和 provider 分片哈希，不含租户、端点或凭据。普通访问不带 embed 参数时仍是完整独立浏览页。
+
 ## 加载、缓存与失败策略
 
 1. 每次打开先请求小型 `manifest.json`，不直接下载完整 `catalog.json`。
@@ -58,6 +64,7 @@ sequenceDiagram
 - 必须使用 HTTPS。浏览器依赖 Web Crypto 校验 SHA-256，生产 HTTP 页面不属于支持的部署形态。
 - 页面使用相对路径，因此可部署在域名根路径或任意 prefix；不要添加 `<base>` 重写。
 - 页面 CSP 只允许同源脚本、样式和请求；若企业网关注入脚本，应先做独立安全评审，不要直接放宽为任意域名。
+- CDN 响应不得用 `X-Frame-Options` 阻止 picker；若通过 HTTP Header 配置 CSP `frame-ancestors`，应只放行实际部署的模型管理前端 origin。HTML meta CSP 不能代替该响应头配置。
 - 发布后必须从国内 runner 执行 `npm run probe -- https://实际地址/prefix/`；探测会同时验证根首页、资源类型、哈希、缓存、压缩和分片。
 
 ## 本地验证

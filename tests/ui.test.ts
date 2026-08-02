@@ -14,15 +14,17 @@ let outputDirectory: string;
 let sourceHtml: string;
 let sourceCss: string;
 let sourceJavaScript: string;
+let sourceEmbedJavaScript: string;
 let manifest: Manifest;
 
 beforeAll(async () => {
   temporaryRoot = await mkdtemp(join(tmpdir(), "llm-catalog-ui-test-"));
   outputDirectory = join(temporaryRoot, "llm-catalog-dist");
-  [sourceHtml, sourceCss, sourceJavaScript] = await Promise.all([
+  [sourceHtml, sourceCss, sourceJavaScript, sourceEmbedJavaScript] = await Promise.all([
     readFile(join(REPOSITORY_ROOT, "web/index.html"), "utf8"),
     readFile(join(REPOSITORY_ROOT, "web/catalog.css"), "utf8"),
     readFile(join(REPOSITORY_ROOT, "web/catalog.js"), "utf8"),
+    readFile(join(REPOSITORY_ROOT, "web/catalog-embed.js"), "utf8"),
   ]);
   await buildToDirectory(REPOSITORY_ROOT, outputDirectory);
   manifest = await readJson<Manifest>(join(outputDirectory, "manifest.json"));
@@ -49,6 +51,7 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceJavaScript).toContain("detail-logo");
     expect(sourceJavaScript).toContain("SUPPORTED_SCHEMA_VERSION");
     expect(sourceJavaScript).toContain("minimum_consumer_schema_version");
+    expect(sourceJavaScript).toContain('from "./catalog-embed.js"');
     expect(sourceHtml).not.toMatch(/(?:href|src)=["']https?:\/\//u);
     expect(sourceCss).not.toMatch(/url\(["']?https?:\/\//u);
   });
@@ -72,6 +75,15 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceJavaScript).toContain("node.textContent = text");
   });
 
+  test("嵌入选择器只向经过校验的父 origin 回传公开能力投影", () => {
+    expect(sourceJavaScript).toContain("window.parent.postMessage(message, embedContext.parentOrigin)");
+    expect(sourceJavaScript).not.toContain('postMessage(message, "*")');
+    expect(sourceJavaScript).toContain("renderPickerAction");
+    expect(sourceEmbedJavaScript).toContain('type, payload');
+    expect(sourceEmbedJavaScript).toContain('"catalog.selection"');
+    expect(sourceEmbedJavaScript).not.toMatch(/api_key|env_endpoints|tenant_id|base_url/iu);
+  });
+
   test("界面不按具体模型名称硬编码", () => {
     for (const modelName of ["GPT-5.5", "GLM-5.2", "GLM-4.6V", "Embedding-3"]) {
       expect(sourceHtml).not.toContain(modelName);
@@ -84,6 +96,7 @@ describe("CDN 静态浏览界面", () => {
     const expected = new Map([
       ["index.html", "text/html; charset=utf-8"],
       ["assets/catalog.css", "text/css; charset=utf-8"],
+      ["assets/catalog-embed.js", "text/javascript; charset=utf-8"],
       ["assets/catalog.js", "text/javascript; charset=utf-8"],
     ]);
     for (const [path, contentType] of expected) {
@@ -91,12 +104,12 @@ describe("CDN 静态浏览界面", () => {
       expect(descriptor).toMatchObject({
         path,
         content_type: contentType,
-        immutable_path: `versioned/2026.08.5/${path}`,
+        immutable_path: `versioned/2026.08.6/${path}`,
       });
       expect(descriptor?.encodings.gzip.path).toBe(`${path}.gz`);
       expect(descriptor?.encodings.br.path).toBe(`${path}.br`);
       expect(await readFile(join(outputDirectory, path))).toEqual(
-        await readFile(join(outputDirectory, `versioned/2026.08.5/${path}`)),
+        await readFile(join(outputDirectory, `versioned/2026.08.6/${path}`)),
       );
     }
     expect(manifest.files.find((file) => file.path === "index.html")?.cache_control).toContain(
