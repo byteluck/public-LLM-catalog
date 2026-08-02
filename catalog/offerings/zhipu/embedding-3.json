@@ -1,0 +1,99 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/offering.schema.json",
+  "schema_version": "1.0.0",
+  "offering_id": "zhipu/embedding-3",
+  "provider_id": "zhipu",
+  "canonical_id": "zhipu/embedding-3",
+  "api_model_id": "embedding-3",
+  "name": "Embedding-3",
+  "status": "active",
+  "lifecycle": {
+    "release_date": "unknown",
+    "last_updated": "unknown",
+    "status": "active",
+    "deprecated_at": "unknown",
+    "replacement": "unknown"
+  },
+  "protocols": ["embeddings"],
+  "limits": {
+    "max_context_tokens": 8192,
+    "max_input_tokens": 3072,
+    "max_output_tokens": "unknown"
+  },
+  "modalities": {
+    "input_modalities": ["text"],
+    "output_modalities": ["vector"]
+  },
+  "capabilities": {
+    "agent": {
+      "streaming": false,
+      "stream_usage": false,
+      "system_message": false,
+      "tool_call": false,
+      "tool_choice": false,
+      "parallel_tool_calls": false,
+      "strict_tools": false,
+      "structured_output": false,
+      "json_schema": false
+    },
+    "reasoning": {
+      "supported": false,
+      "modes": ["unknown"],
+      "effort_values": ["unknown"],
+      "budget_tokens": false,
+      "interleaved_reasoning": false,
+      "protocol_fields": {}
+    }
+  },
+  "sampling_parameters": {
+    "temperature": { "supported": false, "range": "unknown", "official_default": "unknown", "protocol_mapping": { "embeddings": "unknown" } },
+    "top_p": { "supported": false, "range": "unknown", "official_default": "unknown", "protocol_mapping": { "embeddings": "unknown" } },
+    "top_k": { "supported": false, "range": "unknown", "official_default": "unknown", "protocol_mapping": { "embeddings": "unknown" } }
+  },
+  "embedding": {
+    "dimension": 2048,
+    "supported_dimensions": [256, 512, 1024, 2048],
+    "max_input_tokens": 3072,
+    "max_batch_size": 64
+  },
+  "evidence": [
+    {
+      "source_id": "zhipu-embedding-3-model",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/models/embedding/embedding-3",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于 API ID、路径、限额、批量和维度；官方请求只包含 model/input/dimensions，因此生成采样参数明确不适用。"
+    },
+    {
+      "source_id": "project-fde-head",
+      "source_url": "urn:git:fses-design-mono:c88e5def41856e42449d52ed6d1b05e6fab09d12",
+      "source_type": "project_audit",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "restricted",
+      "notes": "当前 FDE 明确不构造 Embedding。"
+    }
+  ],
+  "field_annotations": {
+    "/offering_id": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/provider_id": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "OpenAIEmbeddings adapter selection", "unsupported_reason": "当前 FDE 不构造 Embedding。", "source_ids": ["zhipu-embedding-3-model", "project-fde-head"] },
+    "/canonical_id": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/api_model_id": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "OpenAIEmbeddings.model", "unsupported_reason": "当前 FDE 不构造 Embedding。", "source_ids": ["zhipu-embedding-3-model", "project-fde-head"] },
+    "/name": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/status": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/lifecycle/*": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/protocols": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "OpenAIEmbeddings adapter selection", "unsupported_reason": "当前 FDE 不构造 Embedding。", "source_ids": ["zhipu-embedding-3-model", "project-fde-head"] },
+    "/limits/max_context_tokens": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/limits/max_input_tokens": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "Embedding request validation", "unsupported_reason": "当前 FDE 不构造 Embedding。", "source_ids": ["zhipu-embedding-3-model", "project-fde-head"] },
+    "/limits/max_output_tokens": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/modalities/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "Embedding role/type validation", "unsupported_reason": "当前 FDE 不构造 Embedding。", "source_ids": ["zhipu-embedding-3-model", "project-fde-head"] },
+    "/capabilities/agent/*": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/capabilities/reasoning/*": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-embedding-3-model"] },
+    "/sampling_parameters/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "runtime filter rejects generation parameters for embeddings", "unsupported_reason": "Embedding 请求不允许生成采样参数。", "source_ids": ["zhipu-embedding-3-model", "project-fde-head"] },
+    "/embedding/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "OpenAIEmbeddings.dimensions / batchSize and input validation", "unsupported_reason": "当前 FDE 不构造 Embedding；baiteda dimension 仅存储和展示。", "source_ids": ["zhipu-embedding-3-model", "project-fde-head"] }
+  }
+}

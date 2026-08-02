@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "canonical_id",
+    "manufacturer_id",
+    "name",
+    "family",
+    "aliases",
+    "kind",
+    "lifecycle",
+    "limits",
+    "modalities",
+    "capabilities",
+    "embedding",
+    "evidence",
+    "field_annotations"
+  ],
+  "properties": {
+    "$schema": { "const": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json" },
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "canonical_id": { "$ref": "common.schema.json#/$defs/identifier" },
+    "manufacturer_id": { "$ref": "common.schema.json#/$defs/identifier" },
+    "name": { "type": "string", "minLength": 1 },
+    "family": { "type": "string", "minLength": 1 },
+    "aliases": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "kind": { "enum": ["chat", "embedding"] },
+    "lifecycle": { "$ref": "common.schema.json#/$defs/lifecycle" },
+    "limits": { "$ref": "common.schema.json#/$defs/limits" },
+    "modalities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_modalities", "output_modalities"],
+      "properties": {
+        "input_modalities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/modality" }
+        },
+        "output_modalities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/modality" }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent", "reasoning"],
+      "properties": {
+        "agent": { "$ref": "common.schema.json#/$defs/agent_capabilities" },
+        "reasoning": { "$ref": "common.schema.json#/$defs/reasoning_capabilities" }
+      }
+    },
+    "embedding": {
+      "oneOf": [
+        { "$ref": "common.schema.json#/$defs/embedding_capabilities" },
+        { "type": "null" }
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "common.schema.json#/$defs/source" }
+    },
+    "field_annotations": { "$ref": "common.schema.json#/$defs/field_annotations" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "embedding" } } },
+      "then": {
+        "properties": {
+          "embedding": { "$ref": "common.schema.json#/$defs/embedding_capabilities" }
+        }
+      },
+      "else": { "properties": { "embedding": { "type": "null" } } }
+    }
+  ]
+}

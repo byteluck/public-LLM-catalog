@@ -1,0 +1,52 @@
+name: 发布国内静态目录
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.CATALOG_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.CATALOG_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.CATALOG_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: 安装 S3 兼容上传客户端
+        run: pipx install awscli
+      - name: 上传版本文件并最后替换 manifest
+        run: >-
+          npm run publish --
+          --provider "${{ vars.CATALOG_OBJECT_PROVIDER }}"
+          --endpoint "${{ vars.CATALOG_S3_ENDPOINT }}"
+          --bucket "${{ secrets.CATALOG_BUCKET }}"
+          --prefix "${{ vars.CATALOG_PREFIX }}"
+          --execute
+
+  probe-cn:
+    needs: publish
+    runs-on: [self-hosted, linux, cn-network]
+    timeout-minutes: 10
+    environment: production
+    env:
+      CATALOG_PROBE_BASE_URLS: ${{ vars.CATALOG_PROBE_BASE_URLS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 从国内网络验证 manifest、分片、缓存与压缩
+        run: npm run probe

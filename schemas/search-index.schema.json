@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/search-index.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "catalog_version", "generated_at", "items"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "catalog_version": { "type": "string", "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]+$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "canonical_id",
+          "offering_id",
+          "provider_id",
+          "api_model_id",
+          "name",
+          "family",
+          "aliases",
+          "kind",
+          "status",
+          "input_modalities",
+          "output_modalities"
+        ],
+        "properties": {
+          "canonical_id": { "$ref": "common.schema.json#/$defs/identifier" },
+          "offering_id": { "$ref": "common.schema.json#/$defs/identifier" },
+          "provider_id": { "$ref": "common.schema.json#/$defs/identifier" },
+          "api_model_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "name": { "type": "string", "minLength": 1 },
+          "family": { "type": "string", "minLength": 1 },
+          "aliases": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "kind": { "enum": ["chat", "embedding"] },
+          "status": { "enum": ["preview", "active", "deprecated", "retired", "unknown"] },
+          "input_modalities": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "common.schema.json#/$defs/modality" }
+          },
+          "output_modalities": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "common.schema.json#/$defs/modality" }
+          }
+        }
+      }
+    }
+  }
+}

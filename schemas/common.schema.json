@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/common.schema.json",
+  "$defs": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "tri_state": {
+      "enum": [true, false, "unknown"]
+    },
+    "unknown_integer": {
+      "anyOf": [
+        { "type": "integer", "minimum": 1 },
+        { "const": "unknown" }
+      ]
+    },
+    "unknown_number": {
+      "oneOf": [
+        { "type": "number" },
+        { "const": "unknown" }
+      ]
+    },
+    "unknown_date": {
+      "oneOf": [
+        { "type": "string", "format": "date" },
+        { "const": "unknown" }
+      ]
+    },
+    "unknown_identifier": {
+      "anyOf": [
+        { "$ref": "#/$defs/identifier" },
+        { "const": "unknown" }
+      ]
+    },
+    "protocol": {
+      "enum": [
+        "openai_chat_completions",
+        "openai_responses",
+        "anthropic_messages",
+        "embeddings"
+      ]
+    },
+    "modality": {
+      "enum": ["text", "image", "audio", "video", "file", "vector"]
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "release_date",
+        "last_updated",
+        "status",
+        "deprecated_at",
+        "replacement"
+      ],
+      "properties": {
+        "release_date": { "$ref": "#/$defs/unknown_date" },
+        "last_updated": { "$ref": "#/$defs/unknown_date" },
+        "status": {
+          "enum": ["preview", "active", "deprecated", "retired", "unknown"]
+        },
+        "deprecated_at": { "$ref": "#/$defs/unknown_date" },
+        "replacement": { "$ref": "#/$defs/unknown_identifier" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_context_tokens",
+        "max_input_tokens",
+        "max_output_tokens"
+      ],
+      "properties": {
+        "max_context_tokens": { "$ref": "#/$defs/unknown_integer" },
+        "max_input_tokens": { "$ref": "#/$defs/unknown_integer" },
+        "max_output_tokens": { "$ref": "#/$defs/unknown_integer" }
+      }
+    },
+    "agent_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streaming",
+        "stream_usage",
+        "system_message",
+        "tool_call",
+        "tool_choice",
+        "parallel_tool_calls",
+        "strict_tools",
+        "structured_output",
+        "json_schema"
+      ],
+      "properties": {
+        "streaming": { "$ref": "#/$defs/tri_state" },
+        "stream_usage": { "$ref": "#/$defs/tri_state" },
+        "system_message": { "$ref": "#/$defs/tri_state" },
+        "tool_call": { "$ref": "#/$defs/tri_state" },
+        "tool_choice": { "$ref": "#/$defs/tri_state" },
+        "parallel_tool_calls": { "$ref": "#/$defs/tri_state" },
+        "strict_tools": { "$ref": "#/$defs/tri_state" },
+        "structured_output": { "$ref": "#/$defs/tri_state" },
+        "json_schema": { "$ref": "#/$defs/tri_state" }
+      }
+    },
+    "reasoning_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported",
+        "modes",
+        "effort_values",
+        "budget_tokens",
+        "interleaved_reasoning",
+        "protocol_fields"
+      ],
+      "properties": {
+        "supported": { "$ref": "#/$defs/tri_state" },
+        "modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "always_on",
+              "switchable",
+              "effort",
+              "budget_tokens",
+              "unknown"
+            ]
+          }
+        },
+        "effort_values": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max",
+              "unknown"
+            ]
+          }
+        },
+        "budget_tokens": { "$ref": "#/$defs/tri_state" },
+        "interleaved_reasoning": { "$ref": "#/$defs/tri_state" },
+        "protocol_fields": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/protocol" },
+          "additionalProperties": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              { "const": "unknown" }
+            ]
+          }
+        }
+      }
+    },
+    "embedding_capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dimension",
+        "supported_dimensions",
+        "max_input_tokens",
+        "max_batch_size"
+      ],
+      "properties": {
+        "dimension": { "$ref": "#/$defs/unknown_integer" },
+        "supported_dimensions": {
+          "oneOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "integer", "minimum": 1 }
+            },
+            { "const": "unknown" }
+          ]
+        },
+        "max_input_tokens": { "$ref": "#/$defs/unknown_integer" },
+        "max_batch_size": { "$ref": "#/$defs/unknown_integer" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "source_url",
+        "source_type",
+        "retrieved_at",
+        "verified_at",
+        "confidence",
+        "redistribution",
+        "notes"
+      ],
+      "properties": {
+        "source_id": { "$ref": "#/$defs/identifier" },
+        "source_url": { "type": "string", "format": "uri" },
+        "source_type": {
+          "enum": [
+            "official_docs",
+            "official_api",
+            "official_model_card",
+            "official_repository",
+            "upstream_aggregator",
+            "project_audit"
+          ]
+        },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "confidence": { "enum": ["high", "medium", "low", "unknown"] },
+        "redistribution": {
+          "enum": [
+            "allowed",
+            "attribution_required",
+            "restricted",
+            "unknown"
+          ]
+        },
+        "notes": { "type": "string", "minLength": 1 }
+      }
+    },
+    "field_annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_effective",
+        "metadata_only",
+        "adapter_mapping",
+        "unsupported_reason",
+        "source_ids"
+      ],
+      "properties": {
+        "runtime_effective": { "type": "boolean" },
+        "metadata_only": { "type": "boolean" },
+        "adapter_mapping": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "unsupported_reason": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "source_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "runtime_effective": { "const": true } },
+            "required": ["runtime_effective"]
+          },
+          "then": {
+            "properties": { "adapter_mapping": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "field_annotations": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^/" },
+      "additionalProperties": { "$ref": "#/$defs/field_annotation" }
+    }
+  }
+}

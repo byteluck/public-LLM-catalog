@@ -1,0 +1,70 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/provider.schema.json",
+  "schema_version": "1.0.0",
+  "provider_id": "zhipu",
+  "name": "智谱开放平台",
+  "website": "https://open.bigmodel.cn/",
+  "domestic_access": true,
+  "api_key_required": true,
+  "status": "active",
+  "protocols": ["openai_chat_completions", "anthropic_messages", "embeddings"],
+  "public_base_urls": [
+    {
+      "protocol": "openai_chat_completions",
+      "url": "https://open.bigmodel.cn/api/paas/v4",
+      "region": "中国大陆"
+    },
+    {
+      "protocol": "anthropic_messages",
+      "url": "https://open.bigmodel.cn/api/anthropic",
+      "region": "中国大陆"
+    },
+    {
+      "protocol": "embeddings",
+      "url": "https://open.bigmodel.cn/api/paas/v4",
+      "region": "中国大陆"
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "zhipu-http-api",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/develop/http/introduction",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于中国大陆官方域名、OpenAI 兼容路径和 API Key/JWT 鉴权。"
+    },
+    {
+      "source_id": "zhipu-claude-compatible",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/develop/claude/introduction",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于 Anthropic Messages 兼容路径；并不推断所有模型支持所有 Anthropic 参数。"
+    },
+    {
+      "source_id": "zhipu-embedding-3-model",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/models/embedding/embedding-3",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于 embeddings 路径和 API Key 要求。"
+    }
+  ],
+  "field_annotations": {
+    "/provider_id": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "provider adapter selection", "unsupported_reason": null, "source_ids": ["zhipu-http-api"] },
+    "/name": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-http-api"] },
+    "/website": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-http-api"] },
+    "/domestic_access": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-http-api"] },
+    "/api_key_required": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-http-api"] },
+    "/status": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-http-api"] },
+    "/protocols": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "ChatOpenAI / ChatAnthropic / OpenAIEmbeddings adapter selection", "unsupported_reason": "当前 FDE 没有 Embedding 构造分支。", "source_ids": ["zhipu-http-api", "zhipu-claude-compatible", "zhipu-embedding-3-model"] },
+    "/public_base_urls": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-http-api", "zhipu-claude-compatible", "zhipu-embedding-3-model"] }
+  }
+}

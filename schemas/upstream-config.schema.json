@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/upstream-config.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "targets", "sources"],
+  "properties": {
+    "$schema": { "const": "https://llm-catalog.example.cn/schemas/upstream-config.schema.json" },
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_id",
+          "url",
+          "format",
+          "enabled",
+          "api_key_env",
+          "max_bytes"
+        ],
+        "properties": {
+          "source_id": { "$ref": "common.schema.json#/$defs/identifier" },
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "format": { "enum": ["models_dev", "litellm", "openai_models"] },
+          "enabled": { "type": "boolean" },
+          "api_key_env": {
+            "oneOf": [
+              { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+              { "type": "null" }
+            ]
+          },
+          "max_bytes": { "type": "integer", "minimum": 1024, "maximum": 104857600 }
+        }
+      }
+    }
+  }
+}

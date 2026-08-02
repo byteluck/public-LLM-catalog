@@ -1,0 +1,108 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/offering.schema.json",
+  "schema_version": "1.0.0",
+  "offering_id": "zhipu/glm-4.6v",
+  "provider_id": "zhipu",
+  "canonical_id": "zhipu/glm-4.6v",
+  "api_model_id": "glm-4.6v",
+  "name": "GLM-4.6V",
+  "status": "active",
+  "lifecycle": {
+    "release_date": "unknown",
+    "last_updated": "unknown",
+    "status": "active",
+    "deprecated_at": "unknown",
+    "replacement": "unknown"
+  },
+  "protocols": ["openai_chat_completions"],
+  "limits": {
+    "max_context_tokens": 131072,
+    "max_input_tokens": "unknown",
+    "max_output_tokens": 32768
+  },
+  "modalities": {
+    "input_modalities": ["text", "image", "video", "file"],
+    "output_modalities": ["text"]
+  },
+  "capabilities": {
+    "agent": {
+      "streaming": true,
+      "stream_usage": "unknown",
+      "system_message": "unknown",
+      "tool_call": true,
+      "tool_choice": "unknown",
+      "parallel_tool_calls": "unknown",
+      "strict_tools": "unknown",
+      "structured_output": "unknown",
+      "json_schema": "unknown"
+    },
+    "reasoning": {
+      "supported": true,
+      "modes": ["switchable"],
+      "effort_values": ["unknown"],
+      "budget_tokens": "unknown",
+      "interleaved_reasoning": "unknown",
+      "protocol_fields": {
+        "openai_chat_completions": "thinking.type"
+      }
+    }
+  },
+  "sampling_parameters": {
+    "temperature": { "supported": "unknown", "range": "unknown", "official_default": "unknown", "protocol_mapping": { "openai_chat_completions": "unknown" } },
+    "top_p": { "supported": "unknown", "range": "unknown", "official_default": "unknown", "protocol_mapping": { "openai_chat_completions": "unknown" } },
+    "top_k": { "supported": "unknown", "range": "unknown", "official_default": "unknown", "protocol_mapping": { "openai_chat_completions": "unknown" } }
+  },
+  "embedding": null,
+  "evidence": [
+    {
+      "source_id": "zhipu-glm-4.6v-model",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/models/vlm/glm-4.6v",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于 API ID、OpenAI Chat 路径、模态、上下文、思考、流式和工具调用。"
+    },
+    {
+      "source_id": "zhipu-core-parameters",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/start/concept-param",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "仅用于最大输出 32768；没有把通用参数表推断成该模型的采样支持矩阵。"
+    },
+    {
+      "source_id": "project-fde-head",
+      "source_url": "urn:git:fses-design-mono:c88e5def41856e42449d52ed6d1b05e6fab09d12",
+      "source_type": "project_audit",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "restricted",
+      "notes": "当前视觉角色运行时路径审计。"
+    }
+  ],
+  "field_annotations": {
+    "/offering_id": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model"] },
+    "/provider_id": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "ChatOpenAI adapter selection", "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/canonical_id": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model"] },
+    "/api_model_id": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "ChatOpenAI.model", "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/name": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model"] },
+    "/status": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model"] },
+    "/lifecycle/*": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model"] },
+    "/protocols": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "ChatOpenAI adapter selection", "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/limits/max_context_tokens": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "current FDE model.profile.maxInputTokens (semantic mismatch)", "unsupported_reason": "不得继续把 context 当 input。", "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/limits/max_input_tokens": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "DeepAgent model.profile.maxInputTokens", "unsupported_reason": "可靠值缺失，必须 fail closed 或显式 override。", "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/limits/max_output_tokens": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "ChatOpenAI.maxTokens", "unsupported_reason": null, "source_ids": ["zhipu-core-parameters", "project-fde-head"] },
+    "/modalities/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "FDE vision role content validation", "unsupported_reason": "当前仅以 Multi 类型放行。", "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/capabilities/agent/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "ChatOpenAI constructor/call options and DeepAgent admission", "unsupported_reason": "当前 FDE 未消费细粒度能力。", "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/capabilities/agent/tool_call": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "current coarse functionCallSupport admission gate", "unsupported_reason": "当前仅粗粒度生效。", "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/capabilities/reasoning/supported": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/capabilities/reasoning/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "ChatOpenAI.modelKwargs.thinking", "unsupported_reason": "当前 FDE 未发送 thinking。", "source_ids": ["zhipu-glm-4.6v-model", "project-fde-head"] },
+    "/sampling_parameters/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "three-layer policy merge then protocol-aware filtering", "unsupported_reason": "模型级支持未获可靠证据且当前构造器未消费，必须省略并诊断。", "source_ids": ["zhipu-glm-4.6v-model", "zhipu-core-parameters", "project-fde-head"] },
+    "/embedding": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-4.6v-model"] }
+  }
+}

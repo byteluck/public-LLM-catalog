@@ -1,0 +1,55 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/provider.schema.json",
+  "schema_version": "1.0.0",
+  "provider_id": "openai",
+  "name": "OpenAI",
+  "website": "https://developers.openai.com/",
+  "domestic_access": "unknown",
+  "api_key_required": true,
+  "status": "active",
+  "protocols": ["openai_chat_completions", "openai_responses"],
+  "public_base_urls": [
+    {
+      "protocol": "openai_chat_completions",
+      "url": "https://api.openai.com/v1",
+      "region": "global"
+    },
+    {
+      "protocol": "openai_responses",
+      "url": "https://api.openai.com/v1",
+      "region": "global"
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "openai-api-quickstart",
+      "source_url": "https://developers.openai.com/api/docs/quickstart",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于 API 鉴权和公开 API 地址；未发现把官方文档作为开放数据集批量再分发的许可。"
+    },
+    {
+      "source_id": "openai-gpt-5.5-model",
+      "source_url": "https://developers.openai.com/api/docs/models/gpt-5.5",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于核验 Chat Completions 与 Responses 端点支持。"
+    }
+  ],
+  "field_annotations": {
+    "/provider_id": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "provider adapter selection", "unsupported_reason": null, "source_ids": ["openai-api-quickstart"] },
+    "/name": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["openai-api-quickstart"] },
+    "/website": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["openai-api-quickstart"] },
+    "/domestic_access": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["openai-api-quickstart"] },
+    "/api_key_required": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["openai-api-quickstart"] },
+    "/status": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["openai-api-quickstart"] },
+    "/protocols": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "ChatOpenAI and endpoint mode selection", "unsupported_reason": "当前 FDE 仅区分 OpenAI/Anthropic，尚未区分 Chat Completions 与 Responses。", "source_ids": ["openai-gpt-5.5-model"] },
+    "/public_base_urls": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["openai-api-quickstart"] }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/offering.schema.json",
+  "$defs": {
+    "parameter_capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supported", "range", "official_default", "protocol_mapping"],
+      "properties": {
+        "supported": { "$ref": "common.schema.json#/$defs/tri_state" },
+        "range": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["minimum", "maximum", "minimum_inclusive", "maximum_inclusive"],
+              "properties": {
+                "minimum": { "type": "number" },
+                "maximum": { "type": "number" },
+                "minimum_inclusive": { "type": "boolean" },
+                "maximum_inclusive": { "type": "boolean" }
+              }
+            },
+            { "const": "unknown" }
+          ]
+        },
+        "official_default": { "$ref": "common.schema.json#/$defs/unknown_number" },
+        "protocol_mapping": {
+          "type": "object",
+          "propertyNames": { "$ref": "common.schema.json#/$defs/protocol" },
+          "additionalProperties": {
+            "anyOf": [
+              { "type": "string", "minLength": 1 },
+              { "const": "unknown" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "offering_id",
+    "provider_id",
+    "canonical_id",
+    "api_model_id",
+    "name",
+    "status",
+    "lifecycle",
+    "protocols",
+    "limits",
+    "modalities",
+    "capabilities",
+    "sampling_parameters",
+    "embedding",
+    "evidence",
+    "field_annotations"
+  ],
+  "properties": {
+    "$schema": { "const": "https://llm-catalog.example.cn/schemas/offering.schema.json" },
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "offering_id": { "$ref": "common.schema.json#/$defs/identifier" },
+    "provider_id": { "$ref": "common.schema.json#/$defs/identifier" },
+    "canonical_id": { "$ref": "common.schema.json#/$defs/identifier" },
+    "api_model_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "name": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["preview", "active", "deprecated", "retired", "unknown"] },
+    "lifecycle": { "$ref": "common.schema.json#/$defs/lifecycle" },
+    "protocols": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/protocol" }
+    },
+    "limits": { "$ref": "common.schema.json#/$defs/limits" },
+    "modalities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_modalities", "output_modalities"],
+      "properties": {
+        "input_modalities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/modality" }
+        },
+        "output_modalities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/modality" }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent", "reasoning"],
+      "properties": {
+        "agent": { "$ref": "common.schema.json#/$defs/agent_capabilities" },
+        "reasoning": { "$ref": "common.schema.json#/$defs/reasoning_capabilities" }
+      }
+    },
+    "sampling_parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["temperature", "top_p", "top_k"],
+      "properties": {
+        "temperature": { "$ref": "#/$defs/parameter_capability" },
+        "top_p": { "$ref": "#/$defs/parameter_capability" },
+        "top_k": { "$ref": "#/$defs/parameter_capability" }
+      }
+    },
+    "embedding": {
+      "oneOf": [
+        { "$ref": "common.schema.json#/$defs/embedding_capabilities" },
+        { "type": "null" }
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "common.schema.json#/$defs/source" }
+    },
+    "field_annotations": { "$ref": "common.schema.json#/$defs/field_annotations" }
+  }
+}

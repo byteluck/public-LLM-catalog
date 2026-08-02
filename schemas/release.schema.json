@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/release.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "catalog_version",
+    "generated_at",
+    "previous_catalog_version",
+    "minimum_consumer_schema_version"
+  ],
+  "properties": {
+    "$schema": { "const": "https://llm-catalog.example.cn/schemas/release.schema.json" },
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "catalog_version": { "type": "string", "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]+$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "previous_catalog_version": {
+      "oneOf": [
+        { "type": "string", "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]+$" },
+        { "type": "null" }
+      ]
+    },
+    "minimum_consumer_schema_version": { "$ref": "common.schema.json#/$defs/schema_version" }
+  }
+}

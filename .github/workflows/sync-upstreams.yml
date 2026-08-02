@@ -1,0 +1,48 @@
+name: 上游候选同步
+
+on:
+  schedule:
+    - cron: "17 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  candidate-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run sync
+      - run: npm run validate
+      - run: npm test
+      - name: 仅为候选变更创建 PR
+        shell: bash
+        run: |
+          if [[ -z "$(git status --porcelain -- upstream/)" ]]; then
+            echo "候选未变化"
+            exit 0
+          fi
+          branch="automation/upstream-${GITHUB_RUN_ID}"
+          git config user.name "llm-catalog-bot"
+          git config user.email "llm-catalog-bot@users.noreply.github.com"
+          git switch -c "$branch"
+          git add upstream/
+          git commit -m "chore: 更新上游候选数据"
+          git push origin "$branch"
+          review="$(node -e 'const r=require("./upstream/review.json");process.stdout.write(r.review_required?"true":"false")')"
+          body="上游任务只更新候选区，不修改 catalog/ 或 dist/。review_required=${review}；冲突、能力降级和删除必须由维护者复核官方来源后另行修改目录。"
+          gh pr create --base main --head "$branch" --title "chore: 更新上游候选数据" --body "$body"

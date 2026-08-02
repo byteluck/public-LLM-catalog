@@ -1,0 +1,38 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/alias.schema.json",
+  "schema_version": "1.0.0",
+  "alias_set_id": "current-project",
+  "entries": [
+    { "alias": "gpt-5.5", "provider_id": "openai", "target_type": "offering", "target_id": "openai/gpt-5.5" },
+    { "alias": "gpt-5.5-2026-04-23", "provider_id": "openai", "target_type": "offering", "target_id": "openai/gpt-5.5" },
+    { "alias": "glm-5.2", "provider_id": "zhipu", "target_type": "offering", "target_id": "zhipu/glm-5.2" },
+    { "alias": "glm-4.6v", "provider_id": "zhipu", "target_type": "offering", "target_id": "zhipu/glm-4.6v" },
+    { "alias": "embedding-3", "provider_id": "zhipu", "target_type": "offering", "target_id": "zhipu/embedding-3" }
+  ],
+  "evidence": [
+    {
+      "source_id": "official-model-identifiers",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/start/model-overview",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "智谱标识由各模型官方页复核；OpenAI 标识由 GPT-5.5 官方模型页复核。"
+    },
+    {
+      "source_id": "project-fde-head",
+      "source_url": "urn:git:fses-design-mono:c88e5def41856e42449d52ed6d1b05e6fab09d12",
+      "source_type": "project_audit",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "restricted",
+      "notes": "这些标识覆盖当前 FDE 配置/契约测试中的聊天、推理、多模态和 Embedding 模型。"
+    }
+  ],
+  "field_annotations": {
+    "/alias_set_id": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["project-fde-head"] },
+    "/entries": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "catalog alias resolver before adapter construction", "unsupported_reason": "当前三个项目尚未接入 canonical/offering alias 解析；私有标识必须用租户 override 显式映射。", "source_ids": ["official-model-identifiers", "project-fde-head"] }
+  }
+}

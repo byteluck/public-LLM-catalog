@@ -1,0 +1,101 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
+  "schema_version": "1.0.0",
+  "canonical_id": "zhipu/glm-5.2",
+  "manufacturer_id": "zhipu",
+  "name": "GLM-5.2",
+  "family": "GLM-5",
+  "aliases": [],
+  "kind": "chat",
+  "lifecycle": {
+    "release_date": "unknown",
+    "last_updated": "unknown",
+    "status": "active",
+    "deprecated_at": "unknown",
+    "replacement": "unknown"
+  },
+  "limits": {
+    "max_context_tokens": 1000000,
+    "max_input_tokens": "unknown",
+    "max_output_tokens": 131072
+  },
+  "modalities": {
+    "input_modalities": ["text"],
+    "output_modalities": ["text"]
+  },
+  "capabilities": {
+    "agent": {
+      "streaming": true,
+      "stream_usage": "unknown",
+      "system_message": true,
+      "tool_call": true,
+      "tool_choice": "unknown",
+      "parallel_tool_calls": "unknown",
+      "strict_tools": "unknown",
+      "structured_output": true,
+      "json_schema": true
+    },
+    "reasoning": {
+      "supported": true,
+      "modes": ["switchable", "effort"],
+      "effort_values": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "budget_tokens": "unknown",
+      "interleaved_reasoning": "unknown",
+      "protocol_fields": {
+        "openai_chat_completions": "reasoning_effort",
+        "anthropic_messages": "unknown"
+      }
+    }
+  },
+  "embedding": null,
+  "evidence": [
+    {
+      "source_id": "zhipu-glm-5.2-model",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/models/text/glm-5.2",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于模型标识、模态、1M 上下文、128K 最大输出和明确列出的 Agent 能力。"
+    },
+    {
+      "source_id": "zhipu-core-parameters",
+      "source_url": "https://docs.bigmodel.cn/cn/guide/start/concept-param",
+      "source_type": "official_docs",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "unknown",
+      "notes": "用于最大输出、thinking 和 reasoning_effort 可选值；不将示例参数当作业务默认。"
+    },
+    {
+      "source_id": "project-fde-head",
+      "source_url": "urn:git:fses-design-mono:c88e5def41856e42449d52ed6d1b05e6fab09d12",
+      "source_type": "project_audit",
+      "retrieved_at": "2026-08-02T00:00:00Z",
+      "verified_at": "2026-08-02T00:00:00Z",
+      "confidence": "high",
+      "redistribution": "restricted",
+      "notes": "仅记录当前项目出现该标识和当前构造器消费路径。"
+    }
+  ],
+  "field_annotations": {
+    "/canonical_id": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/manufacturer_id": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model"] },
+    "/name": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model"] },
+    "/family": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model"] },
+    "/aliases": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model"] },
+    "/kind": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "FDE modelType role-admission gate", "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/lifecycle/*": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model"] },
+    "/limits/max_context_tokens": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "current FDE model.profile.maxInputTokens (semantic mismatch; must be replaced)", "unsupported_reason": "当前实现混用了 context 与 input 限额。", "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/limits/max_input_tokens": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "DeepAgent model.profile.maxInputTokens", "unsupported_reason": "官方页面未单独给出 max_input_tokens，当前项目也无该字段。", "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/limits/max_output_tokens": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "ChatOpenAI.maxTokens / ChatAnthropic.maxTokens", "unsupported_reason": null, "source_ids": ["zhipu-core-parameters", "project-fde-head"] },
+    "/modalities/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "FDE role-admission and content-part validation", "unsupported_reason": "当前只消费粗粒度 modelType。", "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/capabilities/agent/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "capability-aware ChatOpenAI/ChatAnthropic/DeepAgent adapter", "unsupported_reason": "当前 FDE 未消费细粒度 Agent 能力。", "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/capabilities/agent/tool_call": { "runtime_effective": true, "metadata_only": false, "adapter_mapping": "current coarse functionCallSupport admission gate", "unsupported_reason": "当前枚举无法表示其余工具能力。", "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/capabilities/reasoning/supported": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model", "project-fde-head"] },
+    "/capabilities/reasoning/*": { "runtime_effective": false, "metadata_only": false, "adapter_mapping": "ChatOpenAI.reasoning / provider protocol fields", "unsupported_reason": "当前 FDE 只记录 isReasonModel，未发送 reasoning 参数。", "source_ids": ["zhipu-core-parameters", "project-fde-head"] },
+    "/embedding": { "runtime_effective": false, "metadata_only": true, "adapter_mapping": null, "unsupported_reason": null, "source_ids": ["zhipu-glm-5.2-model"] }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://llm-catalog.example.cn/schemas/upstream-config.schema.json",
+  "schema_version": "1.0.0",
+  "targets": ["gpt-5.5", "glm-5.2", "glm-4.6v", "embedding-3"],
+  "sources": [
+    {
+      "source_id": "models-dev",
+      "url": "https://models.dev/api.json",
+      "format": "models_dev",
+      "enabled": true,
+      "api_key_env": null,
+      "max_bytes": 52428800
+    },
+    {
+      "source_id": "litellm-model-map",
+      "url": "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json",
+      "format": "litellm",
+      "enabled": true,
+      "api_key_env": null,
+      "max_bytes": 52428800
+    },
+    {
+      "source_id": "deepseek-models-api",
+      "url": "https://api.deepseek.com/models",
+      "format": "openai_models",
+      "enabled": true,
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "max_bytes": 1048576
+    },
+    {
+      "source_id": "minimax-models-api",
+      "url": "https://api.minimaxi.com/v1/models",
+      "format": "openai_models",
+      "enabled": true,
+      "api_key_env": "MINIMAX_API_KEY",
+      "max_bytes": 1048576
+    }
+  ]
+}

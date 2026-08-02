@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://llm-catalog.example.cn/schemas/manifest.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "catalog_version",
+    "generated_at",
+    "previous_catalog_version",
+    "minimum_consumer_schema_version",
+    "immutable_base_path",
+    "files"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "catalog_version": { "type": "string", "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]+$" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "previous_catalog_version": {
+      "oneOf": [
+        { "type": "string", "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]+$" },
+        { "type": "null" }
+      ]
+    },
+    "minimum_consumer_schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "immutable_base_path": { "type": "string", "pattern": "^versioned/[^/]+/$" },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "immutable_path",
+          "size",
+          "sha256",
+          "etag",
+          "cache_control",
+          "immutable_cache_control",
+          "content_type",
+          "encodings"
+        ],
+        "properties": {
+          "path": { "type": "string", "pattern": "^[^/].*\\.json$" },
+          "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.json$" },
+          "size": { "type": "integer", "minimum": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "etag": { "type": "string", "pattern": "^\"[a-f0-9]{64}\"$" },
+          "cache_control": { "type": "string", "minLength": 1 },
+          "immutable_cache_control": { "type": "string", "minLength": 1 },
+          "content_type": { "const": "application/json; charset=utf-8" },
+          "encodings": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["gzip", "br"],
+            "properties": {
+              "gzip": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "immutable_path", "size", "sha256"],
+                "properties": {
+                  "path": { "type": "string", "pattern": "\\.json\\.gz$" },
+                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.json\\.gz$" },
+                  "size": { "type": "integer", "minimum": 1 },
+                  "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+                }
+              },
+              "br": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "immutable_path", "size", "sha256"],
+                "properties": {
+                  "path": { "type": "string", "pattern": "\\.json\\.br$" },
+                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.json\\.br$" },
+                  "size": { "type": "integer", "minimum": 1 },
+                  "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
