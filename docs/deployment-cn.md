@@ -100,7 +100,8 @@ npm run --silent publish -- --provider oss --prefix public-llm-catalog > publish
 - 不缓存 4xx/5xx 为长 TTL，不把 manifest 配成 immutable。
 - 不对已经压缩的 `.gz`/`.br` 再压缩。
 - HTTPS 域名、证书和 DNS 均在中国大陆可访问；如面向公众按要求完成备案。
-- 不把不存在的 `.json` 重写成 `index.html`，目录不是 SPA；页面和数据放在同一 prefix，无需开放跨域。
+- 不把不存在的 `.json` 重写成 `index.html`，目录不是 SPA。
+- 若模型管理前端与目录同源，不需要 CORS；若前端按环境变量跨域直读目录，允许 `GET`、`HEAD`、`OPTIONS`，公开数据可返回 `Access-Control-Allow-Origin: *`（或列出允许的前端域名），且不要启用 credentials。建议暴露 `ETag`、`Cache-Control`、`Content-Length`、`Content-Type`，所有压缩变体都必须保留可重新验证的 ETag。
 - 如通过内容协商自动选择编码，仍保留显式 sidecar URL供探测，并正确设置 `Vary: Accept-Encoding`。
 
 ## 国内网络探测
@@ -129,15 +130,17 @@ CATALOG_PROBE_BASE_URLS='https://cdn-a.example.cn/catalog/,https://cdn-b.example
 
 `.github/workflows/publish.yml` 把上传和探测拆成两个 job。`probe-cn` 明确要求带 `self-hosted`、`linux`、`cn-network` 标签的中国大陆 runner；不能用境外 GitHub-hosted runner 冒充国内网络验收。
 
-## 消费配置
+## 前端消费配置
 
-业务端只配置国内根地址，例如：
+模型管理前端使用独立的目录根地址，不从通用 CDN 路径隐式拼接。例如公司环境：
 
-```properties
-ai.llm.public-model-catalog.base-url=https://cdn.example.cn/public-llm-catalog/
+```dotenv
+VUE_APP_LLM_CATALOG_BASE_URL=https://fe-resource.baiteda.com/LLM_catalog/
 ```
 
-不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为运行时 fallback。业务刷新过程只先请求 manifest；版本未变不下载 `catalog.json`。网络、Schema 或哈希失败时继续使用最后成功缓存，没有缓存才加载随应用打包的 `snapshots/catalog.json`。浏览界面则先加载更小的 search index，再加载候选快照；仅在打开模型详情时读取对应 provider 分片；它不会请求全量 `catalog.json`。
+客户私有化部署可以设置为内网 HTTPS 地址或同源 `/LLM_catalog/`。`.env` 是构建期配置；如果同一前端安装包需要部署后切换地址，还要把同名变量注入现有 `window.__APP_ENV__`，由前端统一读取。空值或目录不可用时只关闭“从公开目录创建”，原有手工新增和已保存模型不能受影响。
+
+不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为 fallback。浏览器每次刷新只先请求 manifest；版本未变不下载 search index，只有打开模型详情时才读取对应 provider 分片。网络、Schema 或哈希失败时继续使用该 base URL 下的最后验证缓存；没有缓存时回退到手工创建。`baiteda-app` 不保存目录根地址，也不访问 CDN；它只接收并校验模型保存请求中的目录绑定和可选白名单能力快照。
 
 ## 凭据与回滚
 

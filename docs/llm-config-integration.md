@@ -2,9 +2,23 @@
 
 ## 结论
 
-`LlmConfig` 中的“从公开目录创建”不应继续被理解为“复制几个模板字段”，而应改成：**选择一个经过版本校验的 provider offering，为它创建一条租户 deployment，并把两者的绑定关系持久化**。
+`LlmConfig` 中的“从公开目录创建”不应继续被理解为“复制几个模板字段”，而应改成：**前端从可配置的静态目录地址选择一个经过版本校验的 provider offering，为它创建一条租户 deployment，并把两者的绑定关系持久化**。
 
-公开目录负责模型事实；`baiteda-app` 负责目录缓存、绑定校验和租户配置；`pro-lowcode-platform-front` 负责选择与展示；FDE 只消费经过 capability 过滤的运行时计划。浏览器和业务服务都不直接依赖 models.dev、GitHub 或国外厂商站点。
+公开目录负责模型事实；`pro-lowcode-platform-front` 直接读取公司 CDN 或客户私有化部署的同一份静态目录，负责哈希校验、缓存、选择与展示；`baiteda-app` 只保存目录绑定和租户配置，不再出站抓取目录；FDE 只消费保存后经过 capability 过滤的运行时配置。任何一层都不直接依赖 models.dev、GitHub 或国外厂商站点。
+
+推荐新增独立配置 `VUE_APP_LLM_CATALOG_BASE_URL`，例如公司环境使用 `https://fe-resource.baiteda.com/LLM_catalog/`，客户环境可以改成内网 HTTPS 地址或同源 `/LLM_catalog/`。不要把目录地址继续硬编码到 Java，也不要只从通用 `VUE_APP_CDN_PATH` 拼接，因为客户可能把公共前端资源和模型目录部署在不同位置。
+
+边界按目标拆分如下：
+
+| 能力 | 是否只做前端 | 说明 |
+| --- | --- | --- |
+| 浏览、搜索、筛选、Logo、详情、证据跳转 | 是 | 浏览器直读静态目录，不需要后端 API |
+| manifest 检查、分片下载、SHA-256、浏览器缓存 | 是 | 静态目录客户端完成；请求不带平台凭据 |
+| 只把目录字段临时预填进创建表单 | 是 | 可以最先上线，但保存后不能追踪目录版本或能力变化 |
+| 保存模型、私有 Base URL/API Key、权限、连通性测试 | 否 | 这些是 tenant deployment，继续走现有后端 |
+| 保存 catalog binding、恢复编辑状态、增量升级比较 | 否 | 前端负责比较，后端至少持久化绑定身份和版本 |
+| 根据能力过滤 Chat/Embedding/DeepAgent 参数 | 否 | 后端下发白名单能力投影，FDE 执行 fail-closed 过滤和构造器映射 |
+| 后端抓取/搜索公开目录 | 不需要 | 现有硬编码的 models.dev/GitHub 服务链路应删除 |
 
 ## 本次审计基线
 
@@ -15,6 +29,8 @@
 | `pro-lowcode-platform-front` | `aebd62c62b8bbf7b282869d4f972375c13ec8946` | `src/views/LlmConfig/`、`src/services/llmConfigService.ts` |
 | `baiteda-app` | `11a5b04316ae106a04d63156cae3fb1c36d07657` | 公开目录服务、模型保存 DTO/PO/VO、保存与下发逻辑 |
 | 本目录仓库 | `0b59cead71da82a2a71d63d59fbfbb26a5729bf3` | Schema `2.4.0`、目录版本 `2026.08.5` 的 manifest、搜索索引和 provider 分片 |
+
+公司 CDN 地址在审计时可打开，返回目录版本 `2026.08.5`、Schema `2.4.0`、83 条 offering，且 `Access-Control-Allow-Origin: *` 允许前端跨域读取。但当前线上 `manifest.json`、`index.html` 和未版本化 JSON 被错误设置为 `Cache-Control: max-age=31536000,immutable`；部分压缩响应还没有 ETag。正式接入增量更新前必须按[国内部署说明](deployment-cn.md)修正，否则浏览器可能长期拿不到新 manifest，国内探测也会失败。
 
 ## 当前链路与问题
 
@@ -55,38 +71,46 @@ flowchart LR
     Offering["provider offering"]
   end
 
-  subgraph Platform["baiteda-app"]
-    Cache["已验证目录缓存"]
-    Resolver["offering / alias 解析"]
-    Binding["CatalogBinding"]
-    Deployment["TenantDeployment"]
-    Policy["System < Tenant < Agent"]
-    Filter["capability filter"]
-  end
-
   subgraph Front["LlmConfig"]
+    Config["VUE_APP_LLM_CATALOG_BASE_URL"]
+    Client["静态目录客户端"]
+    Cache["浏览器已验证缓存"]
     Picker["目录选择器"]
     Detail["能力与证据详情"]
     Editor["模型部署编辑器"]
   end
 
+  subgraph Platform["baiteda-app · 不访问目录 CDN"]
+    Validate["保存 DTO 白名单校验"]
+    Binding["CatalogBinding / 可选能力快照"]
+    Deployment["TenantDeployment"]
+    Resource["发布 Resource VO"]
+  end
+
   subgraph Runtime["FDE"]
+    Policy["System < Tenant < Agent"]
+    Filter["capability filter"]
     Plan["RuntimePlan"]
     Adapter["Chat / Embedding adapter"]
   end
 
-  Manifest --> Cache
-  Index --> Cache
-  Shard --> Cache
-  Shard --> Offering
+  Config --> Client
+  Manifest --> Client
+  Index --> Client
+  Shard --> Client
+  Client --> Cache
+  Client --> Offering
   Cache --> Picker
   Cache --> Detail
-  Offering --> Resolver
-  Picker --> Binding
-  Binding --> Deployment
-  Editor --> Deployment
-  Resolver --> Policy
-  Deployment --> Policy
+  Picker --> Detail
+  Offering --> Editor
+  Detail --> Editor
+  Editor --> Validate
+  Validate --> Binding
+  Validate --> Deployment
+  Binding --> Resource
+  Deployment --> Resource
+  Resource --> Policy
   Policy --> Filter
   Filter --> Plan
   Plan --> Adapter
@@ -98,14 +122,14 @@ flowchart LR
 
 ### 1. 进入目录选择器
 
-保留现有“从公开目录创建”按钮。弹窗首屏只查询后端缓存的轻量搜索索引，显示：
+保留现有“从公开目录创建”按钮。弹窗通过前端静态目录客户端读取轻量搜索索引，显示：
 
 - 厂家 Logo、供应商、模型名称和 API model ID；
 - Chat / Embedding、输入输出模态、生命周期和核验状态；
 - 目录版本、生成时间、上游收集时间和逐条核验时间；
 - `待加载详情`、`可配置`、`仅供参考`、`禁止新建`等业务准入状态。
 
-搜索列表不需要下载完整 `catalog.json`。用户展开详情或点击“使用”时，后端才读取并校验对应 provider 分片。
+搜索列表不需要下载完整 `catalog.json`。用户展开详情或点击“使用”时，前端才按 manifest 的不可变路径读取并校验对应 provider 分片。
 
 搜索索引本身不包含完整协议和能力，因此列表首次出现时可以是 `detail_required`；用户选择后由 provider 分片给出最终状态。准入状态由集成层计算，不写回公开目录：
 
@@ -166,70 +190,58 @@ flowchart LR
 | `bound_current` | 当前绑定仍是最新版本 |
 | `update_available` | 显示新旧 offering 差异，用户人工确认后升级 |
 | `deprecated` | 显示弃用时间和 replacement，不自动替换 |
-| `unresolved` | 固定版本或 offering 暂时无法解析，继续使用最后验证缓存并报警 |
+| `unresolved` | 固定版本或 offering 暂时无法解析，创建页使用浏览器最后验证缓存；已有模型继续使用后端已保存的绑定/能力快照并报警 |
 | `unlinked` | 历史/自定义模型；可手工绑定，不按模型名称猜测 |
 
 升级差异至少比较 API model ID、协议、status、三类限额、`true/false/unknown` 能力变化和 replacement。能力降级、限额下降、协议删除或模型 retired 必须人工确认。
 
-## 后端静态目录消费
+## 前端静态目录消费
 
-保留前端只调用 `baiteda-app` 的 BFF 方式，重写 `LlmModelPublicCatalogService` 的数据源：
+前端新增独立的 `PublicLlmCatalogClient`，使用浏览器原生 `fetch` 和 Web Crypto；它不复用带鉴权拦截器的 `FetchService`，避免把 token、tenant header 或 cookie 发往静态目录域名。
 
-1. 只请求配置的国内 CDN `manifest.json`，支持 `If-None-Match`。
-2. 校验 manifest Schema 和 `minimum_consumer_schema_version`。
-3. 目录版本未变化时不重复下载索引或分片。
-4. 版本变化时使用 manifest 中的 `immutable_path` 下载 `search-index.json`，校验 size 和 SHA-256 后原子切换缓存。
-5. 用户请求详情时按 provider 下载不可变分片，并执行同样校验。
-6. 失败时继续使用最后成功缓存；无缓存时使用随应用发布的内置快照。
-7. 固定版本从 `versioned/{catalog_version}/manifest.json` 解析；国内对象存储不得删除仍被租户模型引用的历史版本。
-8. 配置国内 CDN host allowlist；日志只记录目录版本、offering 和诊断，不记录端点或 Key。
+1. 用 `getLegacyEnv('VUE_APP_LLM_CATALOG_BASE_URL')` 读取目录根地址，并统一补末尾 `/`。
+2. 每次打开选择器先以 `cache: 'no-cache'` 请求小型 `manifest.json`，检查 Schema、`minimum_consumer_schema_version` 和目录版本。
+3. 版本未变化时读取浏览器中已经按 SHA-256 验证的 search index，不重复下载。
+4. 版本变化时按 manifest 的 `immutable_path` 下载 `search-index.json`，校验 size 和 SHA-256 后才原子切换本地缓存。
+5. 用户打开详情时才下载对应 provider 分片，完成相同校验后解析 offering、canonical、provider 和 alias。
+6. 缓存键必须同时包含规范化 base URL、目录版本和内容 SHA-256，避免公司 CDN 与客户内网目录互相串缓存。
+7. manifest 暂时不可用时使用该 base URL 的最后验证缓存；没有缓存时仍允许点击原有“新增模型”创建 unlinked 模型，不能让目录故障阻塞已有配置。
+8. 所有目录请求使用 `credentials: 'omit'`，不附带业务 API header；证据站点只作为用户主动点击的链接，不在加载时请求。
 
-最后成功缓存应持久化，而不是只放当前 Java 进程内存。可按 `(catalog_version, provider_id, shard_sha256)` 去重存储经过验证的公开分片；租户模型仅保存引用。这样目录临时不可用或服务重启也不会阻塞已有配置。
+前端构建时可以从 `.env` 注入该值。若私有化安装包希望在**不重新构建前端**的情况下改变目录地址，还需把 `VUE_APP_LLM_CATALOG_BASE_URL` 加入 `index.html` 的 `window.__APP_ENV__`，继续通过现有 `getLegacyEnv` 读取；只写 `.env` 属于构建期配置，不是部署后的动态配置。
 
-## 建议 API 契约
+## 后端边界
 
-现有 `searchPublicModelTemplates` 可短期兼容，目标接口改用 offering 语义并版本化。
+目录搜索和详情改由前端完成后，后端当前写死的目录抓取链路可以删除：
 
-### 搜索
+- `LlmModelPublicCatalogService.java` 及其测试；
+- controller/service 中的 `searchPublicModelTemplates`；
+- `LlmModelPublicCatalogTemplateQueryBo`、Template/Page VO；
+- `ai.llm.public-model-catalog.*` 配置；
+- 前端 `llmConfigService.ts` 中对应的 authenticated API 方法和旧扁平 Template 类型。
 
-`POST /ego_app/api/v1/private/admin/LlmConfig/searchPublicModelOfferings`
+不要删除 `saveModel`、`updateModel`、`queryModelDetail`、连通性测试或端点能力探测；它们处理的是 tenant deployment，而不是公开目录。
 
-```json
-{
-  "query": {
-    "keyword": "glm",
-    "provider_ids": ["zhipu"],
-    "kinds": ["chat"],
-    "statuses": ["active"]
-  },
-  "page": {
-    "page_index": 1,
-    "page_size": 20
-  }
+如果目录只用于本次表单预填，删除上述链路后确实可以只改前端，但保存完成后仍会丢失目录版本与 offering 身份，也无法做增量升级或让运行时读取细粒度能力。完整目标仍需给现有保存 DTO/PO/VO 增加 catalog binding；这是持久化改造，不需要后端访问 CDN。
+
+需要让 FDE 使用目录能力时，前端可随绑定提交一个严格白名单的 `catalog_capability_snapshot`，只包含所选 offering 的协议、三类限额、三态能力、采样支持和 Embedding 约束。后端校验枚举、范围、ID 一致性和 projection SHA-256 后按目录版本保存并下发；它不接受 evidence URL、Logo、Base URL 或任何 secret。这个快照是已认证管理员通过前端提交的版本化配置，不应伪装成后端独立核验结果。
+
+如果安全模型要求后端能够抵抗绕过前端直接伪造目录能力，则仅靠浏览器 SHA-256 不够：应由目录 CI 对 manifest/projection 做签名，后端只验证签名和内置公钥，仍然不需要出站访问 CDN。在签名机制上线前，false/unknown 的 fail-closed 规则和后端白名单校验必须保留。
+
+## 建议前端契约
+
+静态目录客户端至少提供以下方法，`LlmConfig/index.vue` 不直接拼 manifest 或 provider JSON：
+
+```ts
+interface PublicLlmCatalogClient {
+  refresh(): Promise<CatalogRefreshResult>
+  search(query: CatalogSearchQuery): CatalogSearchResult
+  getOffering(catalogVersion: string, offeringId: string): Promise<CatalogOfferingDetail>
+  compareBinding(binding: CatalogBinding): Promise<CatalogBindingDiff>
 }
 ```
 
-响应顶层携带：
-
-- `catalog.schema_version`、`catalog.catalog_version`、`generated_at`；
-- `catalog.collected_at`、`catalog.reviewed_at`；
-- `source=download|cache|builtin_snapshot` 和非敏感 diagnostics；
-- 行数据中的 catalog identity、Logo 不可变地址、模态、status 和 verification status。
-
-搜索请求不得包含租户模型 ID、协议覆盖、URL 或 Key。
-
-### 详情
-
-`POST /ego_app/api/v1/private/admin/LlmConfig/queryPublicModelOfferingDetail`
-
-```json
-{
-  "catalog_version": "2026.08.5",
-  "offering_id": "zhipu/glm-5.2"
-}
-```
-
-响应返回该版本中经过服务端复核的 `provider`、`canonical_model`、`offering`、适用 alias、provider 分片 SHA-256、准入状态和诊断。前端不得把搜索行中的摘要当成保存依据。
+`refresh()` 返回 `download | cache` 来源、版本、生成/收集/核验时间和非敏感诊断；`getOffering()` 只返回通过 manifest size/SHA-256 校验的详情。搜索、筛选、分页和准入状态都在当前浏览器内完成，不再调用 baiteda 搜索接口。
 
 ### 保存
 
@@ -258,7 +270,7 @@ flowchart LR
 }
 ```
 
-端点、Key、环境和权重继续使用现有租户字段提交，此处不重复展示。服务端必须按 `catalog_version + offering_id` 重新加载 offering，并核对 provider/canonical/API ID/分片哈希；不能信任前端提交的能力、限额或证据正文。
+端点、Key、环境和权重继续使用现有租户字段提交，此处不重复展示。服务端不再加载 CDN；它校验 binding 字段格式、provider/offering 前缀一致性、允许的协议和哈希格式。若同时提交 `catalog_capability_snapshot`，服务端只接受运行时所需的严格白名单字段并重新计算 projection SHA-256，拒绝 evidence、Logo、URL 和未知扩展字段。
 
 ## 字段映射
 
@@ -300,7 +312,7 @@ flowchart LR
 | `catalog_shard_sha256` | 保存依据的 provider 分片哈希 |
 | `max_input_tokens` | 与 context/output 分离的运行字段 |
 
-`is_reason_model` 和 `function_call` 必须允许 null 表示 unknown，保存逻辑不得再给空值填 `0` 或 `Unsupported`。现有 `max_tokens` 可在兼容期明确解释为 tenant `max_output_tokens`；目录上限不能写入它。完整 capability 不复制到租户行，可保存在按版本和哈希去重的公共快照缓存中。
+`is_reason_model` 和 `function_call` 必须允许 null 表示 unknown，保存逻辑不得再给空值填 `0` 或 `Unsupported`。现有 `max_tokens` 可在兼容期明确解释为 tenant `max_output_tokens`；目录上限不能写入它。完整 offering 不复制到租户行；运行时确实需要的白名单 capability projection 可作为版本化快照单独保存，并与普通租户 override 分栏。
 
 ## 文件级实施清单
 
@@ -308,24 +320,27 @@ flowchart LR
 
 | 文件 | 变更 |
 | --- | --- |
-| `src/services/llmConfigService.ts` | 新增 offering 搜索/详情类型、catalog metadata、三态、binding 和 runtime override DTO；保留 v1 类型只用于过渡 |
+| `.env*`、`index.html` | 增加 `VUE_APP_LLM_CATALOG_BASE_URL` 的构建期/可选部署期入口；复用现有 `src/config/legacy-env.ts#getLegacyEnv`，无需修改该工具；空值时只隐藏或禁用目录入口，不影响手工新增 |
+| `src/services/publicLlmCatalogService.ts`（新增） | 原生 fetch + Web Crypto 实现 manifest/index/shard、版本缓存、CORS 错误诊断和本地搜索；绝不挂业务鉴权 header |
+| `src/services/llmConfigService.ts` | 删除 `searchPublicModelTemplates` 和旧扁平 Template 类型；Save/Detail 类型增加 catalog binding、三态和 runtime override |
 | `src/views/LlmConfig/index.vue` | 目录列表显示 Logo/版本/核验时间；选中后加载详情；新增只读绑定区、绑定状态、协议选择、三限额分离和升级提示 |
 | `src/views/LlmConfig/publicCatalogBinding.ts`（新增） | 集中实现类型派生、alias/override 判定、保存 payload 和 unknown 保留，避免逻辑继续堆在单个 Vue 文件中 |
 | `src/views/LlmConfig/modelCapabilityAssistant.ts` | 端点探测只生成 tenant override 候选；删除把公开目录扁平模板直接写进运行字段的职责 |
-| contract/unit tests | 覆盖无凭据搜索、版本固定、私有 ID override、unknown 不转 false、目录限额不预填、Logo 国内地址和不可用回退 |
+| contract/unit tests | 覆盖环境地址、`credentials: omit`、无 token header、哈希、版本缓存、私有 ID override、unknown 不转 false、目录限额不预填和不可用回退 |
 
 ### baiteda-app
 
 | 文件/模块 | 变更 |
 | --- | --- |
-| `LlmModelPublicCatalogService.java` | 改为国内 manifest/index/shard 消费器；去掉 models.dev/GitHub runtime fallback；实现版本、哈希、ETag、持久缓存和内置快照 |
-| 公开目录 BO/VO | 用 offering 语义替换扁平模板；返回 catalog metadata、identity、三态、证据摘要和准入诊断 |
-| `LlmModelSaveDto.java` / `LlmModelDetailVo.java` | 增加 catalog binding 与 runtime override；详情返回绑定状态和可用更新 |
+| `LlmModelPublicCatalogService.java` 及测试 | 删除，不再由 Java 访问任何目录地址 |
+| Controller / Service 接口与实现 | 删除 `searchPublicModelTemplates` 方法和注入；保留 save/update/detail、连通性和端点实测 |
+| 公开目录 Query BO、Template/Page VO | 删除；公开搜索/详情不再是后端 API |
+| application/Nacos 配置 | 删除 `ai.llm.public-model-catalog.*`，后端不保存 CDN URL |
+| `LlmModelSaveDto.java` / `LlmModelDetailVo.java` | 增加 catalog binding、可选白名单 capability snapshot 与 runtime override；详情返回保存的绑定状态 |
 | `LlmInterfaceProtocolEnum.java` 与发布 VO | 增加明确 wire protocol，兼容期与旧 `OpenAI/Ollama/Anthropic` 分开；不能用一个 `OpenAI` 同时代表 Chat Completions、Responses 和 Embeddings |
 | `SystemLlmModelPo.java` 与多数据库迁移 | 增加上述绑定字段和 `max_input_tokens`；保留私有端点字段原边界 |
-| `LlmModelConfigServiceImpl.java` | 保存时服务端重解析 offering；unknown 不默认成 false；目录上限与运行覆盖分开；发布时携带绑定和能力版本 |
-| 新增 resolver/cache | provider scoped alias 解析、固定版本缓存、更新差异和准入状态计算 |
-| tests | 覆盖 manifest 未变不下载、哈希失败不切换、历史版本、内置快照、alias/override、无 secret、unknown 和保存防篡改 |
+| `LlmModelConfigServiceImpl.java` | 保存时校验 binding/snapshot 白名单；unknown 不默认成 false；目录上限与运行覆盖分开；发布时携带绑定和能力版本 |
+| tests | 断言没有目录出站请求和硬编码公网 URL；覆盖 binding 格式、projection hash、alias/override、无 secret、unknown 和额外字段拒绝 |
 
 ### FDE
 
@@ -333,17 +348,18 @@ FDE 的构造器映射仍按[现有项目参数审计与集成计划](audit-and-
 
 ## 推荐上线顺序
 
-1. **目录消费基础**：baiteda 改读国内 CDN，完成 manifest/hash/cache/snapshot；提供 offering 搜索和详情 v2，旧接口保留兼容。
-2. **绑定可追踪**：数据库和 Save/Detail API 增加 catalog binding；前端完成目录选择、Logo、核验时间、协议与私有 ID mapping。此阶段高级运行参数仍不可编辑。
-3. **运行时闭环**：baiteda Resource VO 与 FDE 同时接入 `max_input_tokens`、细粒度能力和三层参数过滤，逐字段增加构造器契约测试。
-4. **增量升级**：增加新版本提示、breaking diff、deprecated/replacement 迁移与历史版本保留策略。
-5. **移除 v1**：确认没有旧前端/后端消费者后，删除扁平 `PublicModelTemplate` 和 models.dev 形状适配代码。
+1. **修正 CDN**：把当前 manifest/index/HTML 的长 immutable 缓存改为声明值；确认跨域 GET/HEAD/OPTIONS、ETag/暴露头和国内探测通过。
+2. **前端直读**：增加环境变量和静态目录客户端，完成搜索、Logo、详情、哈希、版本缓存与私有化 base URL；同时删除后端旧目录搜索链路。
+3. **绑定可追踪**：数据库和 Save/Detail API 增加 catalog binding；前端保存目录版本、offering、哈希、协议与私有 ID mapping。此阶段高级运行参数仍不可编辑。
+4. **运行时闭环**：按需保存白名单 capability snapshot，baiteda Resource VO 与 FDE 同时接入 `max_input_tokens`、细粒度能力和三层参数过滤，逐字段增加构造器契约测试。
+5. **增量升级**：前端比较固定版本与最新版本，增加 breaking diff、deprecated/replacement 迁移与历史版本保留策略。
 
 第一批联动不应同时开放 temperature/top_p/top_k。先把“选了谁、绑定哪个版本、实际调用什么 ID、unknown 如何处理”闭环做对，再按运行时契约逐个开放参数。
 
 ## 验收用例
 
-- 搜索只访问 baiteda；baiteda 只访问配置的国内 CDN，不出现 models.dev/GitHub runtime 请求。
+- 搜索和详情由浏览器直接访问配置的公司 CDN/客户内网目录；baiteda 不产生任何目录出站请求，也不出现 models.dev/GitHub runtime 请求。
+- 跨域请求不携带 cookie、token、tenant header；同源私有部署可使用相对目录地址。
 - manifest 版本不变时，不重复下载 search index 或 provider 分片。
 - size、SHA-256、Schema 或最低消费版本失败时，不污染最后成功缓存。
 - 选择 offering 后保存 identity、目录版本和哈希；编辑时可恢复同一绑定。

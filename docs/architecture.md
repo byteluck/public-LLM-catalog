@@ -163,6 +163,8 @@ flowchart LR
 
 当前 `src/consumer.ts` 是 TypeScript 参考实现；业务项目应实现相同状态机，并把最后成功版本持久化。目录故障不得阻塞已有模型配置。
 
+`pro-lowcode-platform-front/LlmConfig` 的目标集成采用浏览器直读：目录根地址由 `VUE_APP_LLM_CATALOG_BASE_URL` 或部署时的 `window.__APP_ENV__` 提供，浏览器完成 manifest/分片哈希校验和本地搜索，`baiteda-app` 不访问目录 CDN。后端只保存 tenant deployment、目录绑定和 FDE 所需的白名单能力投影；已有模型运行依赖保存后的配置，不依赖浏览器或 CDN 实时可用。具体删除/保留边界见[创建模型联动设计](llm-config-integration.md)。
+
 ## 安全边界
 
 Schema 和递归安全扫描禁止 API Key、credential、tenant、私有 Base URL、环境端点、NAT、负载均衡和 deployment override 等字段。扫描同时拒绝常见密钥形态、URL 用户信息、localhost、回环和 RFC 1918 IPv4。发布凭据只从 CI Secret/进程环境读取，发布计划和日志不打印凭据。
