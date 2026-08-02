@@ -29,6 +29,17 @@
 
 提升脚本只创建缺失的模型、offering 和 provider 文档；已有且不同的 model/offering 会失败，已有 provider（例如 OpenAI）保留原有官方资料，不能被聚合源覆盖。随后必须运行完整校验、构建和人工评审。
 
+## 逐条官方核验
+
+可以逐条核验，但核验单位必须是 **provider offering**，而不是仅按模型名称或 models.dev 路线批量处理。每条记录升级前都需要：
+
+1. 补入供应商官方文档、API 或模型卡的稳定 URL，并记录 `retrieved_at`、`verified_at`、置信度与字段级来源；
+2. 对实际调用所需的协议、API model ID、输入/输出限额、模态、工具、推理、采样或 Embedding 字段逐项确认；没有官方结论的字段继续写 `unknown`；
+3. 为任何新增的 `runtime_effective` 字段补齐构造器映射和契约测试；
+4. 经人工复核后再让浏览界面显示“已官方核验”。仅有聚合源、名称相似、模型家族页面或厂商新闻均不足以升级状态。
+
+因此现有“上游观测 · 未官方核验”不是错误提示，而是待核验队列的安全状态。它不会阻止人员浏览，但会阻止运行时把未核验协议或生成参数当作可调用能力。
+
 ## Logo 资产与页面关联
 
 厂家 SVG 以 `upstream/logos/{provider_id}.svg` 保存，并由构建器复制到 `dist/assets/logos/`，随后进入 manifest、SHA-256、gzip/brotli 和不可变版本路径。当前 29 个 provider 中：

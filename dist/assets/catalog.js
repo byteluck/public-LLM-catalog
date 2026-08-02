@@ -367,6 +367,34 @@ function providerName(item) {
   return typeof item.provider_name === "string" ? item.provider_name : item.provider_id;
 }
 
+function normalizedProviderIdentity(value) {
+  return String(value ?? "")
+    .normalize("NFKD")
+    .toLocaleLowerCase("en")
+    .replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+function compactModelName(name, providerIdentities) {
+  const value = String(name ?? "").trim();
+  const separator = value.indexOf(":");
+  if (separator < 1) {
+    return value;
+  }
+  const prefix = normalizedProviderIdentity(value.slice(0, separator));
+  const matchesProvider = providerIdentities
+    .map(normalizedProviderIdentity)
+    .some((identity) => identity !== "" && identity === prefix);
+  return matchesProvider ? value.slice(separator + 1).trim() : value;
+}
+
+function catalogDisplayName(item) {
+  return compactModelName(item.name, [providerName(item), item.provider_id]);
+}
+
+function candidateDisplayName(item) {
+  return compactModelName(item.name, [modelsDevProviderName(item.provider_id), item.provider_id]);
+}
+
 function matchesSearch(item, query) {
   if (query === "") {
     return true;
@@ -438,14 +466,8 @@ function modelsDevCandidateCard(item) {
   const header = createElement("div", "candidate-card-header");
   if (provider !== undefined) {
     append(header, candidateLogo(provider), createElement("span", "candidate-provider", provider.name));
-    const logoStatus = provider.logo_status === "dedicated"
-      ? "models.dev 专属 logo"
-      : provider.logo_status === "mapped"
-        ? `映射 logo · ${provider.logo_source_provider_id}`
-        : "通用占位 logo";
-    header.append(createElement("span", "candidate-logo-status", logoStatus));
   }
-  const title = createElement("h3", "candidate-title", item.name);
+  const title = createElement("h3", "candidate-title", candidateDisplayName(item));
   const apiId = createElement("code", "api-id", item.api_model_id);
   const chips = createElement("div", "chip-row");
   for (const modality of item.input_modalities) {
@@ -538,9 +560,10 @@ function applyFilters() {
 }
 
 function cardFor(item) {
+  const displayName = catalogDisplayName(item);
   const card = createElement("button", "model-card");
   card.type = "button";
-  card.setAttribute("aria-label", `查看 ${item.name} 的能力详情`);
+  card.setAttribute("aria-label", `查看 ${displayName} 的能力详情`);
 
   const top = createElement("span", "card-topline");
   const provider = createElement("span", "card-provider");
@@ -558,7 +581,7 @@ function cardFor(item) {
   );
 
   const body = createElement("span", "card-body");
-  const title = createElement("span", "card-title", item.name);
+  const title = createElement("span", "card-title", displayName);
   const apiId = createElement("span", "api-id", item.api_model_id);
   const modalities = createElement("span", "modality-row");
   for (const modality of item.input_modalities) {
@@ -738,7 +761,7 @@ function renderIdentity(provider, model, offering, item) {
   );
   const titleRow = createElement("div", "detail-title-row");
   const titleGroup = createElement("div", "detail-heading");
-  const heading = createElement("h2", "", offering.name);
+  const heading = createElement("h2", "", compactModelName(offering.name, [provider.name, provider.provider_id]));
   heading.id = "dialog-title";
   append(titleGroup, manufacturerLogo(item, "detail-logo"), heading);
   const copy = createElement("button", "copy-button", "复制 API ID");

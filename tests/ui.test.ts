@@ -147,10 +147,20 @@ describe("CDN 静态浏览界面", () => {
   });
 
   test("模型卡片采用紧凑尺寸，避免目录列表过于拥挤", () => {
-    expect(sourceCss).toContain("min-height: 258px");
-    expect(sourceCss).toContain("font-size: clamp(20px, 2vw, 28px)");
-    expect(sourceCss).toContain("min-height: 278px");
-    expect(sourceCss).toContain("font-size: clamp(19px, 1.7vw, 25px)");
+    expect(sourceCss).toContain("width: calc(100% - 48px)");
+    expect(sourceCss).toContain("repeat(auto-fill, minmax(250px, 1fr))");
+    expect(sourceCss).toContain("min-height: 218px");
+    expect(sourceCss).toContain("font-size: clamp(17px, 1.25vw, 22px)");
+    expect(sourceCss).toContain("min-height: 244px");
+    expect(sourceCss).toContain("font-size: clamp(16px, 1.2vw, 20px)");
+  });
+
+  test("卡片展示名称会移除与左上角厂家一致的前缀，但保留原始目录名称", () => {
+    expect(sourceJavaScript).toContain("function compactModelName");
+    expect(sourceJavaScript).toContain("catalogDisplayName(item)");
+    expect(sourceJavaScript).toContain("candidateDisplayName(item)");
+    expect(sourceJavaScript).toContain("compactModelName(offering.name, [provider.name, provider.provider_id])");
+    expect(sourceJavaScript).toContain("const title = createElement(\"span\", \"card-title\", displayName)");
   });
 
   test("models.dev 候选快照和厂家 logo 进入同一 manifest", async () => {

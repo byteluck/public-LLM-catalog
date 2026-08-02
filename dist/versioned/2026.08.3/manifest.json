@@ -8,22 +8,22 @@
         "br": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.css.br",
           "path": "assets/catalog.css.br",
-          "sha256": "507dba5eae70fa5c40dec71ec5939d0bbf8e2d2ee08df4205fa7ac1fe2668ab1",
-          "size": 4050
+          "sha256": "2f2d07520f5e926bdc5c3990eda0eee3be00b77388ceb50e271832b2c80ccf04",
+          "size": 4030
         },
         "gzip": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.css.gz",
           "path": "assets/catalog.css.gz",
-          "sha256": "64ee0b3ab09dc22874ca19b239fd33cb41ae3ac3699df757a30154c45deddab5",
-          "size": 4746
+          "sha256": "34e75f0ec5e817baacf10345e19eb47b2a207d80b20ff4c9293c16c563f8a792",
+          "size": 4711
         }
       },
-      "etag": "\"908790dcbedaff5689b21155e4687bda26e1b31ab24103af012c18835c5c5198\"",
+      "etag": "\"7ba2b52263693a1d84a08b3d078ee6d23c39e08c35087e4171062f0b4dae0750\"",
       "immutable_cache_control": "public, max-age=31536000, immutable",
       "immutable_path": "versioned/2026.08.3/assets/catalog.css",
       "path": "assets/catalog.css",
-      "sha256": "908790dcbedaff5689b21155e4687bda26e1b31ab24103af012c18835c5c5198",
-      "size": 23181
+      "sha256": "7ba2b52263693a1d84a08b3d078ee6d23c39e08c35087e4171062f0b4dae0750",
+      "size": 22903
     },
     {
       "cache_control": "public, max-age=300, must-revalidate",
@@ -32,22 +32,22 @@
         "br": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.js.br",
           "path": "assets/catalog.js.br",
-          "sha256": "44f8776ba0e3f41247019d2cc691bcdf4196964defbc65664bcc6adfa3bfe3c7",
-          "size": 8655
+          "sha256": "96ed851acc65001236abb50e58157d1e745db4f43e119d8871dfa2c32d8d0856",
+          "size": 8782
         },
         "gzip": {
           "immutable_path": "versioned/2026.08.3/assets/catalog.js.gz",
           "path": "assets/catalog.js.gz",
-          "sha256": "8a8f45df8f339313880bfa328838cdd14f797fdf9ee7838da31b6ee303a6fed1",
-          "size": 10207
+          "sha256": "d8e539d0439e3a48d2eba28df83f1f56a3d5f3adc77ff4b29d2fc6cec909b4a8",
+          "size": 10355
         }
       },
-      "etag": "\"a97ba865a4ecb034a347c30e39796ffb0c97ecbba1c4c86031a73f73c9d2bb02\"",
+      "etag": "\"a8ecca9e97a8168974997cc93397c2bf68f567561a16833db027395071dc22f9\"",
       "immutable_cache_control": "public, max-age=31536000, immutable",
       "immutable_path": "versioned/2026.08.3/assets/catalog.js",
       "path": "assets/catalog.js",
-      "sha256": "a97ba865a4ecb034a347c30e39796ffb0c97ecbba1c4c86031a73f73c9d2bb02",
-      "size": 37932
+      "sha256": "a8ecca9e97a8168974997cc93397c2bf68f567561a16833db027395071dc22f9",
+      "size": 38647
     },
     {
       "cache_control": "public, max-age=300, must-revalidate",

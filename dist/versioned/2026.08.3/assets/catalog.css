@@ -75,7 +75,7 @@ button {
 .site-header,
 main,
 footer {
-  width: min(1220px, calc(100% - 40px));
+  width: calc(100% - 48px);
   margin-inline: auto;
 }
 
@@ -415,8 +415,8 @@ footer {
 
 .model-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
 }
 
 .upstream-explorer {
@@ -488,15 +488,15 @@ footer {
 
 .candidate-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
 }
 
 .candidate-card {
   display: flex;
-  min-height: 278px;
+  min-height: 244px;
   flex-direction: column;
-  padding: 16px;
+  padding: 14px;
   border: 1px solid var(--ink);
   border-radius: var(--radius);
   background: var(--paper-bright);
@@ -511,24 +511,24 @@ footer {
 
 .candidate-card-header {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: 6px 8px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 6px;
   align-items: center;
-  min-height: 30px;
-  padding-bottom: 11px;
+  min-height: 24px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
 }
 
 .candidate-logo {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   color: var(--ink);
 }
 
 .candidate-provider {
   overflow: hidden;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-overflow: ellipsis;
@@ -536,34 +536,27 @@ footer {
   white-space: nowrap;
 }
 
-.candidate-logo-status {
-  grid-column: 1 / -1;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 8px;
-}
-
 .candidate-title {
-  margin: 16px 0 0;
-  font-size: clamp(19px, 1.7vw, 25px);
+  margin: 12px 0 0;
+  font-size: clamp(16px, 1.2vw, 20px);
   letter-spacing: -0.045em;
   line-height: 1.1;
 }
 
 .candidate-card > .api-id {
-  margin-top: 7px;
+  margin-top: 6px;
 }
 
 .candidate-card > .chip-row {
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .candidate-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   margin: auto 0 0;
-  padding-top: 16px;
+  padding-top: 12px;
 }
 
 .candidate-facts .fact {
@@ -577,15 +570,15 @@ footer {
 
 .candidate-facts dd {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .candidate-footer {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 11px;
-  margin-top: 14px;
-  padding-top: 10px;
+  margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-family: var(--mono);
@@ -600,7 +593,7 @@ footer {
 .model-card {
   position: relative;
   display: flex;
-  min-height: 258px;
+  min-height: 218px;
   flex-direction: column;
   padding: 0;
   overflow: hidden;
@@ -623,10 +616,10 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 13px;
+  padding: 8px 10px;
   border-bottom: 1px solid var(--line);
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -652,17 +645,17 @@ footer {
 }
 
 .catalog-logo {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   flex: none;
   color: var(--ink);
 }
 
 .verification-label {
-  max-width: 148px;
+  max-width: 108px;
   overflow: hidden;
   color: var(--accent-dark);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.02em;
   text-overflow: ellipsis;
@@ -671,7 +664,7 @@ footer {
 }
 
 .kind-label {
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 999px;
   background: var(--unknown);
 }
@@ -684,23 +677,23 @@ footer {
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 18px 18px 16px;
+  padding: 14px 14px 12px;
 }
 
 .card-title {
   display: block;
   margin: 0;
-  font-size: clamp(20px, 2vw, 28px);
+  font-size: clamp(17px, 1.25vw, 22px);
   letter-spacing: -0.045em;
   line-height: 1.08;
 }
 
 .api-id {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   overflow-wrap: anywhere;
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .modality-row,
@@ -712,18 +705,18 @@ footer {
 
 .modality-row {
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 12px;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  min-height: 23px;
-  padding: 2px 8px;
+  min-height: 21px;
+  padding: 1px 7px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: white;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .detail-section > .chip-row + .chip-row,
@@ -736,23 +729,23 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 14px;
-  padding-top: 11px;
+  margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .card-arrow {
   color: var(--ink);
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .state-label {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
 }
 
@@ -1239,20 +1232,13 @@ dialog::backdrop {
     grid-column: auto;
   }
 
-  .model-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .candidate-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 800px) {
   .site-header,
   main,
   footer {
-    width: min(100% - 24px, 1220px);
+    width: calc(100% - 24px);
   }
 
   .hero {
@@ -1357,7 +1343,7 @@ dialog::backdrop {
   }
 
   .model-card {
-    min-height: 238px;
+    min-height: 206px;
   }
 
   .facts-grid,
