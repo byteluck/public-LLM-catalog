@@ -159,7 +159,7 @@ flowchart LR
 3. `catalog_version` 与本地缓存相同则不下载全量目录。
 4. 版本变化时按 manifest 的 `immutable_path` 下载目标文件，并在解析前校验字节级 SHA-256；发布窗口内不会混用旧 manifest 和新当前路径。
 5. 下载、版本、Schema 或哈希失败时继续使用最后成功缓存；没有缓存时使用内置快照。
-6. 私有 `api_model_id` 不能按名称猜测能力，必须显式指定 `publicOfferingOverride`，或由经过校验的 alias 指向公开 offering。
+6. 私有 `api_model_id` 不能按名称猜测能力，必须显式保存目标 `catalog_offering_id` 并标记 `catalog_binding_mode=explicit_override`，或由经过校验的同 provider alias 指向公开 offering。
 
 当前 `src/consumer.ts` 是 TypeScript 参考实现；业务项目应实现相同状态机，并把最后成功版本持久化。目录故障不得阻塞已有模型配置。
 

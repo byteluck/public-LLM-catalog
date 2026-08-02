@@ -2,7 +2,7 @@
 
 本仓库维护供应商中立、版本化、机器可读的公开模型能力事实，并生成可直接发布到国内对象存储/CDN 的静态 JSON 和同源浏览界面。打开 CDN 根地址即可搜索和查看模型详情；运行时不依赖数据库，也不直接访问 GitHub、models.dev、LiteLLM 或国外厂商站点。
 
-> 当前为首个目录版本。参见[架构说明](docs/architecture.md)、[浏览界面](docs/web-ui.md)、[Schema 语义](docs/schema-reference.md)、[候选来源矩阵](docs/source-matrix.md)、[models.dev 2026 候选与 Logo](docs/models-dev-2026.md)、[国内部署](docs/deployment-cn.md)、[现有项目审计与集成边界](docs/audit-and-integration.md)和[维护流程](docs/operations.md)。
+> 当前为首个目录版本。参见[架构说明](docs/architecture.md)、[浏览界面](docs/web-ui.md)、[Schema 语义](docs/schema-reference.md)、[候选来源矩阵](docs/source-matrix.md)、[models.dev 2026 候选与 Logo](docs/models-dev-2026.md)、[国内部署](docs/deployment-cn.md)、[LlmConfig 创建模型联动设计](docs/llm-config-integration.md)、[现有项目审计与集成边界](docs/audit-and-integration.md)和[维护流程](docs/operations.md)。
 
 ## 快速开始
 

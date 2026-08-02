@@ -6,11 +6,13 @@
 
 | 仓库 | HEAD | 必读范围 |
 | --- | --- | --- |
-| `baiteda-app` | `4e807b1a57dcf16a8e9b0dd1c15bae1a1591d6af` | `SystemLlmModelPo.java`、`LlmModelPublicCatalogService.java` |
+| `baiteda-app` | `11a5b04316ae106a04d63156cae3fb1c36d07657` | `SystemLlmModelPo.java`、`LlmModelPublicCatalogService.java`、模型保存 DTO/VO 与保存逻辑 |
 | `fses-design-mono` | `c88e5def41856e42449d52ed6d1b05e6fab09d12` | `开发要求.md`、`model-runtime.ts`、`create-agent.ts` |
 | `pro-lowcode-platform-front` | `aebd62c62b8bbf7b282869d4f972375c13ec8946` | `src/views/LlmConfig/` 全目录 |
 
 FDE 这三个必读文件从先前审计点 `c7be767a...` 到当前 HEAD 没有差异；目录证据记录为本次最后复核到的当前 HEAD。初始模型集合来自 FDE 当前默认值和运行时契约测试：`gpt-5.5`、`glm-5.2`、`glm-4.6v`、`embedding-3`，分别覆盖默认聊天、推理工具、多模态视觉和 Embedding 配置形态。
+
+`LlmConfig` 的创建模型联动已进一步细化为[目录绑定与租户 deployment 设计](llm-config-integration.md)。当前入口虽然存在，但后端仍直接访问 models.dev/GitHub，且选择后没有持久化 catalog identity 和版本；该设计给出了替换接口、保存契约、交互状态与分阶段上线门禁。
 
 ## 当前参数差距矩阵
 
@@ -44,7 +46,7 @@ FDE 这三个必读文件从先前审计点 `c7be767a...` 到当前 HEAD 没有�
 
 `StreamCallSupported` 只说明当前项目希望看到流式工具消息，无法回答以下互不等价的问题：模型能否调用工具、是否接受 `tool_choice`、能否并行调用、能否强制严格工具参数、是否支持结构化输出、是否接受 JSON Schema、流式响应是否带 usage。把其中任意一个从 `function_call` 推出来都会把“未知”误作“支持”。
 
-兼容方式：旧枚举继续作为 UI/旧接口的派生视图，但只按保守规则计算。例如仅当 `tool_call=true && streaming=true` 时才可能显示流式调用；它不能反向写回细粒度字段。新运行时直接读取 offering 的九个 Agent 能力三态。Agent 需要的能力不是 `true` 时，应降级到明确无工具路径或拒绝装配并输出诊断，不能偷偷尝试。
+兼容方式：旧枚举继续作为 UI/旧接口的派生视图，但只按保守规则计算：`tool_call=true` 只能派生 `CallSupported`，`false` 派生 `Unsupported`，`unknown` 保留空值。当前目录没有独立的“流式工具调用”事实，因此不能从 `streaming + tool_call` 推出 `StreamCallSupported`，也不能由旧枚举反向写回细粒度字段。新运行时直接读取 offering 的九个 Agent 能力三态。Agent 需要的能力不是 `true` 时，应降级到明确无工具路径或拒绝装配并输出诊断，不能偷偷尝试。
 
 ## baiteda-app 文件级集成清单
 
@@ -52,7 +54,7 @@ FDE 这三个必读文件从先前审计点 `c7be767a...` 到当前 HEAD 没有�
 
 | 文件/层 | 所需变更 |
 | --- | --- |
-| `.../dal/entity/mysql/SystemLlmModelPo.java` 与数据库迁移 | 增加 `canonical_model_id`、`provider_id`、`catalog_offering_id`、`catalog_version`、`public_offering_override`、独立 `max_input_tokens`；明确现有 `model=max api_model_id`、`max_tokens=max_output_tokens`。`temperature/top_p` 只能作为 tenant override，可增加 `top_k`/`reasoning_effort`，但必须与同一版本的运行时映射一起上线。私有 capability override 若确有需要，应放租户受控 JSON，不能回写公开目录 |
+| `.../dal/entity/mysql/SystemLlmModelPo.java` 与数据库迁移 | 增加 `catalog_canonical_id`、`catalog_provider_id`、`catalog_offering_id`、`catalog_version`、`catalog_schema_version`、`catalog_api_model_id`、`catalog_binding_mode`、`catalog_shard_sha256` 和独立 `max_input_tokens`；明确现有 `model=租户实际 api_model_id`、`max_tokens=tenant max_output_tokens`。`explicit_override` 由绑定模式表达，不根据名称猜测。`temperature/top_p` 只能作为 tenant override，可增加 `top_k`/`reasoning_effort`，但必须与同一版本的运行时映射一起上线。私有 capability override 若确有需要，应放租户受控 JSON，不能回写公开目录 |
 | `.../common/domain/dto/ai/LlmModelSaveDto.java` | 对应新增身份、输入预算和运行策略字段；校验 sampling 值只是覆盖，不是模型事实；禁止前端提交 provider capability 真值覆盖官方目录 |
 | `.../common/domain/vo/ai/LlmModelDetailVo.java`、`LlmModelConfigResourceVo.java`、`LlmModelOptionVo.java` | 详情返回展示事实与来源；Resource VO 返回 FDE 所需 catalog identity、版本、细粒度三态、协议映射和三层合并前的 tenant override。secret 权限边界保持不变 |
 | `.../vo/ai/LlmModelPublicCatalogTemplateVo.java`、`PageVo.java` | 从本项目 search index/provider shard 映射 canonical/offering，不再适配 models.dev 两种形状；保留 `unknown`，不要转成 false/null 后再猜测 |
@@ -103,7 +105,7 @@ FDE 这三个必读文件从先前审计点 `c7be767a...` 到当前 HEAD 没有�
 
 1. 用 `(provider_id, api_model_id)` 精确匹配公开 offering。
 2. 未命中时解析同 provider 的 alias；全局 alias 只能在不歧义时使用。
-3. 私有部署 ID 未命中时必须提供 `public_offering_override`，明确继承哪个公开 offering 的能力。
+3. 私有部署 ID 未命中时必须明确保存目标 `catalog_offering_id`，并标记 `catalog_binding_mode=explicit_override`，说明继承哪个公开 offering 的能力。
 4. override 只决定能力基线；实际请求仍使用租户的私有 `api_model_id`、Base URL 和 Key。
 5. 租户可再提供受审计的 capability override，且未知字段默认仍为 unknown。
 
