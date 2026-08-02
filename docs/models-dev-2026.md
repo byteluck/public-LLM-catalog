@@ -6,6 +6,17 @@
 
 `models_dev_created_at` 是 models.dev 目录的收录时间，**不是**厂商官方 `release_date`。因此任何由此快照提升的 canonical 和 offering 都将生命周期发布日期保留为 `unknown`；不从收录时间推导状态、弃用时间或替代项。
 
+## 收集与核验批次
+
+为便于后续增量更新，轻量 `search-index.json` 的 `models_dev_sync` 固定带有以下批次元数据，并在首页目录统计中显示前两项：
+
+- `collected_at`：本次从 models.dev 收集并冻结候选快照的时间，来自 `upstream/models-dev-2026.json.source.retrieved_at`。
+- `reviewed_at`：本次逐条官方核验侧车生成的时间，来自 `catalog/reviews/models-dev-2026.json.reviewed_at`；每条记录也保留各自的 `reviewed_at`。
+- `source_revision` 与 `source_snapshot_sha256`：用于确认下一次同步和核验是否针对同一上游修订/冻结快照。
+- `direct_offering_count`：本次被逐条核验的已提升直连 offering 数量。
+
+增量同步时，先比较新旧 `source_revision`、`collected_at` 和候选快照哈希；只有候选发生变化才生成待审差异。重新核验后再更新 `reviewed_at` 和受影响记录的单条时间，避免把旧结论误当作新快照的结论。
+
 快照中的每条记录包含：
 
 - `provider_id`、原样 `api_model_id`、`canonical_slug`、名称和路线类型（直连、免费、路由器、别名）；

@@ -28,6 +28,7 @@ npm run preview
 - `catalog/aliases/`：公开别名映射；私有模型标识应由租户部署 override 映射。
 - `upstream/models-dev-2026.json`：models.dev 2026 收录快照和厂家 Logo 元数据。其直连记录可经显式、可重复的人工提升进入目录，但始终保留低置信度来源和 `unknown` 运行时能力；免费、路由和别名记录只留在上游浏览区。
 - `catalog/reviews/models-dev-2026.json`：79 条已提升的 models.dev 直连记录的逐条官方核验侧车。它记录官网证据、官方 API ID（如有）和 `keep_fail_closed` 处置，不会自动改写 canonical、offering 或运行时参数。
+- `dist/search-index.json#models_dev_sync`：随轻量索引发布的本次上游收集时间、逐条核验时间、来源修订和快照哈希；可作为下一次增量收集/复核的比对基线。
 - `upstream/logos/`：随 CDN 发布的 SVG 厂家图标；缺少可靠源时使用明确标记的中性占位图。
 - API Key、私有 Base URL、环境、权重和负载均衡等 tenant deployment 数据禁止进入本仓库。
 - `temperature`、`top_p`、`top_k` 只记录供应商 offering 是否支持、范围、官方默认值和协议映射，不保存业务默认运行值。

@@ -68,9 +68,13 @@
               <dd id="metric-embedding">—</dd>
             </div>
           </dl>
-          <p class="pulse-note">
-            页面先校验 manifest 与搜索索引，详情按供应商分片加载。目录不可用时尝试使用浏览器中的已验证缓存。
-          </p>
+          <div class="pulse-note">
+            <div class="pulse-timing" aria-label="上游收集与逐条核验时间">
+              <span>上游收集 <time id="models-dev-collected-at">—</time></span>
+              <span>逐条核验 <time id="models-dev-reviewed-at">—</time></span>
+            </div>
+            <p>页面先校验 manifest 与搜索索引，详情按供应商分片加载。目录不可用时尝试使用浏览器中的已验证缓存。</p>
+          </div>
         </div>
       </section>
 

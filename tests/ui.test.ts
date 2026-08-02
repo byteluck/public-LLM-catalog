@@ -40,6 +40,10 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceHtml).toContain("models-dev-explorer");
     expect(sourceJavaScript).toContain('fetchVerifiedJson("models-dev-2026.json")');
     expect(sourceJavaScript).toContain('fetchVerifiedJson("reviews/models-dev-2026.json")');
+    expect(sourceHtml).toContain('id="models-dev-collected-at"');
+    expect(sourceHtml).toContain('id="models-dev-reviewed-at"');
+    expect(sourceJavaScript).toContain("assertModelsDevSync");
+    expect(sourceJavaScript).toContain("models_dev_sync");
     expect(sourceJavaScript).toContain("candidateLogo");
     expect(sourceJavaScript).toContain("manufacturerLogo");
     expect(sourceJavaScript).toContain("detail-logo");
@@ -87,12 +91,12 @@ describe("CDN 静态浏览界面", () => {
       expect(descriptor).toMatchObject({
         path,
         content_type: contentType,
-        immutable_path: `versioned/2026.08.4/${path}`,
+        immutable_path: `versioned/2026.08.5/${path}`,
       });
       expect(descriptor?.encodings.gzip.path).toBe(`${path}.gz`);
       expect(descriptor?.encodings.br.path).toBe(`${path}.br`);
       expect(await readFile(join(outputDirectory, path))).toEqual(
-        await readFile(join(outputDirectory, `versioned/2026.08.4/${path}`)),
+        await readFile(join(outputDirectory, `versioned/2026.08.5/${path}`)),
       );
     }
     expect(manifest.files.find((file) => file.path === "index.html")?.cache_control).toContain(
@@ -100,13 +104,35 @@ describe("CDN 静态浏览界面", () => {
     );
   });
 
-  test("搜索索引包含展示所需供应商名称但不复制能力和证据正文", async () => {
-    const index = await readJson<{ items: Array<Record<string, unknown>> }>(
-      join(outputDirectory, "search-index.json"),
-    );
+  test("搜索索引包含展示所需供应商名称与增量批次时间，但不复制能力和证据正文", async () => {
+    const [index, candidates, reviews] = await Promise.all([
+      readJson<{
+        items: Array<Record<string, unknown>>;
+        models_dev_sync: {
+          collected_at: string;
+          reviewed_at: string;
+          source_revision: string;
+          source_snapshot_sha256: string;
+          direct_offering_count: number;
+        };
+      }>(join(outputDirectory, "search-index.json")),
+      readJson<{ source: { retrieved_at: string; source_revision: string } }>(
+        join(REPOSITORY_ROOT, "upstream/models-dev-2026.json"),
+      ),
+      readJson<{ reviewed_at: string; source_snapshot_sha256: string; reviews: unknown[] }>(
+        join(REPOSITORY_ROOT, "catalog/reviews/models-dev-2026.json"),
+      ),
+    ]);
     expect(index.items.every((item) => typeof item.provider_name === "string")).toBe(true);
     expect(index.items.every((item) => "verification_status" in item && "manufacturer_logo" in item)).toBe(true);
     expect(index.items.every((item) => !("capabilities" in item) && !("evidence" in item))).toBe(true);
+    expect(index.models_dev_sync).toEqual({
+      collected_at: candidates.source.retrieved_at,
+      reviewed_at: reviews.reviewed_at,
+      source_revision: candidates.source.source_revision,
+      source_snapshot_sha256: reviews.source_snapshot_sha256,
+      direct_offering_count: reviews.reviews.length,
+    });
   });
 
   test("已提升的 2026 模型在主目录索引中绑定同源厂家 logo", async () => {
@@ -152,6 +178,9 @@ describe("CDN 静态浏览界面", () => {
   test("模型卡片采用紧凑尺寸，避免目录列表过于拥挤", () => {
     expect(sourceCss).toContain("width: calc(100% - 48px)");
     expect(sourceCss).toContain("font-size: clamp(34px, 3.8vw, 56px)");
+    expect(sourceCss).toContain("font-size: clamp(30px, 3.4vw, 48px)");
+    expect(sourceCss).toContain("font-size: clamp(28px, 3vw, 42px)");
+    expect(sourceCss).toContain("font-size: clamp(34px, 10vw, 44px)");
     expect(sourceCss).toContain("repeat(auto-fill, minmax(250px, 1fr))");
     expect(sourceCss).toContain("min-height: 218px");
     expect(sourceCss).toContain("font-size: clamp(17px, 1.25vw, 22px)");

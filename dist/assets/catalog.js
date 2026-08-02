@@ -2,7 +2,7 @@ const BASE_URL = new URL("./", window.location.href);
 const CACHE_PREFIX = "public-llm-catalog:";
 const MANIFEST_CACHE_KEY = `${CACHE_PREFIX}manifest`;
 const SUPPORTED_SCHEMA_MAJOR = 2;
-const SUPPORTED_SCHEMA_VERSION = "2.3.0";
+const SUPPORTED_SCHEMA_VERSION = "2.4.0";
 
 const labels = {
   kind: { chat: "Chat", embedding: "Embedding" },
@@ -93,6 +93,8 @@ const elements = {
   releaseState: document.querySelector(".release-state"),
   releaseLabel: byId("release-label"),
   generatedAt: byId("generated-at"),
+  modelsDevCollectedAt: byId("models-dev-collected-at"),
+  modelsDevReviewedAt: byId("models-dev-reviewed-at"),
   metricOfferings: byId("metric-offerings"),
   metricProviders: byId("metric-providers"),
   metricMultimodal: byId("metric-multimodal"),
@@ -690,6 +692,28 @@ function renderMetrics(index) {
   elements.generatedAt.textContent = displayDate(index.generated_at);
 }
 
+function assertModelsDevSync(value) {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    typeof value.collected_at !== "string" ||
+    typeof value.reviewed_at !== "string" ||
+    typeof value.source_revision !== "string" ||
+    typeof value.source_snapshot_sha256 !== "string" ||
+    !Number.isInteger(value.direct_offering_count)
+  ) {
+    throw new Error("搜索索引缺少 models.dev 收集或核验时间点");
+  }
+  return value;
+}
+
+function renderModelsDevSync(sync) {
+  elements.modelsDevCollectedAt.dateTime = sync.collected_at;
+  elements.modelsDevCollectedAt.textContent = displayDate(sync.collected_at);
+  elements.modelsDevReviewedAt.dateTime = sync.reviewed_at;
+  elements.modelsDevReviewedAt.textContent = displayDate(sync.reviewed_at);
+}
+
 function renderReleaseState() {
   elements.releaseState?.classList.toggle("is-cached", state.offline);
   elements.releaseState?.classList.toggle("is-ready", !state.offline);
@@ -725,9 +749,11 @@ async function loadCatalog() {
     ) {
       throw new Error("搜索索引与 manifest 版本不一致");
     }
+    const modelsDevSync = assertModelsDevSync(index.models_dev_sync);
     state.items = index.items;
     state.catalogOfferingKeys = new Set(state.items.map(catalogOfferingKey));
     renderMetrics(index);
+    renderModelsDevSync(modelsDevSync);
     populateProviderFilter();
     applyFilters();
     await loadModelsDevCandidates();

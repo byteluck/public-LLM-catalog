@@ -51,6 +51,22 @@ interface SearchIndexItem {
   output_modalities: string[];
 }
 
+interface ModelsDevSyncMetadata {
+  collected_at: string;
+  reviewed_at: string;
+  source_revision: string;
+  source_snapshot_sha256: string;
+  direct_offering_count: number;
+}
+
+interface GeneratedSearchIndex {
+  schema_version: string;
+  catalog_version: string;
+  generated_at: string;
+  models_dev_sync: ModelsDevSyncMetadata;
+  items: SearchIndexItem[];
+}
+
 function sortBy<T>(values: T[], selector: (value: T) => string): T[] {
   return [...values].sort((left, right) => selector(left).localeCompare(selector(right), "en"));
 }
@@ -115,7 +131,7 @@ function searchIndex(
   source: SourceCatalog,
   modelsDevCandidates: ModelsDevCandidates,
   modelsDevOfficialReviews: ModelsDevOfficialReviews,
-): Record<string, unknown> {
+): GeneratedSearchIndex {
   const models = new Map(source.models.map((model) => [model.canonical_id, model]));
   const providers = new Map(source.providers.map((provider) => [provider.provider_id, provider]));
   const logoPaths = new Map(
@@ -172,6 +188,13 @@ function searchIndex(
     schema_version: source.release.schema_version,
     catalog_version: source.release.catalog_version,
     generated_at: source.release.generated_at,
+    models_dev_sync: {
+      collected_at: modelsDevCandidates.source.retrieved_at,
+      reviewed_at: modelsDevOfficialReviews.reviewed_at,
+      source_revision: modelsDevCandidates.source.source_revision,
+      source_snapshot_sha256: modelsDevOfficialReviews.source_snapshot_sha256,
+      direct_offering_count: modelsDevOfficialReviews.reviews.length,
+    },
     items: sortBy(items, (item) => `${item.name.toLowerCase()}\u0000${item.offering_id}`),
   };
 }

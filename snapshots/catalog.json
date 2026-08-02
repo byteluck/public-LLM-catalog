@@ -78,10 +78,10 @@
           "unsupported_reason": "当前三个项目尚未接入 canonical/offering alias 解析；私有标识必须用租户 override 显式映射。"
         }
       },
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     }
   ],
-  "catalog_version": "2026.08.4",
+  "catalog_version": "2026.08.5",
   "generated_at": "2026-08-02T00:00:00Z",
   "models": [
     {
@@ -251,7 +251,7 @@
         ]
       },
       "name": "AionLabs: Aion-2.0",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -422,7 +422,7 @@
         ]
       },
       "name": "Anthropic: Claude Opus 4.6",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -593,7 +593,7 @@
         ]
       },
       "name": "Anthropic: Claude Opus 4.6 (Fast)",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -764,7 +764,7 @@
         ]
       },
       "name": "Anthropic: Claude Sonnet 4.6",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -935,7 +935,7 @@
         ]
       },
       "name": "Anthropic: Claude Opus 4.7",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -1106,7 +1106,7 @@
         ]
       },
       "name": "Anthropic: Claude Opus 4.7 (Fast)",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -1275,7 +1275,7 @@
         ]
       },
       "name": "Arcee AI: Trinity Large Preview",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -1444,7 +1444,7 @@
         ]
       },
       "name": "Arcee AI: Trinity Large Thinking",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -1615,7 +1615,7 @@
         ]
       },
       "name": "ByteDance Seed: Seed-2.0-Lite",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -1786,7 +1786,7 @@
         ]
       },
       "name": "ByteDance Seed: Seed-2.0-Mini",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -1955,7 +1955,7 @@
         ]
       },
       "name": "DeepSeek: DeepSeek V4 Flash",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -2124,7 +2124,7 @@
         ]
       },
       "name": "DeepSeek: DeepSeek V4 Pro",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -2295,7 +2295,7 @@
         ]
       },
       "name": "Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview)",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -2468,7 +2468,7 @@
         ]
       },
       "name": "Google: Gemini 3.1 Flash Lite",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -2641,7 +2641,7 @@
         ]
       },
       "name": "Google: Gemini 3.1 Flash Lite Preview",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -2814,7 +2814,7 @@
         ]
       },
       "name": "Google: Gemini 3.1 Pro Preview",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -2987,7 +2987,7 @@
         ]
       },
       "name": "Google: Gemini 3.1 Pro Preview Custom Tools",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -3158,7 +3158,7 @@
         ]
       },
       "name": "Google: Gemma 4 26B A4B ",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -3329,7 +3329,7 @@
         ]
       },
       "name": "Google: Gemma 4 31B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -3500,7 +3500,7 @@
         ]
       },
       "name": "Google: Lyria 3 Clip Preview",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -3671,7 +3671,7 @@
         ]
       },
       "name": "Google: Lyria 3 Pro Preview",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -3840,7 +3840,7 @@
         ]
       },
       "name": "IBM: Granite 4.1 8B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -4009,7 +4009,7 @@
         ]
       },
       "name": "Inception: Mercury 2",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -4178,7 +4178,7 @@
         ]
       },
       "name": "inclusionAI: Ling-2.6-1T",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -4347,7 +4347,7 @@
         ]
       },
       "name": "Kwaipilot: KAT-Coder-Pro V2",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -4516,7 +4516,7 @@
         ]
       },
       "name": "LiquidAI: LFM2-24B-A2B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -4685,7 +4685,7 @@
         ]
       },
       "name": "MiniMax: MiniMax M2-her",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -4854,7 +4854,7 @@
         ]
       },
       "name": "MiniMax: MiniMax M2.5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -5023,7 +5023,7 @@
         ]
       },
       "name": "MiniMax: MiniMax M2.7",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -5194,7 +5194,7 @@
         ]
       },
       "name": "Mistral: Mistral Medium 3.5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -5364,7 +5364,7 @@
         ]
       },
       "name": "Mistral: Mistral Small 4",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -5534,7 +5534,7 @@
         ]
       },
       "name": "MoonshotAI: Kimi K2.5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -5703,7 +5703,7 @@
         ]
       },
       "name": "NVIDIA: Nemotron 3 Super",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -5873,7 +5873,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.2-Codex",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -6044,7 +6044,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.3 Chat",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -6215,7 +6215,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.3-Codex",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -6386,7 +6386,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.4",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -6556,7 +6556,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.4 Image 2",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -6727,7 +6727,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.4 Mini",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -6898,7 +6898,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.4 Nano",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -7069,7 +7069,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.4 Pro",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -7323,7 +7323,7 @@
         ]
       },
       "name": "GPT-5.5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -7494,7 +7494,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -7665,7 +7665,7 @@
         ]
       },
       "name": "OpenAI: GPT-5.5 Pro",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -7836,7 +7836,7 @@
         ]
       },
       "name": "OpenAI: GPT Audio",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -8007,7 +8007,7 @@
         ]
       },
       "name": "OpenAI: GPT Audio Mini",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -8178,7 +8178,7 @@
         ]
       },
       "name": "OpenAI: GPT Chat Latest",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -8349,7 +8349,7 @@
         ]
       },
       "name": "Perceptron: Perceptron Mk1",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -8518,7 +8518,7 @@
         ]
       },
       "name": "Qwen: Qwen3 Coder Next",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -8687,7 +8687,7 @@
         ]
       },
       "name": "Qwen: Qwen3 Max Thinking",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -8858,7 +8858,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5-122B-A10B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -9029,7 +9029,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5-27B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -9200,7 +9200,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5-35B-A3B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -9371,7 +9371,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5 397B A17B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -9542,7 +9542,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5-9B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -9713,7 +9713,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5-Flash",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -9884,7 +9884,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5 Plus 2026-02-15",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -10055,7 +10055,7 @@
         ]
       },
       "name": "Qwen: Qwen3.5 Plus 2026-04-20",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -10226,7 +10226,7 @@
         ]
       },
       "name": "Qwen: Qwen3.6 27B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -10397,7 +10397,7 @@
         ]
       },
       "name": "Qwen: Qwen3.6 35B A3B",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -10568,7 +10568,7 @@
         ]
       },
       "name": "Qwen: Qwen3.6 Flash",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -10737,7 +10737,7 @@
         ]
       },
       "name": "Qwen: Qwen3.6 Max Preview",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -10908,7 +10908,7 @@
         ]
       },
       "name": "Qwen: Qwen3.6 Plus",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -11079,7 +11079,7 @@
         ]
       },
       "name": "Reka Edge",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -11248,7 +11248,7 @@
         ]
       },
       "name": "StepFun: Step 3.5 Flash",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -11417,7 +11417,7 @@
         ]
       },
       "name": "Tencent: Hy3 preview",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -11586,7 +11586,7 @@
         ]
       },
       "name": "Upstage: Solar Pro 3",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -11755,7 +11755,7 @@
         ]
       },
       "name": "Writer: Palmyra X5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -11926,7 +11926,7 @@
         ]
       },
       "name": "xAI: Grok 4.20",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -12097,7 +12097,7 @@
         ]
       },
       "name": "xAI: Grok 4.20 Multi-Agent",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -12267,7 +12267,7 @@
         ]
       },
       "name": "xAI: Grok 4.3",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -12439,7 +12439,7 @@
         ]
       },
       "name": "Xiaomi: MiMo-V2-Omni",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -12608,7 +12608,7 @@
         ]
       },
       "name": "Xiaomi: MiMo-V2-Pro",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -12780,7 +12780,7 @@
         ]
       },
       "name": "Xiaomi: MiMo-V2.5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -12949,7 +12949,7 @@
         ]
       },
       "name": "Xiaomi: MiMo-V2.5-Pro",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -13118,7 +13118,7 @@
         ]
       },
       "name": "Z.ai: GLM 4.7 Flash",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -13287,7 +13287,7 @@
         ]
       },
       "name": "Z.ai: GLM 5",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -13456,7 +13456,7 @@
         ]
       },
       "name": "Z.ai: GLM 5 Turbo",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -13625,7 +13625,7 @@
         ]
       },
       "name": "Z.ai: GLM 5.1",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -13796,7 +13796,7 @@
         ]
       },
       "name": "Z.ai: GLM 5V Turbo",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -14017,7 +14017,7 @@
         ]
       },
       "name": "Embedding-3",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -14266,7 +14266,7 @@
         ]
       },
       "name": "GLM-4.6V",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -14520,7 +14520,7 @@
         ]
       },
       "name": "GLM-5.2",
-      "schema_version": "2.3.0"
+      "schema_version": "2.4.0"
     }
   ],
   "offerings": [
@@ -14729,7 +14729,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -14939,7 +14939,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -15149,7 +15149,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -15359,7 +15359,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -15569,7 +15569,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -15779,7 +15779,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -15987,7 +15987,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -16195,7 +16195,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -16405,7 +16405,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -16615,7 +16615,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -16823,7 +16823,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -17031,7 +17031,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -17241,7 +17241,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -17453,7 +17453,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -17665,7 +17665,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -17877,7 +17877,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -18089,7 +18089,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -18299,7 +18299,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -18509,7 +18509,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -18719,7 +18719,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -18929,7 +18929,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -19137,7 +19137,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -19345,7 +19345,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -19553,7 +19553,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -19761,7 +19761,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -19969,7 +19969,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -20177,7 +20177,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -20385,7 +20385,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -20593,7 +20593,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -20803,7 +20803,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -21012,7 +21012,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -21221,7 +21221,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -21429,7 +21429,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -21638,7 +21638,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -21848,7 +21848,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -22058,7 +22058,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -22268,7 +22268,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -22477,7 +22477,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -22687,7 +22687,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -22897,7 +22897,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -23107,7 +23107,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -23412,7 +23412,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "active"
     },
     {
@@ -23622,7 +23622,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -23832,7 +23832,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -24042,7 +24042,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -24252,7 +24252,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -24462,7 +24462,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -24672,7 +24672,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -24880,7 +24880,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -25088,7 +25088,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -25298,7 +25298,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -25508,7 +25508,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -25718,7 +25718,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -25928,7 +25928,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -26138,7 +26138,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -26348,7 +26348,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -26558,7 +26558,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -26768,7 +26768,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -26978,7 +26978,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -27188,7 +27188,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -27398,7 +27398,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -27606,7 +27606,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -27816,7 +27816,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -28026,7 +28026,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -28234,7 +28234,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -28442,7 +28442,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -28650,7 +28650,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -28858,7 +28858,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -29068,7 +29068,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -29278,7 +29278,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -29487,7 +29487,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -29698,7 +29698,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -29906,7 +29906,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -30117,7 +30117,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -30325,7 +30325,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -30533,7 +30533,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -30741,7 +30741,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -30949,7 +30949,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -31157,7 +31157,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -31367,7 +31367,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown"
     },
     {
@@ -31637,7 +31637,7 @@
           "supported": false
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "active"
     },
     {
@@ -31936,7 +31936,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "active"
     },
     {
@@ -32279,7 +32279,7 @@
           "supported": true
         }
       },
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "active"
     }
   ],
@@ -32378,7 +32378,7 @@
       "protocols": "unknown",
       "provider_id": "aion-labs",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -32476,7 +32476,7 @@
       "protocols": "unknown",
       "provider_id": "anthropic",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -32574,7 +32574,7 @@
       "protocols": "unknown",
       "provider_id": "arcee-ai",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -32672,7 +32672,7 @@
       "protocols": "unknown",
       "provider_id": "bytedance-seed",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -32770,7 +32770,7 @@
       "protocols": "unknown",
       "provider_id": "deepseek",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -32868,7 +32868,7 @@
       "protocols": "unknown",
       "provider_id": "google",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -32966,7 +32966,7 @@
       "protocols": "unknown",
       "provider_id": "ibm-granite",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33064,7 +33064,7 @@
       "protocols": "unknown",
       "provider_id": "inception",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33162,7 +33162,7 @@
       "protocols": "unknown",
       "provider_id": "inclusionai",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33260,7 +33260,7 @@
       "protocols": "unknown",
       "provider_id": "kwaipilot",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33358,7 +33358,7 @@
       "protocols": "unknown",
       "provider_id": "liquid",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33456,7 +33456,7 @@
       "protocols": "unknown",
       "provider_id": "minimax",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33554,7 +33554,7 @@
       "protocols": "unknown",
       "provider_id": "mistralai",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33652,7 +33652,7 @@
       "protocols": "unknown",
       "provider_id": "moonshotai",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33750,7 +33750,7 @@
       "protocols": "unknown",
       "provider_id": "nvidia",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -33872,7 +33872,7 @@
           "url": "https://api.openai.com/v1"
         }
       ],
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "active",
       "website": "https://developers.openai.com/"
     },
@@ -33970,7 +33970,7 @@
       "protocols": "unknown",
       "provider_id": "perceptron",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34068,7 +34068,7 @@
       "protocols": "unknown",
       "provider_id": "qwen",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34166,7 +34166,7 @@
       "protocols": "unknown",
       "provider_id": "rekaai",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34264,7 +34264,7 @@
       "protocols": "unknown",
       "provider_id": "stepfun",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34362,7 +34362,7 @@
       "protocols": "unknown",
       "provider_id": "tencent",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34460,7 +34460,7 @@
       "protocols": "unknown",
       "provider_id": "upstage",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34558,7 +34558,7 @@
       "protocols": "unknown",
       "provider_id": "writer",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34656,7 +34656,7 @@
       "protocols": "unknown",
       "provider_id": "x-ai",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34754,7 +34754,7 @@
       "protocols": "unknown",
       "provider_id": "xiaomi",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34852,7 +34852,7 @@
       "protocols": "unknown",
       "provider_id": "z-ai",
       "public_base_urls": "unknown",
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "unknown",
       "website": "unknown"
     },
@@ -34994,10 +34994,10 @@
           "url": "https://open.bigmodel.cn/api/paas/v4"
         }
       ],
-      "schema_version": "2.3.0",
+      "schema_version": "2.4.0",
       "status": "active",
       "website": "https://open.bigmodel.cn/"
     }
   ],
-  "schema_version": "2.3.0"
+  "schema_version": "2.4.0"
 }

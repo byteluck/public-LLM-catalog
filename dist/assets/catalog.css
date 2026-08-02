@@ -273,12 +273,33 @@ footer {
 }
 
 .pulse-note {
-  margin: 0;
   padding: 17px 20px;
   border-top: 1px solid var(--ink);
   background: #e9e4d7;
   color: var(--muted);
   font-size: 12px;
+}
+
+.pulse-timing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pulse-timing span {
+  white-space: nowrap;
+}
+
+.pulse-timing time {
+  color: var(--accent-dark);
+}
+
+.pulse-note p {
+  margin: 8px 0 0;
 }
 
 .principles {
@@ -318,12 +339,18 @@ footer {
   margin-bottom: 34px;
 }
 
-.section-heading h2,
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(30px, 3.4vw, 48px);
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+}
+
 .method h2 {
   margin: 0;
-  font-size: clamp(34px, 4.8vw, 60px);
-  letter-spacing: -0.055em;
-  line-height: 1;
+  font-size: clamp(28px, 3vw, 42px);
+  letter-spacing: -0.05em;
+  line-height: 1.06;
 }
 
 .result-count {
@@ -1332,7 +1359,7 @@ dialog::backdrop {
   }
 
   .hero h1 {
-    font-size: clamp(46px, 14vw, 70px);
+    font-size: clamp(34px, 10vw, 44px);
   }
 
   .hero-actions {

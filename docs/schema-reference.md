@@ -21,7 +21,7 @@
 
 所有对象 `additionalProperties: false`。新增字段必须先评审 Schema 和兼容版本，避免上游任意字段悄然进入权威格式。
 
-当前发布契约为 Schema `2.3.0`。`2.0.0` 已允许 manifest 描述 HTML、CSS 和 JavaScript；`2.1.0` 增加 SVG 内容类型、models.dev 候选快照和厂家 logo 资产；`2.2.0` 允许 provider/offering 的 `protocols`、provider `website` 与 `public_base_urls` 显式写为 `unknown`，并在搜索索引增加核验状态与厂家 logo 路径；`2.3.0` 增加按 offering 发布的逐条官方核验侧车，以及区分 API ID、模型身份、不可用路线和未找到合格证据的检索状态。侧车固定为 `keep_fail_closed`，不改变 existing offering 的运行时字段。旧消费端应继续使用最后成功缓存或内置快照，升级解析器后再切换；当前 release 的 `minimum_consumer_schema_version` 为 `2.3.0`。
+当前发布契约为 Schema `2.4.0`。`2.0.0` 已允许 manifest 描述 HTML、CSS 和 JavaScript；`2.1.0` 增加 SVG 内容类型、models.dev 候选快照和厂家 logo 资产；`2.2.0` 允许 provider/offering 的 `protocols`、provider `website` 与 `public_base_urls` 显式写为 `unknown`，并在搜索索引增加核验状态与厂家 logo 路径；`2.3.0` 增加按 offering 发布的逐条官方核验侧车，以及区分 API ID、模型身份、不可用路线和未找到合格证据的检索状态；`2.4.0` 在搜索索引增加 `models_dev_sync`，明确上游收集时间、逐条核验时间、来源修订、快照哈希和覆盖数量，供增量更新比对。侧车固定为 `keep_fail_closed`，不改变 existing offering 的运行时字段。旧消费端应继续使用最后成功缓存或内置快照，升级解析器后再切换；当前 release 的 `minimum_consumer_schema_version` 为 `2.4.0`。
 
 ## 限额
 

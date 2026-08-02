@@ -17,9 +17,10 @@
 4. 采样参数只改 offering 的支持/范围/官方默认/协议映射，不在 canonical 写业务值。
 5. 更新 alias 时先确定 provider scope，避免跨供应商歧义。
 6. 对 models.dev 直连提升项，先逐条人工核对官网，再更新 `scripts/generate-models-dev-2026-reviews.ts` 的证据结论并运行 `npm run review:models-dev-2026`；不要把侧车结论直接复制为运行时字段。
-7. 升级 `catalog/release.json` 的目录版本和生成时间。
-8. 执行 `npm run validate && npm run build && npm run check`。
-9. PR 人工检查来源冲突、能力降级、模型删除/替代、许可和国内可访问性。
+7. 对增量同步先比较上一版本 `search-index.json.models_dev_sync` 的收集时间、核验时间、来源修订和快照哈希；只对变更候选发起复核，保留未变记录的原核验时间。
+8. 升级 `catalog/release.json` 的目录版本和生成时间。
+9. 执行 `npm run validate && npm run build && npm run check`。
+10. PR 人工检查来源冲突、能力降级、模型删除/替代、许可和国内可访问性。
 
 ## 自动上游同步
 

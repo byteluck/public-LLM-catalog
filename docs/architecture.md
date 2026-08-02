@@ -108,7 +108,7 @@ flowchart LR
 - `dist/index.html` 与 `dist/assets/`：无框架、无境外运行时依赖的目录浏览界面；全部资源同样进入 manifest、哈希、压缩和版本化流程。
 - `dist/catalog.json`：全量聚合目录。
 - `dist/providers/{provider}.json`：按供应商分片。
-- `dist/search-index.json`：不带大段证据正文的轻量检索索引；包含 `verification_status` 与同源 `manufacturer_logo` 路径，供卡片与详情页关联厂家标识。
+- `dist/search-index.json`：不带大段证据正文的轻量检索索引；包含 `verification_status`、同源 `manufacturer_logo` 路径，以及 `models_dev_sync` 的收集/核验时间、来源修订和快照哈希，供卡片、详情页和增量更新比对使用。
 - `dist/models-dev-2026.json`：models.dev 2026 收录候选快照；首页单独读取，保留未提升的免费、路由器和别名路线。
 - `dist/reviews/models-dev-2026.json`：79 条已提升直连 offering 的逐条官方核验侧车；提供官网证据和审计结论，但每条都固定为 `keep_fail_closed`，不会自动成为 runtime offering 字段。
 - `dist/assets/logos/{provider}.svg`：随 manifest、哈希、gzip/brotli 和不可变版本发布的厂家图标或明确标记的中性占位图。
