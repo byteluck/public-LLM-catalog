@@ -17,10 +17,11 @@
 | `provider-shard.schema.json` | 构建后的供应商分片 | 单 provider 及其 canonical/offering/alias 子集 |
 | `search-index.schema.json` | 轻量检索输出 | 身份、名称、别名、类型、状态、模态、核验状态和同源厂家 logo 路径 |
 | `models-dev-candidates.schema.json` | models.dev 2026 上游候选 | 收录时间、候选 offering、厂家 logo 状态与来源；免费/路由/别名路线不进入权威 catalog |
+| `models-dev-official-review.schema.json` | models.dev 2026 逐条官方核验侧车 | 已提升直连 offering 的上游 ID、逐条官网证据、官方 API ID/协议（如可确认）和固定 fail-closed 处置 |
 
 所有对象 `additionalProperties: false`。新增字段必须先评审 Schema 和兼容版本，避免上游任意字段悄然进入权威格式。
 
-当前发布契约为 Schema `2.2.0`。`2.0.0` 已允许 manifest 描述 HTML、CSS 和 JavaScript；`2.1.0` 增加 SVG 内容类型、models.dev 候选快照和厂家 logo 资产；`2.2.0` 允许 provider/offering 的 `protocols`、provider `website` 与 `public_base_urls` 显式写为 `unknown`，并在搜索索引增加核验状态与厂家 logo 路径。旧消费端应继续使用最后成功缓存或内置快照，升级解析器后再切换；当前 release 的 `minimum_consumer_schema_version` 为 `2.2.0`。
+当前发布契约为 Schema `2.3.0`。`2.0.0` 已允许 manifest 描述 HTML、CSS 和 JavaScript；`2.1.0` 增加 SVG 内容类型、models.dev 候选快照和厂家 logo 资产；`2.2.0` 允许 provider/offering 的 `protocols`、provider `website` 与 `public_base_urls` 显式写为 `unknown`，并在搜索索引增加核验状态与厂家 logo 路径；`2.3.0` 增加按 offering 发布的逐条官方核验侧车，以及区分 API ID、模型身份、不可用路线和未找到合格证据的检索状态。侧车固定为 `keep_fail_closed`，不改变 existing offering 的运行时字段。旧消费端应继续使用最后成功缓存或内置快照，升级解析器后再切换；当前 release 的 `minimum_consumer_schema_version` 为 `2.3.0`。
 
 ## 限额
 

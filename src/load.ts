@@ -5,6 +5,7 @@ import { readJson } from "./json.js";
 import type {
   AliasSet,
   CanonicalModel,
+  ModelsDevOfficialReviews,
   Offering,
   Provider,
   Release,
@@ -26,4 +27,10 @@ export async function loadSourceCatalog(root: string): Promise<SourceCatalog> {
     readCollection<AliasSet>(join(catalogRoot, "aliases")),
   ]);
   return { release, models, providers, offerings, aliases };
+}
+
+export async function loadModelsDevOfficialReviews(root: string): Promise<ModelsDevOfficialReviews> {
+  return readJson<ModelsDevOfficialReviews>(
+    join(root, "catalog", "reviews", "models-dev-2026.json"),
+  );
 }

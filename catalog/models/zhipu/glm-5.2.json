@@ -1,6 +1,6 @@
 {
   "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
-  "schema_version": "2.2.0",
+  "schema_version": "2.3.0",
   "canonical_id": "zhipu/glm-5.2",
   "manufacturer_id": "zhipu",
   "name": "GLM-5.2",

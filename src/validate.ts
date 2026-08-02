@@ -4,8 +4,8 @@ import { Ajv2020, type AnySchema, type ErrorObject, type ValidateFunction } from
 import addFormatsModule from "ajv-formats";
 
 import { listFiles } from "./files.js";
-import { isPlainObject, readJson } from "./json.js";
-import { loadSourceCatalog } from "./load.js";
+import { isPlainObject, readJson, sha256, stableJson } from "./json.js";
+import { loadModelsDevOfficialReviews, loadSourceCatalog } from "./load.js";
 import type {
   AliasEntry,
   AliasSet,
@@ -15,6 +15,7 @@ import type {
   ParameterCapability,
   Provider,
   ModelsDevCandidates,
+  ModelsDevOfficialReviews,
   SourceCatalog,
   ValidationIssue,
 } from "./types.js";
@@ -31,6 +32,7 @@ const SCHEMA_IDS = {
   searchIndex: "https://llm-catalog.example.cn/schemas/search-index.schema.json",
   upstreamConfig: "https://llm-catalog.example.cn/schemas/upstream-config.schema.json",
   modelsDevCandidates: "https://llm-catalog.example.cn/schemas/models-dev-candidates.schema.json",
+  modelsDevOfficialReviews: "https://llm-catalog.example.cn/schemas/models-dev-official-review.schema.json",
 } as const;
 
 const TECHNICAL_ROOT_FIELDS = new Set(["$schema", "schema_version", "evidence", "field_annotations"]);
@@ -64,6 +66,7 @@ interface Validators {
   searchIndex: ValidateFunction;
   upstreamConfig: ValidateFunction;
   modelsDevCandidates: ValidateFunction;
+  modelsDevOfficialReviews: ValidateFunction;
 }
 
 function issue(
@@ -100,6 +103,7 @@ export async function createValidators(root: string): Promise<Validators> {
     searchIndex: get(SCHEMA_IDS.searchIndex),
     upstreamConfig: get(SCHEMA_IDS.upstreamConfig),
     modelsDevCandidates: get(SCHEMA_IDS.modelsDevCandidates),
+    modelsDevOfficialReviews: get(SCHEMA_IDS.modelsDevOfficialReviews),
   };
 }
 
@@ -596,16 +600,161 @@ export function validateSchemaVersionConsistency(
     );
 }
 
+function candidateOfferingKey(input: {
+  provider_id: string;
+  canonical_slug?: string;
+  canonical_id?: string;
+  api_model_id: string;
+}): string {
+  return `${input.provider_id}\u0000${input.canonical_slug ?? input.canonical_id}\u0000${input.api_model_id}`;
+}
+
+/**
+ * Reviews are deliberately a sidecar: a positive source lookup must not change
+ * a runtime offering until its field annotations and adapter contract are updated.
+ */
+export function validateModelsDevOfficialReviews(
+  catalog: SourceCatalog,
+  candidates: ModelsDevCandidates,
+  reviews: ModelsDevOfficialReviews,
+): ValidationIssue[] {
+  const file = "catalog/reviews/models-dev-2026.json";
+  const issues: ValidationIssue[] = [];
+  if (reviews.schema_version !== catalog.release.schema_version) {
+    issues.push(
+      issue(
+        "schema_version_mismatch",
+        file,
+        "/schema_version",
+        `核验清单 Schema ${reviews.schema_version} 与 release ${catalog.release.schema_version} 不一致`,
+      ),
+    );
+  }
+  const snapshotHash = sha256(stableJson(candidates));
+  if (reviews.source_snapshot_sha256 !== snapshotHash) {
+    issues.push(
+      issue(
+        "review_snapshot_mismatch",
+        file,
+        "/source_snapshot_sha256",
+        "核验清单不对应当前冻结的 models.dev 候选快照",
+      ),
+    );
+  }
+
+  const offeringsByCandidateKey = new Map(
+    catalog.offerings.map((offering) => [candidateOfferingKey(offering), offering]),
+  );
+  const expected = new Map<string, ModelsDevCandidates["models"][number]>();
+  for (const candidate of candidates.models.filter((item) => item.route_kind === "direct")) {
+    const key = candidateOfferingKey(candidate);
+    if (!offeringsByCandidateKey.has(key)) {
+      issues.push(
+        issue(
+          "unpromoted_direct_candidate",
+          file,
+          "/reviews",
+          `直连候选尚未对应目录 offering: ${candidate.candidate_id}`,
+        ),
+      );
+      continue;
+    }
+    expected.set(offeringsByCandidateKey.get(key)!.offering_id, candidate);
+  }
+
+  const reviewedOfferingIds = new Set<string>();
+  for (const [index, review] of reviews.reviews.entries()) {
+    const path = `/reviews/${index}`;
+    if (reviewedOfferingIds.has(review.offering_id)) {
+      issues.push(issue("duplicate_offering_review", file, `${path}/offering_id`, "offering 核验记录重复"));
+    }
+    reviewedOfferingIds.add(review.offering_id);
+
+    const candidate = expected.get(review.offering_id);
+    const offering = catalog.offerings.find((item) => item.offering_id === review.offering_id);
+    if (candidate === undefined || offering === undefined) {
+      issues.push(
+        issue("unexpected_offering_review", file, `${path}/offering_id`, "核验记录不对应已提升的直连候选"),
+      );
+      continue;
+    }
+    if (
+      review.provider_id !== offering.provider_id ||
+      review.canonical_id !== offering.canonical_id ||
+      review.observed_api_model_id !== offering.api_model_id
+    ) {
+      issues.push(
+        issue(
+          "review_identity_mismatch",
+          file,
+          path,
+          "核验记录的 provider/canonical/上游 API ID 必须与 offering 原始观察值一致",
+        ),
+      );
+    }
+    const sourceIds = new Set<string>();
+    for (const [evidenceIndex, evidence] of review.evidence.entries()) {
+      if (sourceIds.has(evidence.source_id)) {
+        issues.push(
+          issue(
+            "duplicate_review_source",
+            file,
+            `${path}/evidence/${evidenceIndex}/source_id`,
+            "单条核验记录的 source_id 重复",
+          ),
+        );
+      }
+      sourceIds.add(evidence.source_id);
+    }
+    if (review.review_status === "official_api_verified") {
+      if (!review.verified_fields.includes("model_identity") || !review.verified_fields.includes("api_model_id")) {
+        issues.push(
+          issue(
+            "incomplete_api_review",
+            file,
+            `${path}/verified_fields`,
+            "官方 API 核验至少必须声明 model_identity 和 api_model_id",
+          ),
+        );
+      }
+    }
+    if (
+      (review.review_status === "official_model_verified" ||
+        review.review_status === "official_route_unavailable") &&
+      !review.verified_fields.includes("model_identity")
+    ) {
+      issues.push(
+        issue(
+          "incomplete_model_review",
+          file,
+          `${path}/verified_fields`,
+          "官方模型或路线结论必须至少核验 model_identity",
+        ),
+      );
+    }
+  }
+
+  for (const offeringId of expected.keys()) {
+    if (!reviewedOfferingIds.has(offeringId)) {
+      issues.push(
+        issue("missing_offering_review", file, "/reviews", `缺少直连 offering 核验记录: ${offeringId}`),
+      );
+    }
+  }
+  return issues;
+}
+
 export async function validateSourceCatalog(root: string): Promise<{
   catalog: SourceCatalog;
   issues: ValidationIssue[];
   validators: Validators;
 }> {
-  const [catalog, validators, upstreamConfig, modelsDevCandidates] = await Promise.all([
+  const [catalog, validators, upstreamConfig, modelsDevCandidates, modelsDevOfficialReviews] = await Promise.all([
     loadSourceCatalog(root),
     createValidators(root),
     readJson<unknown>(join(root, "catalog", "upstreams.json")),
     readJson<ModelsDevCandidates>(join(root, "upstream", "models-dev-2026.json")),
+    loadModelsDevOfficialReviews(root),
   ]);
   const issues: ValidationIssue[] = [];
 
@@ -620,6 +769,13 @@ export async function validateSourceCatalog(root: string): Promise<{
       "upstream/models-dev-2026.json",
     ),
   );
+  issues.push(
+    ...schemaIssues(
+      validators.modelsDevOfficialReviews,
+      modelsDevOfficialReviews,
+      "catalog/reviews/models-dev-2026.json",
+    ),
+  );
   const candidateIds = new Set<string>();
   for (const [index, candidate] of modelsDevCandidates.models.entries()) {
     const path = `/models/${index}`;
@@ -632,6 +788,7 @@ export async function validateSourceCatalog(root: string): Promise<{
     }
   }
   issues.push(...scanForTenantData(modelsDevCandidates, "upstream/models-dev-2026.json"));
+  issues.push(...scanForTenantData(modelsDevOfficialReviews, "catalog/reviews/models-dev-2026.json"));
 
   for (const model of catalog.models) {
     const file = `catalog/models/${model.canonical_id}.json`;
@@ -682,6 +839,7 @@ export async function validateSourceCatalog(root: string): Promise<{
   }
   issues.push(...validateIdentityAndReferences(catalog));
   issues.push(...validateSchemaVersionConsistency(catalog, upstreamConfig));
+  issues.push(...validateModelsDevOfficialReviews(catalog, modelsDevCandidates, modelsDevOfficialReviews));
 
   const releaseFile = relative(root, join(root, "catalog", "release.json"));
   if (!/^\d{4}\.\d{2}\.\d+$/.test(catalog.release.catalog_version)) {

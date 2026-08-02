@@ -1,22 +1,50 @@
+import { join } from "node:path";
+
 import { describe, expect, test } from "vitest";
 
-import { loadSourceCatalog } from "../src/load.js";
+import { readJson } from "../src/json.js";
+import { loadModelsDevOfficialReviews, loadSourceCatalog } from "../src/load.js";
 import { REPOSITORY_ROOT } from "../src/paths.js";
 import {
   createValidators,
   validateEvidenceAndAnnotations,
   validateIdentityAndReferences,
   validateLimitConsistency,
+  validateModelsDevOfficialReviews,
   validateSchemaVersionConsistency,
   validateSourceCatalog,
   validateWith,
 } from "../src/validate.js";
-import type { AliasEntry } from "../src/types.js";
+import type { AliasEntry, ModelsDevCandidates } from "../src/types.js";
 
 describe("目录约束", () => {
   test("当前源数据通过 Schema、引用、唯一性和证据校验", async () => {
     const result = await validateSourceCatalog(REPOSITORY_ROOT);
     expect(result.issues).toEqual([]);
+  });
+
+  test("每条已提升的 models.dev 直连记录都有独立官方核验，且核验不放开运行时", async () => {
+    const [catalog, candidates, reviews] = await Promise.all([
+      loadSourceCatalog(REPOSITORY_ROOT),
+      readJson<ModelsDevCandidates>(join(REPOSITORY_ROOT, "upstream/models-dev-2026.json")),
+      loadModelsDevOfficialReviews(REPOSITORY_ROOT),
+    ]);
+    const direct = candidates.models.filter((candidate) => candidate.route_kind === "direct");
+    expect(reviews.reviews).toHaveLength(direct.length);
+    expect(validateModelsDevOfficialReviews(catalog, candidates, reviews)).toEqual([]);
+    expect(new Set(reviews.reviews.map((review) => review.runtime_disposition))).toEqual(
+      new Set(["keep_fail_closed"]),
+    );
+    for (const review of reviews.reviews.filter((item) => item.review_status === "official_api_verified")) {
+      expect(review.evidence.length).toBeGreaterThan(0);
+      expect(review.verified_fields).toEqual(expect.arrayContaining(["model_identity", "api_model_id"]));
+    }
+
+    const duplicate = structuredClone(reviews);
+    duplicate.reviews.push(structuredClone(duplicate.reviews[0]!));
+    expect(validateModelsDevOfficialReviews(catalog, candidates, duplicate).map((item) => item.code)).toContain(
+      "duplicate_offering_review",
+    );
   });
 
   test("能力布尔值只能为 true/false/unknown", async () => {

@@ -16,9 +16,10 @@
 3. 为每个事实叶节点补 `field_annotations`，说明当前运行时影响、adapter 映射或缺口原因。
 4. 采样参数只改 offering 的支持/范围/官方默认/协议映射，不在 canonical 写业务值。
 5. 更新 alias 时先确定 provider scope，避免跨供应商歧义。
-6. 升级 `catalog/release.json` 的目录版本和生成时间。
-7. 执行 `npm run validate && npm run build && npm run check`。
-8. PR 人工检查来源冲突、能力降级、模型删除/替代、许可和国内可访问性。
+6. 对 models.dev 直连提升项，先逐条人工核对官网，再更新 `scripts/generate-models-dev-2026-reviews.ts` 的证据结论并运行 `npm run review:models-dev-2026`；不要把侧车结论直接复制为运行时字段。
+7. 升级 `catalog/release.json` 的目录版本和生成时间。
+8. 执行 `npm run validate && npm run build && npm run check`。
+9. PR 人工检查来源冲突、能力降级、模型删除/替代、许可和国内可访问性。
 
 ## 自动上游同步
 
@@ -31,7 +32,7 @@
 - `upstream/review.json` 标出与当前权威目录冲突、能力退化、限额下降和候选删除。
 - 自动化分支只提交 `upstream/`，不会生成或提交 `catalog/`、`dist/`。
 
-维护者随后回到官方来源逐字段复核，手工形成独立目录 PR。不能在同步 PR 上把 candidate 自动提升为权威事实。当前已提升的 2026 直连记录是例外的、显式执行的低置信度观察导入：运行 `npm run promote:models-dev-2026` 仅创建缺失文档，并把协议/端点/运行时能力保留为 `unknown`；它仍需要独立审查和完整契约测试，不能替代官方复核。
+维护者随后回到官方来源逐字段复核，手工形成独立目录 PR。不能在同步 PR 上把 candidate 自动提升为权威事实。当前已提升的 2026 直连记录是例外的、显式执行的低置信度观察导入：运行 `npm run promote:models-dev-2026` 仅创建缺失文档，并把协议/端点/运行时能力保留为 `unknown`；`npm run review:models-dev-2026` 只重建绑定候选 SHA-256 的静态审计侧车，所有记录保持 `keep_fail_closed`。二者均不能替代字段级官方复核、构造器映射和完整契约测试。
 
 ## 冲突策略
 
@@ -64,5 +65,6 @@
 - [ ] 国内对象存储版本对象先上传，manifest 最后上传。
 - [ ] CDN prefix 根路径返回 `index.html`，HTML/CSS/JS Content-Type 正确且没有境外运行时资源。
 - [ ] `models-dev-2026.json` 与厂家 SVG 的 Content-Type、哈希、不可变路径和占位 logo 状态均通过 probe。
+- [ ] `reviews/models-dev-2026.json` 覆盖每个已提升直连 offering，结论、官网链接与 `keep_fail_closed` 处置均已人工复核。
 - [ ] 至少一个国内 runner 的完整 probe 通过。
 - [ ] 回滚版本和内置快照已确认可用。

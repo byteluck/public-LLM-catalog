@@ -2,7 +2,7 @@ const BASE_URL = new URL("./", window.location.href);
 const CACHE_PREFIX = "public-llm-catalog:";
 const MANIFEST_CACHE_KEY = `${CACHE_PREFIX}manifest`;
 const SUPPORTED_SCHEMA_MAJOR = 2;
-const SUPPORTED_SCHEMA_VERSION = "2.2.0";
+const SUPPORTED_SCHEMA_VERSION = "2.3.0";
 
 const labels = {
   kind: { chat: "Chat", embedding: "Embedding" },
@@ -51,7 +51,17 @@ const labels = {
   domesticAccess: { true: "可访问", false: "不可访问", unknown: "未知" },
   verification: {
     officially_verified: "已官方核验",
-    upstream_observation: "上游观测 · 未官方核验",
+    official_api_verified: "API 标识已核验",
+    official_model_verified: "模型已核验",
+    official_route_unavailable: "官方路线不可用",
+    upstream_observation: "上游观测 · 未核验",
+  },
+  verificationDescription: {
+    officially_verified: "目录字段已由官方来源核验。",
+    official_api_verified: "官方来源已确认模型/API 标识；当前目录仍未把该观察记录接入运行时。",
+    official_model_verified: "官方来源已确认模型本身；实际 API offering、协议或字段仍待补齐。",
+    official_route_unavailable: "官方资料说明该路线不可用或不是独立模型 ID，不能进入新部署。",
+    upstream_observation: "尚未找到可引用的官方模型/API 映射，默认不发送任何运行时参数。",
   },
   modelsDevRoute: { direct: "直连记录", free: "免费路由", router: "路由器", alias: "别名路由" },
 };
@@ -66,6 +76,8 @@ const state = {
   modelsDevCandidates: [],
   modelsDevProviders: new Map(),
   filteredModelsDevCandidates: [],
+  modelsDevOfficialReviews: new Map(),
+  modelsDevOfficialReviewLoad: null,
   offline: false,
 };
 
@@ -546,6 +558,50 @@ async function loadModelsDevCandidates() {
   }
 }
 
+async function loadModelsDevOfficialReviews() {
+  if (state.modelsDevOfficialReviewLoad !== null) {
+    return state.modelsDevOfficialReviewLoad;
+  }
+  const loading = fetchVerifiedJson("reviews/models-dev-2026.json")
+    .then((snapshot) => {
+      if (
+        snapshot?.review_set_id !== "models-dev-2026-official-review" ||
+        !Array.isArray(snapshot.reviews)
+      ) {
+        throw new Error("逐条官方核验清单结构无效");
+      }
+      const reviews = new Map();
+      for (const review of snapshot.reviews) {
+        if (
+          typeof review?.offering_id !== "string" ||
+          typeof review?.review_status !== "string" ||
+          typeof review?.summary !== "string" ||
+          review.runtime_disposition !== "keep_fail_closed" ||
+          !Array.isArray(review.evidence)
+        ) {
+          throw new Error("逐条官方核验记录结构无效");
+        }
+        if (reviews.has(review.offering_id)) {
+          throw new Error(`逐条官方核验记录重复: ${review.offering_id}`);
+        }
+        reviews.set(review.offering_id, review);
+      }
+      state.modelsDevOfficialReviews = reviews;
+      return reviews;
+    })
+    .catch((error) => {
+      state.modelsDevOfficialReviewLoad = null;
+      throw error;
+    });
+  state.modelsDevOfficialReviewLoad = loading;
+  return loading;
+}
+
+async function reviewForOffering(offeringId) {
+  const reviews = await loadModelsDevOfficialReviews();
+  return reviews.get(offeringId) ?? null;
+}
+
 function applyFilters() {
   const query = normalizeSearch(elements.search.value);
   state.filtered = state.items.filter(
@@ -573,7 +629,7 @@ function cardFor(item) {
     provider,
     append(
       createElement("span", "card-badges"),
-      item.verification_status === "upstream_observation"
+      item.verification_status !== "officially_verified"
         ? createElement("span", "verification-label", labels.verification[item.verification_status])
         : null,
       createElement("span", `kind-label ${item.kind}`, labels.kind[item.kind] ?? item.kind),
@@ -789,6 +845,7 @@ function renderIdentity(provider, model, offering, item) {
     fact("模型系列", model.family),
     fact("别名", item.aliases.length > 0 ? item.aliases.join("、") : "无"),
     fact("核验状态", labels.verification[item.verification_status] ?? "未知"),
+    fact("核验说明", labels.verificationDescription[item.verification_status] ?? "未知"),
     fact("国内直连", labels.domesticAccess[String(provider.domestic_access)] ?? "未知"),
     fact(
       "API Key",
@@ -905,6 +962,48 @@ function renderLifecycle(model, offering) {
   return lifecycleSection;
 }
 
+function reviewProtocolNames(protocols) {
+  if (protocols === "unknown") {
+    return "未知";
+  }
+  return protocols.map((protocol) => labels.protocol[protocol] ?? protocol).join("、");
+}
+
+function renderOfficialReview(review) {
+  if (review === null) {
+    return null;
+  }
+  const reviewSection = section("2026 上游记录逐条核验");
+  reviewSection.append(
+    factGrid([
+      fact("上游观察 API ID", review.observed_api_model_id),
+      fact("官方 API Model ID", displayValue(review.official_api_model_id)),
+      fact("官方协议", reviewProtocolNames(review.official_protocols)),
+      fact("已核验字段", review.verified_fields.length === 0 ? "无" : review.verified_fields.join("、")),
+      fact("核验时间", displayDate(review.reviewed_at)),
+      fact("运行时处置", "保持 fail-closed；不会自动进入构造器或请求"),
+    ]),
+    createElement("p", "review-summary", review.summary),
+  );
+  if (review.evidence.length === 0) {
+    reviewSection.append(createElement("p", "review-empty", "未找到可引用的合格官方证据；这不是模型不存在的断言。"));
+    return reviewSection;
+  }
+  const evidenceList = createElement("div", "evidence-list");
+  for (const evidence of review.evidence) {
+    const item = createElement("article", "evidence-item");
+    item.append(createElement("h4", "", evidence.source_id));
+    const link = createElement("a", "", evidence.source_url);
+    link.href = evidence.source_url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    item.append(link, createElement("p", "", evidence.notes));
+    evidenceList.append(item);
+  }
+  reviewSection.append(evidenceList);
+  return reviewSection;
+}
+
 function renderRuntimeAnnotations(offering) {
   const annotations = Object.entries(offering.field_annotations);
   const runtime = annotations.filter(([, value]) => value.runtime_effective).length;
@@ -1014,7 +1113,7 @@ async function openDetail(item, updateUrl = true) {
   const loadingTitle = createElement("h2", "visually-hidden", `${item.name} 详情`);
   loadingTitle.id = "dialog-title";
   const loading = createElement("div", "loading-state detail-loading");
-  append(loading, createElement("span", "loading-bar"), createElement("p", "", `正在校验 ${providerName(item)} 分片…`));
+  append(loading, createElement("span", "loading-bar"), createElement("p", "", `正在校验 ${providerName(item)} 分片与核验记录…`));
   elements.dialogContent.replaceChildren(loadingTitle, loading);
   if (!elements.dialog.open) {
     elements.dialog.showModal();
@@ -1023,7 +1122,10 @@ async function openDetail(item, updateUrl = true) {
     updateDetailUrl(item.offering_id);
   }
   try {
-    const shard = await providerShard(item.provider_id);
+    const [shard, review] = await Promise.all([
+      providerShard(item.provider_id),
+      reviewForOffering(item.offering_id).catch(() => null),
+    ]);
     const offering = shard.offerings.find((value) => value.offering_id === item.offering_id);
     const model = shard.models.find((value) => value.canonical_id === item.canonical_id);
     if (offering === undefined || model === undefined) {
@@ -1039,6 +1141,7 @@ async function openDetail(item, updateUrl = true) {
       renderSampling(offering),
       renderEmbedding(offering),
       renderLifecycle(model, offering),
+      renderOfficialReview(review),
       renderRuntimeAnnotations(offering),
       renderEvidence(shard.provider, model, offering),
     );

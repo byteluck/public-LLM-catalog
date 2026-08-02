@@ -166,5 +166,5 @@
     ]
   },
   "name": "OpenAI: GPT-5.2-Codex",
-  "schema_version": "2.2.0"
+  "schema_version": "2.3.0"
 }

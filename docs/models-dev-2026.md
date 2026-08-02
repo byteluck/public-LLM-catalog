@@ -31,14 +31,30 @@
 
 ## 逐条官方核验
 
-可以逐条核验，但核验单位必须是 **provider offering**，而不是仅按模型名称或 models.dev 路线批量处理。每条记录升级前都需要：
+本版本已对 **79 条 `route_kind: "direct"` 记录逐条建立核验结论**。源文件为 `catalog/reviews/models-dev-2026.json`，构建后以 `dist/reviews/models-dev-2026.json` 发布；它与冻结候选快照的 SHA-256 绑定，校验器要求每个已提升直连 offering 恰好有一条记录。浏览界面只在打开该 offering 的详情时按 manifest 下载此侧车，并显示逐条官网链接、核验时间和结论。
 
-1. 补入供应商官方文档、API 或模型卡的稳定 URL，并记录 `retrieved_at`、`verified_at`、置信度与字段级来源；
-2. 对实际调用所需的协议、API model ID、输入/输出限额、模态、工具、推理、采样或 Embedding 字段逐项确认；没有官方结论的字段继续写 `unknown`；
-3. 为任何新增的 `runtime_effective` 字段补齐构造器映射和契约测试；
-4. 经人工复核后再让浏览界面显示“已官方核验”。仅有聚合源、名称相似、模型家族页面或厂商新闻均不足以升级状态。
+每一条核验以 **provider offering** 为单位，而不是按名称或模型家族批量推断。可用结论如下：
 
-因此现有“上游观测 · 未官方核验”不是错误提示，而是待核验队列的安全状态。它不会阻止人员浏览，但会阻止运行时把未核验协议或生成参数当作可调用能力。
+- `official_api_verified`：官方文档/API 确认模型身份和实际 API ID；若官方资料同时明确协议，才记录协议。
+- `official_model_verified`：官方来源确认模型本身，但没有足够资料把它提升为可调用的 API offering。
+- `official_route_unavailable`：官方说明该路线已不可用，或它只是请求速度/配置变体而非独立模型 ID。
+- `official_evidence_not_found`：截至核验日没有找到可复现的精确名称/API ID 官方映射。这不是“模型不存在”的断言。
+
+核验侧车不是新的运行时配置来源。所有记录都固定为 `runtime_disposition: "keep_fail_closed"`：它不会自动修改低置信度 canonical/offering 的 `api_model_id`、`protocols`、限额、采样、Agent 或推理字段，也不会自动向构造器发送任何参数。即使状态为 `official_api_verified`，后续要把某个字段接入租户配置，仍必须在独立目录变更中完成：
+
+1. 将官方证据和精确字段写入 canonical/provider/offering；
+2. 更新该字段的 `field_annotations`，明确 `runtime_effective`、`adapter_mapping` 或 `unsupported_reason`；
+3. 新增 ChatOpenAI、ChatAnthropic、Embedding 或 DeepAgent 的构造器映射与契约测试；
+4. 经人工审核后，才允许运行时使用该字段。
+
+核验生成器不发网络请求；维护者先人工确认官网资料和结论，再运行：
+
+```bash
+npm run review:models-dev-2026
+npm run validate
+```
+
+这样可使静态核验清单、来源快照哈希和 UI 结论在本地、CI 与国内 CDN 上完全可重复。
 
 ## Logo 资产与页面关联
 

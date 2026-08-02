@@ -9,6 +9,7 @@ import type {
   AggregatedCatalog,
   AliasSet,
   ModelsDevCandidates,
+  ModelsDevOfficialReviews,
   Manifest,
   ManifestFile,
   Offering,
@@ -39,7 +40,12 @@ interface SearchIndexItem {
   aliases: string[];
   kind: "chat" | "embedding";
   status: string;
-  verification_status: "officially_verified" | "upstream_observation";
+  verification_status:
+    | "officially_verified"
+    | "official_api_verified"
+    | "official_model_verified"
+    | "official_route_unavailable"
+    | "upstream_observation";
   manufacturer_logo: string | null;
   input_modalities: string[];
   output_modalities: string[];
@@ -108,11 +114,15 @@ function aliasNames(aliasSets: AliasSet[], offering: Offering): string[] {
 function searchIndex(
   source: SourceCatalog,
   modelsDevCandidates: ModelsDevCandidates,
+  modelsDevOfficialReviews: ModelsDevOfficialReviews,
 ): Record<string, unknown> {
   const models = new Map(source.models.map((model) => [model.canonical_id, model]));
   const providers = new Map(source.providers.map((provider) => [provider.provider_id, provider]));
   const logoPaths = new Map(
     modelsDevCandidates.providers.map((provider) => [provider.provider_id, provider.logo_path]),
+  );
+  const reviewStatusByOfferingId = new Map(
+    modelsDevOfficialReviews.reviews.map((review) => [review.offering_id, review.review_status]),
   );
   const items = source.offerings.map((offering): SearchIndexItem => {
     const model = models.get(offering.canonical_id);
@@ -136,11 +146,22 @@ function searchIndex(
       ),
       kind: model.kind,
       status: offering.status,
-      verification_status: [...model.evidence, ...offering.evidence].some((source) =>
-        source.source_type.startsWith("official_"),
-      )
-        ? "officially_verified"
-        : "upstream_observation",
+      verification_status: (() => {
+        if ([...model.evidence, ...offering.evidence].some((evidence) => evidence.source_type.startsWith("official_"))) {
+          return "officially_verified";
+        }
+        const reviewStatus = reviewStatusByOfferingId.get(offering.offering_id);
+        if (reviewStatus === "official_api_verified") {
+          return "official_api_verified";
+        }
+        if (reviewStatus === "official_model_verified") {
+          return "official_model_verified";
+        }
+        if (reviewStatus === "official_route_unavailable") {
+          return "official_route_unavailable";
+        }
+        return "upstream_observation";
+      })(),
       manufacturer_logo:
         logoPaths.get(model.manufacturer_id) ?? logoPaths.get(offering.provider_id) ?? null,
       input_modalities: offering.modalities.input_modalities,
@@ -255,6 +276,9 @@ export async function buildToDirectory(
   const modelsDevCandidates = await readJson<ModelsDevCandidates>(
     join(repositoryRoot, "upstream", "models-dev-2026.json"),
   );
+  const modelsDevOfficialReviews = await readJson<ModelsDevOfficialReviews>(
+    join(repositoryRoot, "catalog", "reviews", "models-dev-2026.json"),
+  );
   const candidateIssues = validateWith(
     validators.modelsDevCandidates,
     modelsDevCandidates,
@@ -262,6 +286,14 @@ export async function buildToDirectory(
   );
   if (candidateIssues.length > 0) {
     throw new Error(`models.dev 候选快照 Schema 校验失败:\n${formatValidationIssues(candidateIssues)}`);
+  }
+  const reviewIssues = validateWith(
+    validators.modelsDevOfficialReviews,
+    modelsDevOfficialReviews,
+    "catalog/reviews/models-dev-2026.json",
+  );
+  if (reviewIssues.length > 0) {
+    throw new Error(`models.dev 官方核验清单 Schema 校验失败:\n${formatValidationIssues(reviewIssues)}`);
   }
   const aggregate = aggregateCatalog(source);
   const generatedIssues = validateWith(validators.catalog, aggregate, "dist/catalog.json");
@@ -274,7 +306,7 @@ export async function buildToDirectory(
     contents: stableJson(aggregate),
     contentType: JSON_CONTENT_TYPE,
   });
-  const generatedSearchIndex = searchIndex(source, modelsDevCandidates);
+  const generatedSearchIndex = searchIndex(source, modelsDevCandidates, modelsDevOfficialReviews);
   const searchIssues = validateWith(
     validators.searchIndex,
     generatedSearchIndex,
@@ -289,6 +321,10 @@ export async function buildToDirectory(
   });
   logicalFiles.set("models-dev-2026.json", {
     contents: stableJson(modelsDevCandidates),
+    contentType: JSON_CONTENT_TYPE,
+  });
+  logicalFiles.set("reviews/models-dev-2026.json", {
+    contents: stableJson(modelsDevOfficialReviews),
     contentType: JSON_CONTENT_TYPE,
   });
   for (const provider of sortBy(modelsDevCandidates.providers, (item) => item.provider_id)) {

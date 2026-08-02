@@ -19,6 +19,7 @@ sequenceDiagram
   U->>C: GET models-dev-2026.json（候选区域）
   U->>C: GET assets/logos/{provider}.svg（卡片展示）
   U->>C: GET providers/{provider}.json（用户打开详情时）
+  U->>C: GET reviews/models-dev-2026.json（已提升 2026 offering 打开详情时）
   U->>U: 校验 size + SHA-256，渲染能力与证据
 ```
 
@@ -31,7 +32,8 @@ sequenceDiagram
 - 查看 temperature、top_p、top_k 的“是否支持、范围、官方默认、协议映射”；页面明确说明这些不是租户运行默认值。
 - 查看 Embedding 维度、输入和批量限制。
 - 查看生命周期、字段级 runtime/metadata/unsupported 标记、adapter mapping 与证据来源。
-- 主目录卡片和详情页按 `search-index.json` 的 `manufacturer_logo` 显示同源 SVG 厂家标识；低置信度提升项同时显示“上游观测 · 未官方核验”。
+- 主目录卡片和详情页按 `search-index.json` 的 `manufacturer_logo` 显示同源 SVG 厂家标识；已提升的 2026 条目会区分“API 标识已核验”“模型已核验”“官方路线不可用”和“上游观测 · 未核验”。
+- 打开已提升的 2026 offering 详情时，页面从同源核验侧车读取该条记录的官方 API ID/协议（如有）、逐条官网链接和 `keep_fail_closed` 处置；这些结论只用于浏览与审计，绝不自动进入构造器或请求参数。
 - 浏览尚未纳入主目录的 models.dev 2026 收录路线，按厂家和名称筛选；页面以 `provider + canonical + API ID` 精确去重，不重复显示上方已有的 offering。路线卡片显示同源 SVG logo、收录日期、路由类型和上游限额提示，并明确标注“未官方核验”。
 - 页面在可用宽度内使用自适应紧凑卡片网格，不设置桌面最大内容宽度；卡片标题仅在其前缀与左上角厂家一致时裁去该前缀，源 JSON 的原始名称保持不变。
 
@@ -49,7 +51,7 @@ sequenceDiagram
 
 ## 发布约束
 
-- 浏览资产进入 manifest 后，发布契约为 Schema `2.2.0`；相较 `2.1.x` 增加可显式为 `unknown` 的 provider/offering 协议与端点表示，以及搜索索引的厂家 logo/核验状态，旧消费端应继续使用旧缓存/内置快照，升级解析器后再切换。
+- 浏览资产进入 manifest 后，发布契约为 Schema `2.3.0`；相较 `2.2.x` 增加逐条官方核验侧车，以及可区分 API 标识、模型身份、不可用路线和未找到合格证据的搜索状态。旧消费端应继续使用旧缓存/内置快照，升级解析器后再切换。
 - 必须整体发布 `dist/`，不能只上传 JSON；HTML/CSS/JS 也在 manifest、gzip/brotli 和不可变版本树中。
 - CDN prefix 根路径必须把 `index.html` 作为默认文档。
 - 必须使用 HTTPS。浏览器依赖 Web Crypto 校验 SHA-256，生产 HTTP 页面不属于支持的部署形态。

@@ -39,6 +39,7 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceHtml).toContain("connect-src 'self'");
     expect(sourceHtml).toContain("models-dev-explorer");
     expect(sourceJavaScript).toContain('fetchVerifiedJson("models-dev-2026.json")');
+    expect(sourceJavaScript).toContain('fetchVerifiedJson("reviews/models-dev-2026.json")');
     expect(sourceJavaScript).toContain("candidateLogo");
     expect(sourceJavaScript).toContain("manufacturerLogo");
     expect(sourceJavaScript).toContain("detail-logo");
@@ -48,12 +49,14 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceCss).not.toMatch(/url\(["']?https?:\/\//u);
   });
 
-  test("先请求 manifest 和轻量索引，详情才按供应商加载分片", () => {
+  test("先请求 manifest 和轻量索引，详情才按需加载供应商分片和核验侧车", () => {
     const manifestLoad = sourceJavaScript.indexOf("await fetchManifest()");
     const indexLoad = sourceJavaScript.indexOf('fetchVerifiedJson("search-index.json")');
     expect(manifestLoad).toBeGreaterThan(-1);
     expect(indexLoad).toBeGreaterThan(manifestLoad);
     expect(sourceJavaScript).toContain("fetchVerifiedJson(`providers/${providerId}.json`)");
+    expect(sourceJavaScript).toContain("function renderOfficialReview(review)");
+    expect(sourceJavaScript).toContain("runtime_disposition !== \"keep_fail_closed\"");
     expect(sourceJavaScript).not.toContain('fetchVerifiedJson("catalog.json")');
     expect(sourceJavaScript).toContain("descriptor.immutable_path");
     expect(sourceJavaScript).toContain('digest("SHA-256"');
@@ -84,12 +87,12 @@ describe("CDN 静态浏览界面", () => {
       expect(descriptor).toMatchObject({
         path,
         content_type: contentType,
-        immutable_path: `versioned/2026.08.3/${path}`,
+        immutable_path: `versioned/2026.08.4/${path}`,
       });
       expect(descriptor?.encodings.gzip.path).toBe(`${path}.gz`);
       expect(descriptor?.encodings.br.path).toBe(`${path}.br`);
       expect(await readFile(join(outputDirectory, path))).toEqual(
-        await readFile(join(outputDirectory, `versioned/2026.08.3/${path}`)),
+        await readFile(join(outputDirectory, `versioned/2026.08.4/${path}`)),
       );
     }
     expect(manifest.files.find((file) => file.path === "index.html")?.cache_control).toContain(
@@ -117,7 +120,7 @@ describe("CDN 静态浏览界面", () => {
     const qwen = index.items.find((item) => item.offering_id === "qwen/qwen3.6-27b-20260422");
     expect(qwen).toMatchObject({
       offering_id: "qwen/qwen3.6-27b-20260422",
-      verification_status: "upstream_observation",
+      verification_status: "official_model_verified",
       manufacturer_logo: "assets/logos/qwen.svg",
     });
     expect(await readFile(join(outputDirectory, "assets/logos/qwen.svg"), "utf8")).toMatch(/^\s*<svg\b/u);
@@ -148,6 +151,7 @@ describe("CDN 静态浏览界面", () => {
 
   test("模型卡片采用紧凑尺寸，避免目录列表过于拥挤", () => {
     expect(sourceCss).toContain("width: calc(100% - 48px)");
+    expect(sourceCss).toContain("font-size: clamp(34px, 3.8vw, 56px)");
     expect(sourceCss).toContain("repeat(auto-fill, minmax(250px, 1fr))");
     expect(sourceCss).toContain("min-height: 218px");
     expect(sourceCss).toContain("font-size: clamp(17px, 1.25vw, 22px)");
@@ -163,17 +167,31 @@ describe("CDN 静态浏览界面", () => {
     expect(sourceJavaScript).toContain("const title = createElement(\"span\", \"card-title\", displayName)");
   });
 
-  test("models.dev 候选快照和厂家 logo 进入同一 manifest", async () => {
+  test("models.dev 候选快照、逐条核验侧车和厂家 logo 进入同一 manifest", async () => {
     const candidate = manifest.files.find((file) => file.path === "models-dev-2026.json");
+    const review = manifest.files.find((file) => file.path === "reviews/models-dev-2026.json");
     const sourceSnapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(
       join(REPOSITORY_ROOT, "upstream/models-dev-2026.json"),
     );
     expect(candidate?.content_type).toBe("application/json; charset=utf-8");
+    expect(review?.content_type).toBe("application/json; charset=utf-8");
     expect(manifest.files.filter((file) => file.content_type === "image/svg+xml; charset=utf-8")).toHaveLength(sourceSnapshot.providers.length);
     const snapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(
       join(outputDirectory, "models-dev-2026.json"),
     );
     expect(snapshot.models).toHaveLength(sourceSnapshot.models.length);
     expect(snapshot.providers).toHaveLength(sourceSnapshot.providers.length);
+    const [sourceReviews, publishedReviews] = await Promise.all([
+      readJson<{ reviews: Array<{ runtime_disposition: string; offering_id: string }> }>(
+        join(REPOSITORY_ROOT, "catalog/reviews/models-dev-2026.json"),
+      ),
+      readJson<{ reviews: Array<{ runtime_disposition: string; offering_id: string }> }>(
+        join(outputDirectory, "reviews/models-dev-2026.json"),
+      ),
+    ]);
+    expect(publishedReviews).toEqual(sourceReviews);
+    expect(publishedReviews.reviews).toHaveLength(79);
+    expect(new Set(publishedReviews.reviews.map((item) => item.offering_id)).size).toBe(79);
+    expect(publishedReviews.reviews.every((item) => item.runtime_disposition === "keep_fail_closed")).toBe(true);
   });
 });

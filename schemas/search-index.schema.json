@@ -45,7 +45,13 @@
           "kind": { "enum": ["chat", "embedding"] },
           "status": { "enum": ["preview", "active", "deprecated", "retired", "unknown"] },
           "verification_status": {
-            "enum": ["officially_verified", "upstream_observation"]
+            "enum": [
+              "officially_verified",
+              "official_api_verified",
+              "official_model_verified",
+              "official_route_unavailable",
+              "upstream_observation"
+            ]
           },
           "manufacturer_logo": {
             "oneOf": [

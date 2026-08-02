@@ -10,6 +10,7 @@
 | provider offering | `catalog/offerings/{provider}/{model-id}.json` | API 模型标识、协议、供应商限额、三态能力、参数支持/范围/官方默认值/协议映射 | Agent Policy、租户覆盖、业务默认值 |
 | tenant deployment | 三个业务项目自身的受控配置 | 私有 Base URL、API Key、环境端点、负载均衡和部署别名覆盖 | 进入本仓库、CI 产物、日志或公开 CDN |
 | upstream candidate | `upstream/models-dev-2026.json` 与 `upstream/logos/` | 2026 收录候选、上游提示和厂家图标来源 | 在同步任务中直接覆盖 canonical/offering、作为运行时事实或携带租户配置 |
+| official review sidecar | `catalog/reviews/models-dev-2026.json` | 单条上游 offering 的官网核验、官方 API ID/协议（如有）和审计结论 | 自动改写 canonical/offering、自动放开运行时参数或携带租户配置 |
 
 所有能力布尔值都是 `true | false | "unknown"`。`false` 只能表达来源明确证明“不支持”；证据不足必须用 `unknown`。
 
@@ -30,6 +31,7 @@ flowchart LR
     Provider["provider"]
     Offering["provider offering"]
     Alias["alias"]
+    ReviewArtifact["official review sidecar"]
     Validate["Schema / 引用 / 证据 / 泄露校验"]
     Build["确定性静态构建"]
   end
@@ -44,6 +46,7 @@ flowchart LR
     Site["index.html + CSS/JS"]
     Search["轻量 search-index"]
     Detail["按需 provider 分片"]
+    ReviewDetail["按需核验侧车"]
     Browser["搜索 / 筛选 / 能力与证据详情"]
   end
 
@@ -62,6 +65,7 @@ flowchart LR
   Aggregators --> Logos
   Candidate --> Review
   Logos --> Build
+  Review --> ReviewArtifact
   Review --> Canonical
   Review --> Provider
   Review --> Offering
@@ -70,6 +74,7 @@ flowchart LR
   Provider --> Validate
   Offering --> Validate
   Alias --> Validate
+  ReviewArtifact --> Validate
   Validate --> Build
   Build --> ObjectStore
   ObjectStore --> CDN
@@ -79,7 +84,9 @@ flowchart LR
   Manifest --> Search
   Search --> Browser
   Browser -->|"打开详情"| Detail
+  Browser -->|"打开详情"| ReviewDetail
   CDN --> Detail
+  CDN --> ReviewDetail
   CDN --> Manifest
   Manifest -->|"版本未变"| Cache
   Manifest -->|"版本变化且哈希通过"| Shard
@@ -103,13 +110,14 @@ flowchart LR
 - `dist/providers/{provider}.json`：按供应商分片。
 - `dist/search-index.json`：不带大段证据正文的轻量检索索引；包含 `verification_status` 与同源 `manufacturer_logo` 路径，供卡片与详情页关联厂家标识。
 - `dist/models-dev-2026.json`：models.dev 2026 收录候选快照；首页单独读取，保留未提升的免费、路由器和别名路线。
+- `dist/reviews/models-dev-2026.json`：79 条已提升直连 offering 的逐条官方核验侧车；提供官网证据和审计结论，但每条都固定为 `keep_fail_closed`，不会自动成为 runtime offering 字段。
 - `dist/assets/logos/{provider}.svg`：随 manifest、哈希、gzip/brotli 和不可变版本发布的厂家图标或明确标记的中性占位图。
 - `dist/versioned/{catalog_version}/...`：包含该版本 manifest 的一年不可变缓存路径。
 - `snapshots/catalog.json`：随消费端发布的、经过相同校验的内置快照。
 
 `catalog/release.json` 是生成时间和版本的唯一输入。构建过程不读取当前时钟、不发网络请求，所有对象键递归排序，数组按稳定身份排序，压缩参数固定。因此相同源输入产生逐字节相同的目录、压缩文件和哈希。
 
-浏览界面不是第二份权威数据：HTML 不内置具体模型，首页先取 manifest，再校验并读取轻量搜索索引；只有用户打开详情时才下载对应 provider 分片。所有动态文本通过 DOM `textContent` 创建，页面只连接同源资源，证据外链仅在用户主动点击后打开。浏览器缓存也以 manifest 中的版本和 SHA-256 为键，不能让旧分片混入新版本。
+浏览界面不是第二份权威数据：HTML 不内置具体模型，首页先取 manifest，再校验并读取轻量搜索索引；只有用户打开详情时才下载对应 provider 分片和逐条核验侧车。侧车只解释观测记录的官网核验结论，不参与 `src/runtime.ts` 的参数过滤或构造计划。所有动态文本通过 DOM `textContent` 创建，页面只连接同源资源，证据外链仅在用户主动点击后打开。浏览器缓存也以 manifest 中的版本和 SHA-256 为键，不能让旧分片混入新版本。
 
 ## 证据和字段标记
 

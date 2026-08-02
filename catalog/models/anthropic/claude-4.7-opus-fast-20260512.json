@@ -167,5 +167,5 @@
     ]
   },
   "name": "Anthropic: Claude Opus 4.7 (Fast)",
-  "schema_version": "2.2.0"
+  "schema_version": "2.3.0"
 }

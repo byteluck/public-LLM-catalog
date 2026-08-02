@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 
 import { readJson } from "../src/json.js";
-import { loadSourceCatalog } from "../src/load.js";
+import { loadModelsDevOfficialReviews, loadSourceCatalog } from "../src/load.js";
 import { REPOSITORY_ROOT } from "../src/paths.js";
 import { filterGenerationSettings } from "../src/runtime.js";
 import type { ModelsDevCandidates } from "../src/types.js";
@@ -77,6 +77,33 @@ describe("models.dev 2026 直连记录提升", () => {
     }
     expect(() =>
       filterGenerationSettings(offering, "openai_chat_completions", {
+        agentPolicy: { temperature: 0.7 },
+      }),
+    ).toThrow(/不支持协议/);
+  });
+
+  test("逐条官方 API 核验仍不会越过 offering 的构造器契约", async () => {
+    const [catalog, reviews] = await Promise.all([
+      loadSourceCatalog(REPOSITORY_ROOT),
+      loadModelsDevOfficialReviews(REPOSITORY_ROOT),
+    ]);
+    const offering = catalog.offerings.find(
+      (value) => value.offering_id === "deepseek/deepseek-v4-flash-20260423",
+    );
+    const review = reviews.reviews.find(
+      (value) => value.offering_id === "deepseek/deepseek-v4-flash-20260423",
+    );
+    expect(review).toMatchObject({
+      review_status: "official_api_verified",
+      official_api_model_id: "deepseek-v4-flash",
+      runtime_disposition: "keep_fail_closed",
+    });
+    expect(offering).toMatchObject({
+      api_model_id: "deepseek/deepseek-v4-flash",
+      protocols: "unknown",
+    });
+    expect(() =>
+      filterGenerationSettings(offering!, "openai_chat_completions", {
         agentPolicy: { temperature: 0.7 },
       }),
     ).toThrow(/不支持协议/);

@@ -1,5 +1,5 @@
 import { sha256 } from "./json.js";
-import type { Manifest } from "./types.js";
+import type { Manifest, ModelsDevOfficialReviews } from "./types.js";
 import { createValidators, formatValidationIssues, validateWith } from "./validate.js";
 
 export interface ProbeResult {
@@ -11,6 +11,7 @@ export interface ProbeResult {
   searchItems: number;
   siteFiles: number;
   modelsDevItems: number;
+  reviewedOfferings: number;
   logoAssets: number;
 }
 
@@ -138,6 +139,7 @@ export async function probeCatalog(input: {
   let providerShards = 0;
   let siteFiles = 0;
   let modelsDevItems = 0;
+  let reviewedOfferings = 0;
   let logoAssets = 0;
   for (const file of manifest.files) {
     const bytes = await fetchBytesWithCache(
@@ -194,6 +196,14 @@ export async function probeCatalog(input: {
       }
       modelsDevItems = (parsed as { models: unknown[] }).models.length;
     }
+    if (file.path === "reviews/models-dev-2026.json") {
+      const parsed = JSON.parse(new TextDecoder().decode(bytes)) as unknown;
+      const issues = validateWith(validators.modelsDevOfficialReviews, parsed, file.path);
+      if (issues.length > 0) {
+        throw new Error(formatValidationIssues(issues));
+      }
+      reviewedOfferings = (parsed as ModelsDevOfficialReviews).reviews.length;
+    }
     if (file.path.startsWith("assets/logos/") && file.path.endsWith(".svg")) {
       logoAssets += 1;
     }
@@ -205,8 +215,15 @@ export async function probeCatalog(input: {
       siteFiles += 1;
     }
   }
-  if (searchItems === 0 || providerShards === 0 || siteFiles !== 3 || modelsDevItems === 0 || logoAssets === 0) {
-    throw new Error("搜索索引、provider 分片、候选快照、logo 或站点文件不完整");
+  if (
+    searchItems === 0 ||
+    providerShards === 0 ||
+    siteFiles !== 3 ||
+    modelsDevItems === 0 ||
+    reviewedOfferings === 0 ||
+    logoAssets === 0
+  ) {
+    throw new Error("搜索索引、provider 分片、候选快照、核验清单、logo 或站点文件不完整");
   }
   return {
     baseUrl: base.toString(),
@@ -217,6 +234,7 @@ export async function probeCatalog(input: {
     searchItems,
     siteFiles,
     modelsDevItems,
+    reviewedOfferings,
     logoAssets,
   };
 }

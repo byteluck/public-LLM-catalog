@@ -246,6 +246,51 @@ export interface ModelsDevCandidates {
   models: ModelsDevCandidate[];
 }
 
+/**
+ * A review records what was verified about a models.dev observation without
+ * silently promoting an observed route into a runtime-safe provider offering.
+ */
+export type OfficialReviewStatus =
+  | "official_api_verified"
+  | "official_model_verified"
+  | "official_route_unavailable"
+  | "official_evidence_not_found";
+
+export type OfficialReviewField =
+  | "model_identity"
+  | "api_model_id"
+  | "protocols"
+  | "lifecycle"
+  | "limits"
+  | "modalities"
+  | "agent_capabilities"
+  | "reasoning"
+  | "sampling";
+
+export interface ModelsDevOfferingReview {
+  offering_id: string;
+  provider_id: string;
+  canonical_id: string;
+  observed_api_model_id: string;
+  review_status: OfficialReviewStatus;
+  reviewed_at: string;
+  verified_fields: OfficialReviewField[];
+  official_api_model_id: string | Unknown;
+  official_protocols: Protocol[] | Unknown;
+  runtime_disposition: "keep_fail_closed";
+  summary: string;
+  evidence: SourceEvidence[];
+}
+
+export interface ModelsDevOfficialReviews {
+  $schema: string;
+  schema_version: string;
+  review_set_id: "models-dev-2026-official-review";
+  source_snapshot_sha256: string;
+  reviewed_at: string;
+  reviews: ModelsDevOfferingReview[];
+}
+
 export interface EncodingDescriptor {
   path: string;
   immutable_path: string;

@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-import { loadSourceCatalog } from "../src/load.js";
+import { loadModelsDevOfficialReviews, loadSourceCatalog } from "../src/load.js";
 import { readJson } from "../src/json.js";
 import { REPOSITORY_ROOT } from "../src/paths.js";
 import { scanForTenantData } from "../src/validate.js";
@@ -11,8 +11,12 @@ import type { AggregatedCatalog } from "../src/types.js";
 
 describe("公开目录安全边界", () => {
   test("源目录不含密钥、私有 URL 或租户部署字段", async () => {
-    const catalog = await loadSourceCatalog(REPOSITORY_ROOT);
+    const [catalog, reviews] = await Promise.all([
+      loadSourceCatalog(REPOSITORY_ROOT),
+      loadModelsDevOfficialReviews(REPOSITORY_ROOT),
+    ]);
     expect(scanForTenantData(catalog, "catalog")).toEqual([]);
+    expect(scanForTenantData(reviews, "catalog/reviews/models-dev-2026.json")).toEqual([]);
   });
 
   test("发布目录和内置快照不含租户部署数据", async () => {
