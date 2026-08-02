@@ -78,11 +78,11 @@
           "unsupported_reason": "当前三个项目尚未接入 canonical/offering alias 解析；私有标识必须用租户 override 显式映射。"
         }
       },
-      "schema_version": "1.0.0"
+      "schema_version": "2.0.0"
     }
   ],
-  "catalog_version": "2026.08.0",
-  "generated_at": "2026-08-02T00:00:00Z",
+  "catalog_version": "2026.08.1",
+  "generated_at": "2026-08-02T04:59:03Z",
   "models": [
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -336,7 +336,7 @@
         ]
       },
       "name": "GPT-5.5",
-      "schema_version": "1.0.0"
+      "schema_version": "2.0.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -557,7 +557,7 @@
         ]
       },
       "name": "Embedding-3",
-      "schema_version": "1.0.0"
+      "schema_version": "2.0.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -806,7 +806,7 @@
         ]
       },
       "name": "GLM-4.6V",
-      "schema_version": "1.0.0"
+      "schema_version": "2.0.0"
     },
     {
       "$schema": "https://llm-catalog.example.cn/schemas/canonical-model.schema.json",
@@ -1060,7 +1060,7 @@
         ]
       },
       "name": "GLM-5.2",
-      "schema_version": "1.0.0"
+      "schema_version": "2.0.0"
     }
   ],
   "offerings": [
@@ -1366,7 +1366,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "1.0.0",
+      "schema_version": "2.0.0",
       "status": "active"
     },
     {
@@ -1636,7 +1636,7 @@
           "supported": false
         }
       },
-      "schema_version": "1.0.0",
+      "schema_version": "2.0.0",
       "status": "active"
     },
     {
@@ -1935,7 +1935,7 @@
           "supported": "unknown"
         }
       },
-      "schema_version": "1.0.0",
+      "schema_version": "2.0.0",
       "status": "active"
     },
     {
@@ -2278,7 +2278,7 @@
           "supported": true
         }
       },
-      "schema_version": "1.0.0",
+      "schema_version": "2.0.0",
       "status": "active"
     }
   ],
@@ -2401,7 +2401,7 @@
           "url": "https://api.openai.com/v1"
         }
       ],
-      "schema_version": "1.0.0",
+      "schema_version": "2.0.0",
       "status": "active",
       "website": "https://developers.openai.com/"
     },
@@ -2543,10 +2543,10 @@
           "url": "https://open.bigmodel.cn/api/paas/v4"
         }
       ],
-      "schema_version": "1.0.0",
+      "schema_version": "2.0.0",
       "status": "active",
       "website": "https://open.bigmodel.cn/"
     }
   ],
-  "schema_version": "1.0.0"
+  "schema_version": "2.0.0"
 }

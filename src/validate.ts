@@ -546,6 +546,50 @@ export function validateIdentityAndReferences(catalog: SourceCatalog): Validatio
   return issues;
 }
 
+export function validateSchemaVersionConsistency(
+  catalog: SourceCatalog,
+  upstreamConfig?: unknown,
+): ValidationIssue[] {
+  const expected = catalog.release.schema_version;
+  const documents: Array<{ file: string; schema_version: string }> = [
+    ...catalog.models.map((model) => ({
+      file: `catalog/models/${model.canonical_id}.json`,
+      schema_version: model.schema_version,
+    })),
+    ...catalog.providers.map((provider) => ({
+      file: `catalog/providers/${provider.provider_id}.json`,
+      schema_version: provider.schema_version,
+    })),
+    ...catalog.offerings.map((offering) => ({
+      file: `catalog/offerings/${offering.offering_id}.json`,
+      schema_version: offering.schema_version,
+    })),
+    ...catalog.aliases.map((aliasSet) => ({
+      file: `catalog/aliases/${aliasSet.alias_set_id}.json`,
+      schema_version: aliasSet.schema_version,
+    })),
+  ];
+  if (
+    isPlainObject(upstreamConfig) &&
+    typeof upstreamConfig.schema_version === "string"
+  ) {
+    documents.push({
+      file: "catalog/upstreams.json",
+      schema_version: upstreamConfig.schema_version,
+    });
+  }
+  return documents
+    .filter((document) => document.schema_version !== expected)
+    .map((document) =>
+      issue(
+        "schema_version_mismatch",
+        document.file,
+        "/schema_version",
+        `文档 Schema ${document.schema_version} 与 release ${expected} 不一致`,
+      ),
+    );
+}
+
 export async function validateSourceCatalog(root: string): Promise<{
   catalog: SourceCatalog;
   issues: ValidationIssue[];
@@ -611,6 +655,7 @@ export async function validateSourceCatalog(root: string): Promise<{
     issues.push(...scanForTenantData(aliasSet, file));
   }
   issues.push(...validateIdentityAndReferences(catalog));
+  issues.push(...validateSchemaVersionConsistency(catalog, upstreamConfig));
 
   const releaseFile = relative(root, join(root, "catalog", "release.json"));
   if (!/^\d{4}\.\d{2}\.\d+$/.test(catalog.release.catalog_version)) {

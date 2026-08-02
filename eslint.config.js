@@ -9,6 +9,14 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    files: ["web/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      globals: globals.browser,
+      sourceType: "module",
+    },
+  },
+  {
     files: ["**/*.ts"],
     languageOptions: {
       globals: globals.node,

@@ -1,0 +1,61 @@
+# 静态目录浏览界面
+
+## 定位
+
+浏览界面让运维、产品和研发人员直接打开国内 CDN 地址查看目录，但不改变数据权威边界。`catalog/` 源 JSON 和由它生成的发布 JSON 仍是权威数据；`web/` 只提供通用渲染器，不内置模型名单、不维护第二份能力数据，也不提交任何租户部署配置。
+
+界面是原生 HTML、CSS 和 JavaScript，没有框架、字体 CDN、统计脚本、数据库或动态 API。页面运行时只访问部署它的同一 CDN prefix：
+
+```mermaid
+sequenceDiagram
+  participant U as 浏览器
+  participant C as 国内 CDN
+  U->>C: GET /catalog/（index.html）
+  U->>C: GET manifest.json（no-cache）
+  C-->>U: catalog_version + 文件 SHA-256
+  U->>U: 检查版本与本地已验证缓存
+  U->>C: GET search-index.json（版本变化或无缓存）
+  U->>U: 校验 size + SHA-256，渲染列表
+  U->>C: GET providers/{provider}.json（用户打开详情时）
+  U->>U: 校验 size + SHA-256，渲染能力与证据
+```
+
+## 可浏览内容
+
+- 按名称、API model ID、canonical/offering ID、系列和别名搜索。
+- 按 provider、Chat/Embedding、输入模态和生命周期状态筛选。
+- 查看 API 标识、协议、输入/输出模态以及严格分离的 context/input/output 上限。
+- 查看 Agent 能力的 `支持 / 不支持 / 未知` 三态、推理模式与协议字段。
+- 查看 temperature、top_p、top_k 的“是否支持、范围、官方默认、协议映射”；页面明确说明这些不是租户运行默认值。
+- 查看 Embedding 维度、输入和批量限制。
+- 查看生命周期、字段级 runtime/metadata/unsupported 标记、adapter mapping 与证据来源。
+
+页面不展示或加载 API Key、私有 Base URL、环境、权重、负载均衡或其他 tenant deployment 数据。证据 URL 仅作为可点击链接出现，页面初始化和搜索不会请求厂商网站。
+
+## 加载、缓存与失败策略
+
+1. 每次打开先请求小型 `manifest.json`，不直接下载完整 `catalog.json`。
+2. search index 和 provider 分片从 manifest 指定的不可变版本路径下载，并且必须同时通过声明的字节数和 SHA-256 校验后才进入浏览器缓存。
+3. 缓存键包含内容哈希；相同目录版本不会重复下载已经验证的索引或分片。
+4. manifest 暂时不可用时尝试读取上次成功的 manifest 和已验证内容缓存，并在页头标明“缓存版本”。
+5. 没有可验证缓存时显示明确错误，不拿不完整响应继续渲染。
+
+业务服务器仍应使用 `src/consumer.ts` 所示的持久缓存和内置快照状态机；浏览器 localStorage 只服务人员浏览，不能替代业务端的内置快照。
+
+## 发布约束
+
+- 浏览资产进入 manifest 后，发布契约升级为 Schema `2.0.0`；只理解 JSON-only manifest 的 `1.x` 消费端必须继续使用旧缓存/内置快照，升级解析器后再切换。
+- 必须整体发布 `dist/`，不能只上传 JSON；HTML/CSS/JS 也在 manifest、gzip/brotli 和不可变版本树中。
+- CDN prefix 根路径必须把 `index.html` 作为默认文档。
+- 必须使用 HTTPS。浏览器依赖 Web Crypto 校验 SHA-256，生产 HTTP 页面不属于支持的部署形态。
+- 页面使用相对路径，因此可部署在域名根路径或任意 prefix；不要添加 `<base>` 重写。
+- 页面 CSP 只允许同源脚本、样式和请求；若企业网关注入脚本，应先做独立安全评审，不要直接放宽为任意域名。
+- 发布后必须从国内 runner 执行 `npm run probe -- https://实际地址/prefix/`；探测会同时验证根首页、资源类型、哈希、缓存、压缩和分片。
+
+## 本地验证
+
+```bash
+npm run preview
+```
+
+该命令先重新构建 `dist/`，再在 `127.0.0.1:4173` 启动只读预览。可用 `CATALOG_PREVIEW_PORT=5180 npm run preview` 修改端口。完成页面检查后终止进程即可；生产环境不运行该脚本。

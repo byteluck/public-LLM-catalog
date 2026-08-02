@@ -7,6 +7,7 @@ import {
   validateEvidenceAndAnnotations,
   validateIdentityAndReferences,
   validateLimitConsistency,
+  validateSchemaVersionConsistency,
   validateSourceCatalog,
   validateWith,
 } from "../src/validate.js";
@@ -26,6 +27,17 @@ describe("目录约束", () => {
     const invalid = structuredClone(catalog.offerings.at(0)!);
     (invalid.capabilities.agent as unknown as Record<string, unknown>).streaming = null;
     expect(validateWith(validators.offering, invalid, "invalid.json")).not.toEqual([]);
+  });
+
+  test("所有权威源文档使用 release 声明的同一 Schema 版本", async () => {
+    const catalog = structuredClone(await loadSourceCatalog(REPOSITORY_ROOT));
+    catalog.models[0]!.schema_version = "1.0.0";
+    expect(validateSchemaVersionConsistency(catalog)).toEqual([
+      expect.objectContaining({
+        code: "schema_version_mismatch",
+        path: "/schema_version",
+      }),
+    ]);
   });
 
   test("canonical model 禁止出现采样默认配置", async () => {

@@ -27,8 +27,22 @@ function cacheControl(path: string): string {
     : "public, max-age=300, must-revalidate";
 }
 
+function contentType(path: string): string {
+  if (path.endsWith(".html") || path.includes(".html.")) {
+    return "text/html; charset=utf-8";
+  }
+  if (path.endsWith(".css") || path.includes(".css.")) {
+    return "text/css; charset=utf-8";
+  }
+  if (path.endsWith(".js") || path.includes(".js.")) {
+    return "text/javascript; charset=utf-8";
+  }
+  return "application/json; charset=utf-8";
+}
+
 async function serve(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname).replace(/^\//, "");
+  const requestedPath = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname).replace(/^\//, "");
+  const pathname = requestedPath === "" ? "index.html" : requestedPath;
   requestCounts.set(pathname, (requestCounts.get(pathname) ?? 0) + 1);
   const candidate = resolve(distDirectory, normalize(pathname));
   if (relative(distDirectory, candidate).startsWith("..")) {
@@ -47,7 +61,7 @@ async function serve(request: IncomingMessage, response: ServerResponse): Promis
       return;
     }
     const headers: Record<string, string | number> = {
-      "content-type": "application/json; charset=utf-8",
+      "content-type": contentType(pathname),
       "content-length": bytes.byteLength,
       "cache-control": cacheControl(pathname),
       etag,
@@ -127,37 +141,42 @@ describe("国内静态地址与消费缓存", () => {
       allowHttp: true,
     });
     expect(result).toMatchObject({
-      catalogVersion: "2026.08.0",
-      logicalFiles: 4,
+      catalogVersion: "2026.08.1",
+      homepage: true,
+      logicalFiles: 7,
       providerShards: 2,
       searchItems: 4,
+      siteFiles: 3,
     });
   });
 
   test("版本未变化时只重新请求小型 manifest，不重复下载 catalog", async () => {
     const snapshot = await readJson<AggregatedCatalog>(join(distDirectory, "catalog.json"));
     const cache = new MemoryCache();
-    const before = requestCounts.get("catalog.json") ?? 0;
+    const catalogPath = "versioned/2026.08.1/catalog.json";
+    const before = requestCounts.get(catalogPath) ?? 0;
+    const currentPathBefore = requestCounts.get("catalog.json") ?? 0;
     const first = await refreshCatalog({
       baseUrl,
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "1.0.0",
+      supportedSchemaVersion: "2.0.0",
     });
-    const afterFirst = requestCounts.get("catalog.json") ?? 0;
+    const afterFirst = requestCounts.get(catalogPath) ?? 0;
     const second = await refreshCatalog({
       baseUrl,
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "1.0.0",
+      supportedSchemaVersion: "2.0.0",
     });
-    const afterSecond = requestCounts.get("catalog.json") ?? 0;
+    const afterSecond = requestCounts.get(catalogPath) ?? 0;
     expect(first.source).toBe("download");
     expect(second).toMatchObject({ source: "cache", catalogDownloaded: false });
     expect(afterFirst).toBe(before + 1);
     expect(afterSecond).toBe(afterFirst);
+    expect(requestCounts.get("catalog.json") ?? 0).toBe(currentPathBefore);
   });
 
   test("目录不可用时优先缓存，无缓存则使用内置快照", async () => {
@@ -168,7 +187,7 @@ describe("国内静态地址与消费缓存", () => {
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "1.0.0",
+      supportedSchemaVersion: "2.0.0",
     });
     const unavailableFetch: typeof fetch = () => Promise.reject(new Error("network unavailable"));
     const cached = await refreshCatalog({
@@ -176,7 +195,7 @@ describe("国内静态地址与消费缓存", () => {
       cache,
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "1.0.0",
+      supportedSchemaVersion: "2.0.0",
       fetchImplementation: unavailableFetch,
     });
     expect(cached).toMatchObject({ source: "cache", catalogDownloaded: false });
@@ -185,7 +204,7 @@ describe("国内静态地址与消费缓存", () => {
       cache: new MemoryCache(),
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "1.0.0",
+      supportedSchemaVersion: "2.0.0",
       fetchImplementation: unavailableFetch,
     });
     expect(builtin).toMatchObject({ source: "builtin_snapshot", catalogDownloaded: false });
@@ -193,19 +212,19 @@ describe("国内静态地址与消费缓存", () => {
 
   test("消费端 Schema 版本不足时不下载新目录并回退内置快照", async () => {
     const snapshot = await readJson<AggregatedCatalog>(join(distDirectory, "catalog.json"));
-    const before = requestCounts.get("catalog.json") ?? 0;
+    const before = requestCounts.get("versioned/2026.08.1/catalog.json") ?? 0;
     const result = await refreshCatalog({
       baseUrl,
       cache: new MemoryCache(),
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
-      supportedSchemaVersion: "0.9.0",
+      supportedSchemaVersion: "1.0.0",
     });
     expect(result).toMatchObject({
       source: "builtin_snapshot",
       catalogDownloaded: false,
       diagnostic: expect.stringContaining("低于目录要求"),
     });
-    expect(requestCounts.get("catalog.json") ?? 0).toBe(before);
+    expect(requestCounts.get("versioned/2026.08.1/catalog.json") ?? 0).toBe(before);
   });
 });

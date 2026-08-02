@@ -13,6 +13,7 @@
     "check:generated": "npm run build && git diff --exit-code -- dist snapshots",
     "lint": "eslint .",
     "probe": "tsx scripts/probe.ts",
+    "preview": "npm run build && tsx scripts/preview.ts",
     "publish": "tsx scripts/publish.ts",
     "sync": "tsx scripts/sync-upstreams.ts",
     "test": "vitest run",

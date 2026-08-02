@@ -112,7 +112,9 @@ export async function refreshCatalog(input: {
     if (catalogFile === undefined) {
       throw new Error("manifest 缺少 catalog.json");
     }
-    const catalogResponse = await fetchImplementation(urlAt(input.baseUrl, catalogFile.path));
+    const catalogResponse = await fetchImplementation(
+      urlAt(input.baseUrl, catalogFile.immutable_path),
+    );
     if (!catalogResponse.ok) {
       throw new Error(`catalog HTTP ${catalogResponse.status}`);
     }

@@ -38,6 +38,13 @@ flowchart LR
     Probe["国内网络探测"]
   end
 
+  subgraph Browse["人员浏览"]
+    Site["index.html + CSS/JS"]
+    Search["轻量 search-index"]
+    Detail["按需 provider 分片"]
+    Browser["搜索 / 筛选 / 能力与证据详情"]
+  end
+
   subgraph Runtime["业务消费端"]
     Manifest["先取 manifest.json"]
     Cache["版本缓存"]
@@ -63,6 +70,12 @@ flowchart LR
   Build --> ObjectStore
   ObjectStore --> CDN
   CDN --> Probe
+  CDN --> Site
+  Site --> Manifest
+  Manifest --> Search
+  Search --> Browser
+  Browser -->|"打开详情"| Detail
+  CDN --> Detail
   CDN --> Manifest
   Manifest -->|"版本未变"| Cache
   Manifest -->|"版本变化且哈希通过"| Shard
@@ -81,6 +94,7 @@ flowchart LR
 源数据按模型拆分，`npm run build` 生成：
 
 - `dist/manifest.json`：小型入口，包含 Schema/目录/前序/最低消费版本、生成时间、每个逻辑文件的字节数、SHA-256、ETag、缓存策略、当前与不可变路径、gzip/brotli 描述。
+- `dist/index.html` 与 `dist/assets/`：无框架、无境外运行时依赖的目录浏览界面；全部资源同样进入 manifest、哈希、压缩和版本化流程。
 - `dist/catalog.json`：全量聚合目录。
 - `dist/providers/{provider}.json`：按供应商分片。
 - `dist/search-index.json`：不带大段证据正文的轻量检索索引。
@@ -88,6 +102,8 @@ flowchart LR
 - `snapshots/catalog.json`：随消费端发布的、经过相同校验的内置快照。
 
 `catalog/release.json` 是生成时间和版本的唯一输入。构建过程不读取当前时钟、不发网络请求，所有对象键递归排序，数组按稳定身份排序，压缩参数固定。因此相同源输入产生逐字节相同的目录、压缩文件和哈希。
+
+浏览界面不是第二份权威数据：HTML 不内置具体模型，首页先取 manifest，再校验并读取轻量搜索索引；只有用户打开详情时才下载对应 provider 分片。所有动态文本通过 DOM `textContent` 创建，页面只连接同源资源，证据外链仅在用户主动点击后打开。浏览器缓存也以 manifest 中的版本和 SHA-256 为键，不能让旧分片混入新版本。
 
 ## 证据和字段标记
 
@@ -127,7 +143,7 @@ flowchart LR
 1. 每次刷新只下载 `manifest.json`。
 2. 先检查 `minimum_consumer_schema_version`；消费端版本不足时保留旧缓存/快照并报警。
 3. `catalog_version` 与本地缓存相同则不下载全量目录。
-4. 版本变化时下载目标文件，并在解析前校验字节级 SHA-256。
+4. 版本变化时按 manifest 的 `immutable_path` 下载目标文件，并在解析前校验字节级 SHA-256；发布窗口内不会混用旧 manifest 和新当前路径。
 5. 下载、版本、Schema 或哈希失败时继续使用最后成功缓存；没有缓存时使用内置快照。
 6. 私有 `api_model_id` 不能按名称猜测能力，必须显式指定 `publicOfferingOverride`，或由经过校验的 alias 指向公开 offering。
 

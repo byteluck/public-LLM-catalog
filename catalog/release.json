@@ -1,8 +1,8 @@
 {
   "$schema": "https://llm-catalog.example.cn/schemas/release.schema.json",
-  "schema_version": "1.0.0",
-  "catalog_version": "2026.08.0",
-  "generated_at": "2026-08-02T00:00:00Z",
-  "previous_catalog_version": null,
-  "minimum_consumer_schema_version": "1.0.0"
+  "schema_version": "2.0.0",
+  "catalog_version": "2026.08.1",
+  "generated_at": "2026-08-02T04:59:03Z",
+  "previous_catalog_version": "2026.08.0",
+  "minimum_consumer_schema_version": "2.0.0"
 }

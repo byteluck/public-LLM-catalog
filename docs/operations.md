@@ -61,5 +61,6 @@
 - [ ] `npm run check`、`git diff --check` 全部通过。
 - [ ] `catalog_version` 未复用已有不同内容。
 - [ ] 国内对象存储版本对象先上传，manifest 最后上传。
+- [ ] CDN prefix 根路径返回 `index.html`，HTML/CSS/JS Content-Type 正确且没有境外运行时资源。
 - [ ] 至少一个国内 runner 的完整 probe 通过。
 - [ ] 回滚版本和内置快照已确认可用。

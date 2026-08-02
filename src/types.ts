@@ -206,6 +206,12 @@ export interface EncodingDescriptor {
   sha256: string;
 }
 
+export type StaticContentType =
+  | "application/json; charset=utf-8"
+  | "text/html; charset=utf-8"
+  | "text/css; charset=utf-8"
+  | "text/javascript; charset=utf-8";
+
 export interface ManifestFile {
   path: string;
   immutable_path: string;
@@ -214,7 +220,7 @@ export interface ManifestFile {
   etag: string;
   cache_control: string;
   immutable_cache_control: string;
-  content_type: "application/json; charset=utf-8";
+  content_type: StaticContentType;
   encodings: {
     gzip: EncodingDescriptor;
     br: EncodingDescriptor;

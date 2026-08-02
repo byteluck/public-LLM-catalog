@@ -42,14 +42,21 @@
           "encodings"
         ],
         "properties": {
-          "path": { "type": "string", "pattern": "^[^/].*\\.json$" },
-          "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.json$" },
+          "path": { "type": "string", "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))[^/].*\\.(?:json|html|css|js)$" },
+          "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/(?!.*(?:^|/)\\.\\.(?:/|$)).*\\.(?:json|html|css|js)$" },
           "size": { "type": "integer", "minimum": 1 },
           "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "etag": { "type": "string", "pattern": "^\"[a-f0-9]{64}\"$" },
           "cache_control": { "type": "string", "minLength": 1 },
           "immutable_cache_control": { "type": "string", "minLength": 1 },
-          "content_type": { "const": "application/json; charset=utf-8" },
+          "content_type": {
+            "enum": [
+              "application/json; charset=utf-8",
+              "text/html; charset=utf-8",
+              "text/css; charset=utf-8",
+              "text/javascript; charset=utf-8"
+            ]
+          },
           "encodings": {
             "type": "object",
             "additionalProperties": false,
@@ -60,8 +67,8 @@
                 "additionalProperties": false,
                 "required": ["path", "immutable_path", "size", "sha256"],
                 "properties": {
-                  "path": { "type": "string", "pattern": "\\.json\\.gz$" },
-                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.json\\.gz$" },
+                  "path": { "type": "string", "pattern": "\\.(?:json|html|css|js)\\.gz$" },
+                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.(?:json|html|css|js)\\.gz$" },
                   "size": { "type": "integer", "minimum": 1 },
                   "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
                 }
@@ -71,8 +78,8 @@
                 "additionalProperties": false,
                 "required": ["path", "immutable_path", "size", "sha256"],
                 "properties": {
-                  "path": { "type": "string", "pattern": "\\.json\\.br$" },
-                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.json\\.br$" },
+                  "path": { "type": "string", "pattern": "\\.(?:json|html|css|js)\\.br$" },
+                  "immutable_path": { "type": "string", "pattern": "^versioned/[^/]+/.*\\.(?:json|html|css|js)\\.br$" },
                   "size": { "type": "integer", "minimum": 1 },
                   "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
                 }

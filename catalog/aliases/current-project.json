@@ -1,6 +1,6 @@
 {
   "$schema": "https://llm-catalog.example.cn/schemas/alias.schema.json",
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "alias_set_id": "current-project",
   "entries": [
     { "alias": "gpt-5.5", "provider_id": "openai", "target_type": "offering", "target_id": "openai/gpt-5.5" },

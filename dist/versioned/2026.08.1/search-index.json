@@ -1,6 +1,6 @@
 {
-  "catalog_version": "2026.08.0",
-  "generated_at": "2026-08-02T00:00:00Z",
+  "catalog_version": "2026.08.1",
+  "generated_at": "2026-08-02T04:59:03Z",
   "items": [
     {
       "aliases": [
@@ -19,6 +19,7 @@
         "vector"
       ],
       "provider_id": "zhipu",
+      "provider_name": "智谱开放平台",
       "status": "active"
     },
     {
@@ -41,6 +42,7 @@
         "text"
       ],
       "provider_id": "zhipu",
+      "provider_name": "智谱开放平台",
       "status": "active"
     },
     {
@@ -60,6 +62,7 @@
         "text"
       ],
       "provider_id": "zhipu",
+      "provider_name": "智谱开放平台",
       "status": "active"
     },
     {
@@ -81,8 +84,9 @@
         "text"
       ],
       "provider_id": "openai",
+      "provider_name": "OpenAI",
       "status": "active"
     }
   ],
-  "schema_version": "1.0.0"
+  "schema_version": "2.0.0"
 }

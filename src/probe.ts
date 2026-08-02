@@ -5,9 +5,11 @@ import { createValidators, formatValidationIssues, validateWith } from "./valida
 export interface ProbeResult {
   baseUrl: string;
   catalogVersion: string;
+  homepage: boolean;
   logicalFiles: number;
   providerShards: number;
   searchItems: number;
+  siteFiles: number;
 }
 
 function urlAt(base: URL, path: string): URL {
@@ -30,7 +32,11 @@ function requireHeader(response: Response, name: string, url: URL): string {
   return value;
 }
 
-async function fetchBytesWithCache(url: URL, expectedHash: string): Promise<Uint8Array> {
+async function fetchBytesWithCache(
+  url: URL,
+  expectedHash: string,
+  expectedContentType: string,
+): Promise<Uint8Array> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`${url} HTTP ${response.status}`);
@@ -38,8 +44,8 @@ async function fetchBytesWithCache(url: URL, expectedHash: string): Promise<Uint
   const etag = requireHeader(response, "etag", url);
   requireHeader(response, "cache-control", url);
   const contentType = requireHeader(response, "content-type", url);
-  if (!contentType.toLowerCase().includes("application/json")) {
-    throw new Error(`${url} Content-Type 不是 application/json`);
+  if (contentType.toLowerCase() !== expectedContentType.toLowerCase()) {
+    throw new Error(`${url} Content-Type=${contentType}，期望 ${expectedContentType}`);
   }
   const bytes = new Uint8Array(await response.arrayBuffer());
   if (sha256(bytes) !== expectedHash) {
@@ -96,6 +102,16 @@ export async function probeCatalog(input: {
   }
   await conditionalCacheCheck(manifestUrl, manifestEtag);
 
+  const homepageFile = manifest.files.find((file) => file.path === "index.html");
+  if (homepageFile === undefined) {
+    throw new Error("manifest 缺少 index.html，CDN 无法提供目录浏览首页");
+  }
+  await fetchBytesWithCache(
+    urlAt(base, ""),
+    homepageFile.sha256,
+    homepageFile.content_type,
+  );
+
   const immutableManifestUrl = urlAt(base, `${manifest.immutable_base_path}manifest.json`);
   const immutableManifestResponse = await fetch(immutableManifestUrl);
   if (!immutableManifestResponse.ok) {
@@ -118,8 +134,13 @@ export async function probeCatalog(input: {
 
   let searchItems = 0;
   let providerShards = 0;
+  let siteFiles = 0;
   for (const file of manifest.files) {
-    const bytes = await fetchBytesWithCache(urlAt(base, file.path), file.sha256);
+    const bytes = await fetchBytesWithCache(
+      urlAt(base, file.path),
+      file.sha256,
+      file.content_type,
+    );
     const immutableUrl = urlAt(base, file.immutable_path);
     const immutableResponse = await fetch(immutableUrl);
     if (!immutableResponse.ok) {
@@ -161,15 +182,24 @@ export async function probeCatalog(input: {
         throw new Error(formatValidationIssues(issues));
       }
     }
+    if (
+      file.path === "index.html" ||
+      file.path === "assets/catalog.css" ||
+      file.path === "assets/catalog.js"
+    ) {
+      siteFiles += 1;
+    }
   }
-  if (searchItems === 0 || providerShards === 0) {
-    throw new Error("搜索索引或 provider 分片为空");
+  if (searchItems === 0 || providerShards === 0 || siteFiles !== 3) {
+    throw new Error("搜索索引、provider 分片或站点文件不完整");
   }
   return {
     baseUrl: base.toString(),
     catalogVersion: manifest.catalog_version,
+    homepage: true,
     logicalFiles: manifest.files.length,
     providerShards,
     searchItems,
+    siteFiles,
   };
 }

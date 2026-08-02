@@ -13,16 +13,24 @@ import type {
   Offering,
   Provider,
   SourceCatalog,
+  StaticContentType,
 } from "./types.js";
 
 const CURRENT_CACHE_CONTROL = "public, max-age=300, must-revalidate";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const JSON_CONTENT_TYPE = "application/json; charset=utf-8" as const;
 
+interface LogicalFile {
+  contents: string;
+  contentType: StaticContentType;
+  cacheControl?: string;
+}
+
 interface SearchIndexItem {
   canonical_id: string;
   offering_id: string;
   provider_id: string;
+  provider_name: string;
   api_model_id: string;
   name: string;
   family: string;
@@ -95,15 +103,21 @@ function aliasNames(aliasSets: AliasSet[], offering: Offering): string[] {
 
 function searchIndex(source: SourceCatalog): Record<string, unknown> {
   const models = new Map(source.models.map((model) => [model.canonical_id, model]));
+  const providers = new Map(source.providers.map((provider) => [provider.provider_id, provider]));
   const items = source.offerings.map((offering): SearchIndexItem => {
     const model = models.get(offering.canonical_id);
     if (model === undefined) {
       throw new Error(`构建搜索索引时 canonical model 不存在: ${offering.canonical_id}`);
     }
+    const provider = providers.get(offering.provider_id);
+    if (provider === undefined) {
+      throw new Error(`构建搜索索引时 provider 不存在: ${offering.provider_id}`);
+    }
     return {
       canonical_id: model.canonical_id,
       offering_id: offering.offering_id,
       provider_id: offering.provider_id,
+      provider_name: provider.name,
       api_model_id: offering.api_model_id,
       name: offering.name,
       family: model.family,
@@ -160,8 +174,9 @@ async function writeLogicalFile(
   outputDirectory: string,
   version: string,
   path: string,
-  contents: string,
+  file: LogicalFile,
 ): Promise<ManifestFile> {
+  const { contents } = file;
   const immutablePath = `versioned/${version}/${path}`;
   const buffer = Buffer.from(contents, "utf8");
   const encoded = compressed(buffer);
@@ -184,9 +199,9 @@ async function writeLogicalFile(
     size: buffer.byteLength,
     sha256: digest,
     etag: `"${digest}"`,
-    cache_control: CURRENT_CACHE_CONTROL,
+    cache_control: file.cacheControl ?? CURRENT_CACHE_CONTROL,
     immutable_cache_control: IMMUTABLE_CACHE_CONTROL,
-    content_type: JSON_CONTENT_TYPE,
+    content_type: file.contentType,
     encodings: {
       gzip: {
         path: currentGzipPath,
@@ -217,8 +232,11 @@ export async function buildToDirectory(
     throw new Error(`聚合目录 Schema 校验失败:\n${formatValidationIssues(generatedIssues)}`);
   }
 
-  const logicalFiles = new Map<string, string>();
-  logicalFiles.set("catalog.json", stableJson(aggregate));
+  const logicalFiles = new Map<string, LogicalFile>();
+  logicalFiles.set("catalog.json", {
+    contents: stableJson(aggregate),
+    contentType: JSON_CONTENT_TYPE,
+  });
   const generatedSearchIndex = searchIndex(source);
   const searchIssues = validateWith(
     validators.searchIndex,
@@ -228,7 +246,10 @@ export async function buildToDirectory(
   if (searchIssues.length > 0) {
     throw new Error(`搜索索引 Schema 校验失败:\n${formatValidationIssues(searchIssues)}`);
   }
-  logicalFiles.set("search-index.json", stableJson(generatedSearchIndex));
+  logicalFiles.set("search-index.json", {
+    contents: stableJson(generatedSearchIndex),
+    contentType: JSON_CONTENT_TYPE,
+  });
   for (const provider of sortBy(source.providers, (item) => item.provider_id)) {
     const shardPath = `providers/${provider.provider_id}.json`;
     const shard = providerShard(source, provider);
@@ -236,16 +257,32 @@ export async function buildToDirectory(
     if (shardIssues.length > 0) {
       throw new Error(`provider 分片 Schema 校验失败:\n${formatValidationIssues(shardIssues)}`);
     }
-    logicalFiles.set(shardPath, stableJson(shard));
+    logicalFiles.set(shardPath, {
+      contents: stableJson(shard),
+      contentType: JSON_CONTENT_TYPE,
+    });
+  }
+
+  const siteFiles: Array<[string, string, StaticContentType, string | undefined]> = [
+    ["index.html", "web/index.html", "text/html; charset=utf-8", "no-cache, max-age=0, must-revalidate"],
+    ["assets/catalog.css", "web/catalog.css", "text/css; charset=utf-8", undefined],
+    ["assets/catalog.js", "web/catalog.js", "text/javascript; charset=utf-8", undefined],
+  ];
+  for (const [outputPath, sourcePath, contentType, cacheControl] of siteFiles) {
+    logicalFiles.set(outputPath, {
+      contents: await readFile(join(repositoryRoot, sourcePath), "utf8"),
+      contentType,
+      ...(cacheControl === undefined ? {} : { cacheControl }),
+    });
   }
 
   await rm(outputDirectory, { recursive: true, force: true });
   await mkdir(outputDirectory, { recursive: true });
   const files: ManifestFile[] = [];
-  for (const [path, contents] of [...logicalFiles.entries()].sort(([left], [right]) =>
+  for (const [path, file] of [...logicalFiles.entries()].sort(([left], [right]) =>
     left.localeCompare(right, "en"),
   )) {
-    files.push(await writeLogicalFile(outputDirectory, source.release.catalog_version, path, contents));
+    files.push(await writeLogicalFile(outputDirectory, source.release.catalog_version, path, file));
   }
   const manifest: Manifest = {
     schema_version: source.release.schema_version,

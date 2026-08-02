@@ -11,13 +11,15 @@
 | `offering.schema.json` | provider 对模型的公开 API offering | `offering_id`、`provider_id`、`canonical_id`、`api_model_id` |
 | `alias.schema.json` | provider-scoped 或全局别名 | alias、target type/id；支持 alias 链但禁止循环 |
 | `catalog.schema.json` | 构建后的聚合目录 | Schema/目录版本和上述四类数组 |
-| `manifest.schema.json` | 静态发布入口 | 版本、生成时间、路径、大小、SHA-256、ETag、缓存和编码描述 |
+| `manifest.schema.json` | 静态发布入口 | 版本、生成时间、JSON/HTML/CSS/JS 路径、Content-Type、大小、SHA-256、ETag、缓存和编码描述 |
 | `release.schema.json` | 构建版本输入 | 目录/Schema 版本、固定生成时间、最低消费版本 |
 | `upstream-config.schema.json` | CI 候选源配置 | HTTPS 来源、格式、Key 环境变量名和响应大小上限 |
 | `provider-shard.schema.json` | 构建后的供应商分片 | 单 provider 及其 canonical/offering/alias 子集 |
 | `search-index.schema.json` | 轻量检索输出 | 身份、名称、别名、类型、状态和模态 |
 
 所有对象 `additionalProperties: false`。新增字段必须先评审 Schema 和兼容版本，避免上游任意字段悄然进入权威格式。
+
+当前发布契约为 Schema `2.0.0`。相较 JSON-only 的 `1.x` manifest，`2.0.0` 允许 manifest 描述 HTML、CSS 和 JavaScript，并在轻量搜索索引增加 `provider_name`。由于旧版严格校验器会拒绝这些文件项，该变化按 major 发布，`minimum_consumer_schema_version` 同步设为 `2.0.0`；旧消费端应继续使用最后成功缓存或内置快照。
 
 ## 限额
 
