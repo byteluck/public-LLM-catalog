@@ -155,7 +155,7 @@ flowchart LR
 - 私有网关使用自定义标识：必须由用户明确确认映射到当前 offering，保存为 `binding_mode=explicit_override`；
 - 不允许根据名称、前缀或正则自动猜测 offering。
 
-协议从 offering 的 `protocols` 中选择。只有一个协议时可以预选；多个协议时必须由用户选择；`unknown` 时不能自动选择。Base URL、API Key、环境和权重始终保持空白，由租户在现有端点区域填写。
+协议从 offering 的 `protocols` 中选择。当前兼容表单在明确包含 `openai_chat_completions` 时预选 OpenAI，否则在明确包含 `anthropic_messages` 时预选 Anthropic；Responses-only 和 `unknown` 不能伪装成 Chat Completions。Base URL、API Key、环境和权重始终保持空白，由租户在现有端点区域填写。
 
 原有“新增模型”按钮继续保留，用于没有目录记录的私有/自研模型。这类记录的绑定状态是 `unlinked`，能力默认 unknown；只有端点实测或受审计的显式 override 可以逐项收紧，不能从模型名称继承能力。
 
@@ -167,7 +167,7 @@ flowchart LR
 2. **租户部署**：实际 API model ID、协议、环境端点、Key、权重、网络和适用范围。
 3. **租户运行覆盖**：`max_output_tokens`、较小的 `max_input_tokens`、Embedding dimension，以及将来经过端到端映射的采样/推理参数。
 
-目录的 `max_output_tokens` 是上限，不得自动写入租户的请求值。租户覆盖留空表示交给 System Default / Agent Policy；填写时必须不超过 offering 上限。`max_context_tokens` 只展示，绝不代替 `max_input_tokens`。
+目录的 `max_output_tokens` 是能力上限，不是官方请求默认值。为满足当前创建页“选择后完整回填已有字段”的产品要求，兼容实现暂时将它写入旧字段 `max_tokens`，并将 `max_context_tokens` 写入同名旧字段；页面要求用户确认。后续 DTO 拆分时应把两者迁移为只读目录事实，再由 System Default / Agent Policy / Tenant Override 独立生成请求值。`max_input_tokens` 始终独立，绝不由 context 代替。
 
 在 FDE 构造器映射和契约测试完成前，`temperature`、`top_p`、`top_k`、reasoning effort 等输入不在前端开放。上线后也必须按以下规则动态呈现：
 
@@ -200,7 +200,7 @@ flowchart LR
 3. iframe 只用 `window.parent.postMessage(message, parentOrigin)` 精确发送，不使用 `*`。
 4. 父页面同时校验 `event.origin`、`event.source === iframe.contentWindow`、channel、协议版本和 session；任一不匹配都静默丢弃。
 5. `catalog.selection` 只含 schema/catalog 版本、provider/canonical/offering/API ID、协议、模态、三类限额、三态 Agent/推理摘要、Embedding 维度和 provider 分片 SHA-256。它不含 Base URL、API Key、环境、权重、租户或证据正文。
-6. 父页面重新按白名单解析 payload，丢弃所有额外字段；目录 `unknown` 保持 unknown，目录 token 上限只展示，不写入租户运行参数。
+6. 父页面重新按白名单解析 payload，丢弃所有额外字段；目录 `unknown` 保持 unknown。当前兼容创建表单会回填已知的 context/output 上限，但不把 `max_input_tokens` 混入任一旧字段。
 7. iframe/manifest 暂时不可用时，“新增模型”仍可手工创建；已有配置与运行时完全不依赖 iframe 在线。
 
 `.env` 默认增加 `VUE_APP_LLM_CATALOG_PATH=/LLM_catalog/index.html`。`VUE_APP_CDN_PATH` 和该 path 同时注入 `window.__APP_ENV__`，私有化安装包可以在部署阶段替换，不要求业务后端感知目录地址。
@@ -239,7 +239,7 @@ interface CatalogMessageEnvelope<T> {
 }
 ```
 
-目录端实现位于 `web/catalog-embed.js`，父页面白名单解析实现位于 `src/views/LlmConfig/publicCatalogBridge.ts`。两端契约测试共同断言 exact origin/source/session、`unknown` 保留、token 上限不预填以及消息不含 tenant/secret 字段。
+目录端实现位于 `web/catalog-embed.js`，父页面白名单解析实现位于 `src/views/LlmConfig/publicCatalogBridge.ts`。两端契约测试共同断言 exact origin/source/session、`unknown` 保留、已知字段完整回填以及消息不含 tenant/secret 字段。
 
 ### 保存
 
@@ -278,9 +278,9 @@ interface CatalogMessageEnvelope<T> {
 | `api_model_id` | 作为实际 `model` 的建议值 | `model` 保存实际值，另存目录 API ID | 实际值进入 adapter；绑定只提供能力基线 |
 | `protocols` | 只能选择明确列出的协议 | 保存具体 wire protocol | 决定 ChatOpenAI Responses/Chat Completions、ChatAnthropic 或 Embedding adapter |
 | provider `public_base_urls` | 可作为说明，不自动写入 | 不属于目录绑定 | 实际 Base URL 永远来自 tenant deployment |
-| `limits.max_context_tokens` | 只读 | 不作为运行覆盖 | 不映射 `model.profile.maxInputTokens` |
+| `limits.max_context_tokens` | 当前兼容页自动回填；目标形态只读 | 过渡期进入同名旧字段，后续迁移为目录事实 | 不得映射 `model.profile.maxInputTokens` |
 | `limits.max_input_tokens` | 显示上限，可允许较小覆盖 | 新增独立字段 | 映射 DeepAgent profile / Embedding 输入预检 |
-| `limits.max_output_tokens` | 显示上限，不自动预填 | `max_output_tokens` 是可选运行覆盖 | 通过上限校验后映射 `maxTokens` |
+| `limits.max_output_tokens` | 当前兼容页自动回填并提示确认 | 过渡期进入 `max_tokens`；目标 DTO 中上限与运行覆盖分离 | 运行覆盖通过上限校验后映射 `maxTokens` |
 | `capabilities.agent.*` | 九个三态只读展示 | 不由普通租户改写 | true 发送/启用；false 禁止；unknown 默认省略并诊断 |
 | `capabilities.reasoning.*` | 细粒度展示 | 只保存已实现的策略覆盖 | 依 effort/budget/协议映射过滤 |
 | `sampling_parameters.*` | 展示支持、范围和官方默认 | 仅保存 Tenant Override | 与 System/Agent 三层合并后过滤 |
@@ -363,7 +363,7 @@ FDE 的构造器映射仍按[现有项目参数审计与集成计划](audit-and-
 - 选择 offering 后保存 identity、目录版本和哈希；编辑时可恢复同一绑定。
 - 租户实际模型 ID 与目录 API ID 不同时，必须保存 `explicit_override`；同 provider alias 可确定性解析；不按名称猜测。
 - `unknown` 在前端、DTO、数据库、Resource VO 和 FDE 全链路保持 unknown/null，不变成 false。
-- context/input/output 三类限额分别展示；目录最大输出不会自动写成请求 `max_tokens`。
+- context/input/output 三类限额保持不同语义；当前兼容页只把 context/output 回填到各自旧字段，不得用 context 猜测 input。目标 DTO 上线后应将目录上限与请求覆盖分开保存。
 - Base URL、Key、环境和权重不会进入目录查询、目录缓存键、公开日志或静态文件。
 - 目录标记 false/unknown 的参数不会进入 ChatOpenAI、ChatAnthropic、Embedding 或 DeepAgent 请求，并产生明确诊断。
 - 新目录版本不会自动改变已有租户模型；降级、限额下降、协议删除和 retired 必须人工评审。
