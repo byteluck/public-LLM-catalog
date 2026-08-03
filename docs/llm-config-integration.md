@@ -26,7 +26,7 @@
 
 | 仓库 | HEAD | 审计范围 |
 | --- | --- | --- |
-| `pro-lowcode-platform-front` | `a0b4bfb4ef317134953ccde14f312a3e672ab3c5` | `src/views/LlmConfig/`、`src/services/llmConfigService.ts`、静态目录客户端与环境注入；原生联动及核验/创建指导已进入当前 HEAD |
+| `pro-lowcode-platform-front` | `b789cc295a61299d9c1cf00719b4f932afdef93d` | `src/views/LlmConfig/`、`src/services/llmConfigService.ts`、静态目录客户端与环境注入；原生联动及核验/创建指导已进入当前 HEAD |
 | `baiteda-app` | `fd9e69b4305c9c4db804e9443c40284fa28eeeaa` | 公开目录服务、模型保存 DTO/PO/VO、保存与下发逻辑 |
 | `fses-design-mono` | `15cfb978f327307164503d86196812701dc7f472` | `开发要求.md`、`model-runtime.ts`、`create-agent.ts` |
 | 本目录仓库 | `81556b041195faca95a59002db2f3d9cca42a6bf` | Schema `2.4.0`、目录版本 `2026.08.6` 的 manifest、搜索索引、provider 分片与静态消费契约 |

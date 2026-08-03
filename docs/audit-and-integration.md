@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | `baiteda-app` | `fd9e69b4305c9c4db804e9443c40284fa28eeeaa` | `SystemLlmModelPo.java`、`LlmModelPublicCatalogService.java`、模型保存 DTO/VO 与保存逻辑 |
 | `fses-design-mono` | `15cfb978f327307164503d86196812701dc7f472` | `开发要求.md`、`model-runtime.ts`、`create-agent.ts` |
-| `pro-lowcode-platform-front` | `a0b4bfb4ef317134953ccde14f312a3e672ab3c5` | `src/views/LlmConfig/`、静态目录客户端与环境注入；原生静态 JSON 联动及核验/创建指导已进入当前 HEAD |
+| `pro-lowcode-platform-front` | `b789cc295a61299d9c1cf00719b4f932afdef93d` | `src/views/LlmConfig/`、静态目录客户端与环境注入；原生静态 JSON 联动及核验/创建指导已进入当前 HEAD |
 
 目录证据记录为本次最后复核到的当前 HEAD。初始模型集合来自 FDE 当前默认值和运行时契约测试：`gpt-5.5`、`glm-5.2`、`glm-4.6v`、`embedding-3`，分别覆盖默认聊天、推理工具、多模态视觉和 Embedding 配置形态。
 
