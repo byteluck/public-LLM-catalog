@@ -101,7 +101,7 @@ npm run --silent publish -- --provider oss --prefix public-llm-catalog > publish
 - 不对已经压缩的 `.gz`/`.br` 再压缩。
 - HTTPS 域名、证书和 DNS 均在中国大陆可访问；如面向公众按要求完成备案。
 - 不把不存在的 `.json` 重写成 `index.html`，目录不是 SPA。
-- iframe 导航及 iframe 内的同源 JSON 请求不依赖父页面 CORS；为独立机器消费者或未来直接 JSON 消费仍可允许 `GET`、`HEAD`、`OPTIONS`，公开数据返回 `Access-Control-Allow-Origin: *`（或列出允许 origin）且不要启用 credentials。建议暴露 `ETag`、`Cache-Control`、`Content-Length`、`Content-Type`，所有压缩变体都必须保留可重新验证的 ETag。
+- `pro-lowcode-platform-front` 会跨域直接读取 JSON，因此 CDN 必须允许 `GET`、`HEAD`、`OPTIONS`，公开数据返回 `Access-Control-Allow-Origin: *`（或列出允许的平台 origin）且不要启用 credentials。建议暴露 `ETag`、`Cache-Control`、`Content-Length`、`Content-Type`，所有压缩变体都必须保留可重新验证的 ETag。同源私有化部署不需要额外 CORS。
 - 如通过内容协商自动选择编码，仍保留显式 sidecar URL供探测，并正确设置 `Vary: Accept-Encoding`。
 
 ## 国内网络探测
@@ -145,11 +145,12 @@ CATALOG_PROBE_PARENT_ORIGIN=https://ai.example.cn \
 ```dotenv
 VUE_APP_CDN_PATH=https://fe-resource.baiteda.com
 VUE_APP_LLM_CATALOG_PATH=/LLM_catalog/index.html
+VUE_APP_LLM_CATALOG_MANIFEST_PATH=/LLM_catalog/manifest.json
 ```
 
-客户私有化部署把 `VUE_APP_CDN_PATH` 设置为客户内网 HTTPS 静态资源 origin，目录仍可保持相同 path；也可以用同源相对 CDN path。两个变量都注入现有 `window.__APP_ENV__`，可由安装包部署模板覆盖。空值或目录不可用时只影响“从公开目录创建”，原有手工新增和已保存模型不能受影响。
+客户私有化部署把 `VUE_APP_CDN_PATH` 设置为客户内网 HTTPS 静态资源 origin，目录仍可保持相同 path；也可以用同源相对 CDN path。三个变量都注入现有 `window.__APP_ENV__`，可由安装包部署模板覆盖。空值或目录不可用时只影响“从公开目录创建”，原有手工新增和已保存模型不能受影响。
 
-不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为 fallback。iframe 内的目录页面每次刷新只先请求 manifest；版本未变不下载 search index，只有打开模型详情时才读取对应 provider 分片。CDN 不得返回 `X-Frame-Options: DENY/SAMEORIGIN`，HTTP CSP 如设置 `frame-ancestors`，必须显式允许模型管理前端的 origin。网络、Schema 或哈希失败时继续使用该目录 origin 下的最后验证缓存；没有缓存时回退到手工创建。`baiteda-app` 不保存目录地址，也不访问 CDN。
+不要配置 GitHub、models.dev、LiteLLM 或海外厂商 URL 作为 fallback。模型管理前端每次打开只先请求 manifest；版本和哈希未变时不下载 search index，只有选择模型时才读取对应 provider 分片。网络、Schema 或哈希失败时继续使用该目录 origin 下的最后验证缓存；没有缓存时回退到手工创建。`baiteda-app` 不保存目录地址，也不访问 CDN。只有仍使用可选 iframe picker 的其他消费者，才需要额外配置 `X-Frame-Options` / CSP `frame-ancestors`。
 
 ## 凭据与回滚
 

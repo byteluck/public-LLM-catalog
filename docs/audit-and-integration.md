@@ -2,17 +2,17 @@
 
 ## 审计基线
 
-2026-08-02 重新读取了要求中的全部文件和 `LlmConfig/` 目录。审计以读取时 HEAD 为准；本次 iframe 联动修改 `pro-lowcode-platform-front`，`baiteda-app` 与 FDE 只读审计、未修改：
+2026-08-03 再次读取了要求中的全部文件和 `LlmConfig/` 目录。审计以读取时 HEAD 为准；`baiteda-app` 与 FDE 的必读文件均未带工作区修改，本目录不修改这两个仓库：
 
 | 仓库 | HEAD | 必读范围 |
 | --- | --- | --- |
-| `baiteda-app` | `e32efc42d96663f0dfe29958e5eb5d21f0030c7c` | `SystemLlmModelPo.java`、`LlmModelPublicCatalogService.java`、模型保存 DTO/VO 与保存逻辑 |
-| `fses-design-mono` | `c88e5def41856e42449d52ed6d1b05e6fab09d12` | `开发要求.md`、`model-runtime.ts`、`create-agent.ts` |
-| `pro-lowcode-platform-front` | `2f514d4c14f754efc9e0d967fc73bb0e840c41ba` | `src/views/LlmConfig/`、目录 API 与环境注入 |
+| `baiteda-app` | `fd9e69b4305c9c4db804e9443c40284fa28eeeaa` | `SystemLlmModelPo.java`、`LlmModelPublicCatalogService.java`、模型保存 DTO/VO 与保存逻辑 |
+| `fses-design-mono` | `15cfb978f327307164503d86196812701dc7f472` | `开发要求.md`、`model-runtime.ts`、`create-agent.ts` |
+| `pro-lowcode-platform-front` | `a0b4bfb4ef317134953ccde14f312a3e672ab3c5` | `src/views/LlmConfig/`、静态目录客户端与环境注入；原生静态 JSON 联动及核验/创建指导已进入当前 HEAD |
 
-FDE 这三个必读文件从先前审计点 `c7be767a...` 到当前 HEAD 没有差异；目录证据记录为本次最后复核到的当前 HEAD。初始模型集合来自 FDE 当前默认值和运行时契约测试：`gpt-5.5`、`glm-5.2`、`glm-4.6v`、`embedding-3`，分别覆盖默认聊天、推理工具、多模态视觉和 Embedding 配置形态。
+目录证据记录为本次最后复核到的当前 HEAD。初始模型集合来自 FDE 当前默认值和运行时契约测试：`gpt-5.5`、`glm-5.2`、`glm-4.6v`、`embedding-3`，分别覆盖默认聊天、推理工具、多模态视觉和 Embedding 配置形态。
 
-`LlmConfig` 的创建模型联动已进一步细化为[目录绑定与租户 deployment 设计](llm-config-integration.md)。本次已把选择入口改成可配置 CDN iframe + postMessage，前端不再调用后端公开目录搜索；选择后当前仍只做安全预填，没有持久化 catalog identity 和版本。完整目标是在后续保存契约中接收经过白名单校验的绑定与可选能力快照，后端始终不访问目录 CDN。
+`LlmConfig` 的创建模型联动已进一步细化为[目录绑定与租户 deployment 设计](llm-config-integration.md)。选择入口直接读取可配置 CDN 的 manifest、搜索索引和按需 provider 分片，用前端自身组件渲染，不再调用后端公开目录搜索，也不再使用 iframe/postMessage；选择后当前仍只做安全预填，没有持久化 catalog identity 和版本。完整目标是在后续保存契约中接收经过白名单校验的绑定与可选能力快照，后端始终不访问目录 CDN。
 
 ## 当前参数差距矩阵
 
@@ -57,7 +57,7 @@ FDE 这三个必读文件从先前审计点 `c7be767a...` 到当前 HEAD 没有�
 | `.../dal/entity/mysql/SystemLlmModelPo.java` 与数据库迁移 | 增加 `catalog_canonical_id`、`catalog_provider_id`、`catalog_offering_id`、`catalog_version`、`catalog_schema_version`、`catalog_api_model_id`、`catalog_binding_mode`、`catalog_shard_sha256` 和独立 `max_input_tokens`；明确现有 `model=租户实际 api_model_id`、`max_tokens=tenant max_output_tokens`。`explicit_override` 由绑定模式表达，不根据名称猜测。`temperature/top_p` 只能作为 tenant override，可增加 `top_k`/`reasoning_effort`，但必须与同一版本的运行时映射一起上线。私有 capability override 若确有需要，应放租户受控 JSON，不能回写公开目录 |
 | `.../common/domain/dto/ai/LlmModelSaveDto.java` | 增加 catalog binding、输入预算、运行策略和可选的严格白名单 capability snapshot；sampling 值只能进入 tenant override。服务端拒绝 evidence、Logo、目录 URL、secret、未知扩展字段，并重新计算 projection SHA-256 |
 | `.../common/domain/vo/ai/LlmModelDetailVo.java`、`LlmModelConfigResourceVo.java`、`LlmModelOptionVo.java` | 详情返回已保存的 catalog identity/版本/能力快照和三层合并前的 tenant override；Resource VO 只下发 FDE 真正消费的细粒度三态和协议映射。secret 权限边界保持不变 |
-| `.../vo/ai/LlmModelPublicCatalogTemplateVo.java`、`PageVo.java`、对应 Query BO | 删除；浏览、搜索和详情由 CDN iframe 完成，不再提供后端模板 API |
+| `.../vo/ai/LlmModelPublicCatalogTemplateVo.java`、`PageVo.java`、对应 Query BO | 删除；浏览、搜索和详情由前端直接读取 CDN 静态 JSON 完成，不再提供后端模板 API |
 | `.../biz/service/ai/impl/LlmModelPublicCatalogService.java` 及测试 | 删除；Java 不再读取公司 CDN、客户目录、models.dev 或 GitHub，也不保留任何运行时 fallback |
 | `.../biz/service/ai/impl/LlmModelConfigServiceImpl.java` | 删除目录服务注入和模板搜索；保存时校验 binding/snapshot 形状、ID 一致性和哈希，unknown 不默认成 false；合并 System Default < Tenant Override < Agent Policy，输出 capability-filtered runtime plan 或向 FDE 提供完整过滤输入 |
 | `.../web/controller/.../LlmModelConfigController.java`、`LlmModelConfigSpController.java` | 删除 `searchPublicModelTemplates`；Save/Detail/Resource BO/VO 协议版本化并携带保存后的 binding/能力诊断，但永不在非授权接口返回密钥 |
@@ -93,12 +93,13 @@ FDE 这三个必读文件从先前审计点 `c7be767a...` 到当前 HEAD 没有�
 
 | 文件 | 所需变更 |
 | --- | --- |
-| `.env`、`index.html`、`public/index.html` | 增加 `VUE_APP_LLM_CATALOG_PATH=/LLM_catalog/index.html`，与 `VUE_APP_CDN_PATH` 一起注入 `window.__APP_ENV__`；私有化部署由部署器覆盖 CDN origin/path |
-| `src/views/LlmConfig/publicCatalogBridge.ts`（新增） | 组合 iframe URL，为每次打开生成 session；严格校验 origin/source/channel/version/session，并对白名单 payload 重新解析。manifest、分片、SHA-256 与缓存继续由目录 iframe 自身完成 |
+| `.env`、`index.html`、`public/index.html` | 增加 `VUE_APP_LLM_CATALOG_MANIFEST_PATH=/LLM_catalog/manifest.json`，并保留完整目录页面路径；与 `VUE_APP_CDN_PATH` 一起注入 `window.__APP_ENV__` |
+| `src/views/LlmConfig/publicCatalogClient.ts`（新增） | 每次先取 manifest；按哈希缓存 search index，按需读取 provider 分片；校验 size/SHA-256，失败回退最后成功快照，请求不带凭据 |
+| `src/views/LlmConfig/publicCatalogBridge.ts` | 对已校验的 provider 分片做公开字段白名单投影和表单映射；unknown 不转 false，租户字段不进入投影 |
 | `src/services/llmConfigService.ts` | 删除 `searchPublicModelTemplates` 和旧 Template 类型；Save/Detail DTO 增加 catalog binding、unknown、可选 capability snapshot 和 runtime override |
 | `src/views/LlmConfig/index.vue` | 先展示 canonical/offering 并允许 provider-scoped alias/私有 override；把 context/input/output 三个限额分栏；显示细粒度能力和字段证据。采样输入明确标注为三层策略中的 Tenant Override，并按 capability 禁用/隐藏；不得继续提交“后端存了但 FDE 不消费”的字段 |
 | `modelCapabilityAssistant.ts` | 外部识别结果只能形成候选，不得用名称猜测；产出与目录 Schema 对齐的三态和证据，不直接改 tenant secret/deployment；旧 `function_call` 只能从细能力保守派生 |
-| contract/unit test | 增加环境地址、iframe source/origin/session、unknown 保留、三限额不预填、private override、capability gating、sampling 分层及无 URL/Key 进入公开消息的测试 |
+| contract/unit test | 增加私有 CDN 地址、manifest 增量缓存、哈希失败、上次成功回退、unknown 保留、private override、capability gating、sampling 分层及无 URL/Key 进入公开投影的测试 |
 
 当前前端界面可编辑 `max_tokens`、`max_context_tokens`、`function_call`、reason flag 和 Embedding dimension，但保存时把 `temperature`、`top_p` 固定为 null。后续只有在 baiteda BO/VO、FDE 构造器映射和端到端契约测试同时合入后，才允许开放某个新增运行时输入。
 

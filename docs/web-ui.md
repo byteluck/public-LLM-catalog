@@ -42,6 +42,8 @@ sequenceDiagram
 
 ## iframe 选择模式
 
+该模式作为通用静态目录能力保留；`pro-lowcode-platform-front/LlmConfig` 已直接读取 manifest/search-index/provider 分片并使用 Ant Design 原生渲染，不嵌入此页面。
+
 业务前端用 `embed=picker&protocol_version=1&parent_origin=...&session_id=...` 打开同一 `index.html` 时，页面隐藏首页介绍、上游路线和页脚，保留紧凑搜索、卡片和详情。用户在详情中点击“使用此模型”后，页面以 channel `com.baiteda.public-llm-catalog` 向精确的 `parent_origin` 发送 `catalog.selection`。
 
 目录端会核对 parent origin、referrer origin 与 session；父页面还必须核对 `event.origin`、`event.source`、channel、版本和 session。消息只投影公开 identity、协议、模态、限额、三态能力、Embedding 摘要和 provider 分片哈希，不含租户、端点或凭据。普通访问不带 embed 参数时仍是完整独立浏览页。

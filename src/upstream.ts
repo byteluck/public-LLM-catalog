@@ -336,7 +336,10 @@ export function assessCrossSourceConflicts(
   return conflicts;
 }
 
-async function fetchPayload(source: UpstreamSourceConfig): Promise<unknown> {
+async function fetchPayload(
+  source: UpstreamSourceConfig,
+  fetchImplementation: typeof fetch,
+): Promise<unknown> {
   const headers = new Headers({ accept: "application/json" });
   if (source.api_key_env !== null) {
     const key = process.env[source.api_key_env];
@@ -345,7 +348,7 @@ async function fetchPayload(source: UpstreamSourceConfig): Promise<unknown> {
     }
     headers.set("authorization", `Bearer ${key}`);
   }
-  const response = await fetch(source.url, {
+  const response = await fetchImplementation(source.url, {
     headers,
     signal: AbortSignal.timeout(60_000),
   });
@@ -385,7 +388,9 @@ export async function syncUpstreamCandidates(input: {
   config: UpstreamConfig;
   catalog: SourceCatalog;
   outputDirectory: string;
+  fetchImplementation?: typeof fetch;
 }): Promise<CandidateReview> {
+  const fetchImplementation = input.fetchImplementation ?? fetch;
   const pending: Array<{ path: string; snapshot: CandidateSnapshot; previous: CandidateSnapshot | null }> = [];
   for (const source of input.config.sources.filter((item) => item.enabled)) {
     if (
@@ -395,7 +400,7 @@ export async function syncUpstreamCandidates(input: {
       console.warn(`${source.source_id}: 缺少 ${source.api_key_env}，保留已有候选且跳过。`);
       continue;
     }
-    const payload = await fetchPayload(source);
+    const payload = await fetchPayload(source, fetchImplementation);
     const snapshot = normalizeCandidateSnapshot({
       schemaVersion: input.config.schema_version,
       source,

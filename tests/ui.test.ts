@@ -148,6 +148,76 @@ describe("CDN 静态浏览界面", () => {
     });
   });
 
+  test("原生创建弹窗可由 manifest、搜索索引、供应商分片和同源 Logo 完整解析选择", async () => {
+    const index = await readJson<{
+      schema_version: string;
+      catalog_version: string;
+      items: Array<{
+        canonical_id: string;
+        offering_id: string;
+        provider_id: string;
+        api_model_id: string;
+        manufacturer_logo: string | null;
+      }>;
+    }>(join(outputDirectory, "search-index.json"));
+
+    expect(index.schema_version).toBe(manifest.schema_version);
+    expect(index.catalog_version).toBe(manifest.catalog_version);
+    expect(manifest.minimum_consumer_schema_version).toBe("2.4.0");
+
+    const descriptors = new Map(manifest.files.map((file) => [file.path, file]));
+    const providerIds = [...new Set(index.items.map((item) => item.provider_id))];
+    const shards = new Map(
+      await Promise.all(
+        providerIds.map(async (providerId) => {
+          const path = `providers/${providerId}.json`;
+          const descriptor = descriptors.get(path);
+          expect(descriptor?.immutable_path).toBe(
+            `versioned/${manifest.catalog_version}/${path}`,
+          );
+          const shard = await readJson<{
+            schema_version: string;
+            catalog_version: string;
+            provider: { provider_id: string };
+            models: Array<{ canonical_id: string }>;
+            offerings: Array<{
+              offering_id: string;
+              canonical_id: string;
+              provider_id: string;
+              api_model_id: string;
+            }>;
+          }>(join(outputDirectory, path));
+          expect(shard.schema_version).toBe(manifest.schema_version);
+          expect(shard.catalog_version).toBe(manifest.catalog_version);
+          expect(shard.provider.provider_id).toBe(providerId);
+          return [providerId, shard] as const;
+        }),
+      ),
+    );
+
+    for (const item of index.items) {
+      const shard = shards.get(item.provider_id);
+      expect(shard).toBeDefined();
+      expect(shard?.models.some((model) => model.canonical_id === item.canonical_id)).toBe(true);
+      expect(
+        shard?.offerings.some(
+          (offering) =>
+            offering.offering_id === item.offering_id &&
+            offering.canonical_id === item.canonical_id &&
+            offering.provider_id === item.provider_id &&
+            offering.api_model_id === item.api_model_id,
+        ),
+      ).toBe(true);
+      if (item.manufacturer_logo !== null) {
+        const logo = descriptors.get(item.manufacturer_logo);
+        expect(logo?.content_type).toBe("image/svg+xml; charset=utf-8");
+        expect(logo?.immutable_path).toBe(
+          `versioned/${manifest.catalog_version}/${item.manufacturer_logo}`,
+        );
+      }
+    }
+  });
+
   test("已提升的 2026 模型在主目录索引中绑定同源厂家 logo", async () => {
     const index = await readJson<{
       items: Array<{

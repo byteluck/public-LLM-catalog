@@ -1,4 +1,3 @@
-import { createServer } from "node:http";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -162,15 +161,6 @@ describe("上游候选隔离", () => {
       join(REPOSITORY_ROOT, "dist", "catalog.json"),
     ];
     const publishedBefore = await Promise.all(publishedPaths.map((path) => readFile(path)));
-    const server = createServer((_request, response) => {
-      response.writeHead(503, { "content-type": "application/json" });
-      response.end('{"error":"unavailable"}');
-    });
-    await new Promise<void>((resolvePromise) => server.listen(0, "127.0.0.1", resolvePromise));
-    const address = server.address();
-    if (address === null || typeof address === "string") {
-      throw new Error("test server missing address");
-    }
     const temporary = await mkdtemp(join(tmpdir(), "llm-catalog-upstream-test-"));
     temporaryDirectories.push(temporary);
     const output = join(temporary, "upstream", "candidates");
@@ -181,23 +171,23 @@ describe("上游候选隔离", () => {
       $schema: "https://llm-catalog.example.cn/schemas/upstream-config.schema.json",
       schema_version: "1.0.0",
       targets: ["glm-5.2"],
-      sources: [{ ...source, url: `http://127.0.0.1:${address.port}/models` }],
+      sources: [{ ...source, url: "https://unavailable.example/models" }],
     };
-    try {
-      await expect(
-        syncUpstreamCandidates({
-          config,
-          catalog: await loadSourceCatalog(REPOSITORY_ROOT),
-          outputDirectory: output,
-        }),
-      ).rejects.toThrow(/HTTP 503/);
-      expect(await readFile(existingPath, "utf8")).toBe("existing-candidate\n");
-      const publishedAfter = await Promise.all(publishedPaths.map((path) => readFile(path)));
-      expect(publishedAfter).toEqual(publishedBefore);
-    } finally {
-      await new Promise<void>((resolvePromise, reject) =>
-        server.close((error) => (error === undefined ? resolvePromise() : reject(error))),
-      );
-    }
+    const unavailableFetch: typeof fetch = async () =>
+      new Response('{"error":"unavailable"}', {
+        status: 503,
+        headers: { "content-type": "application/json" },
+      });
+    await expect(
+      syncUpstreamCandidates({
+        config,
+        catalog: await loadSourceCatalog(REPOSITORY_ROOT),
+        outputDirectory: output,
+        fetchImplementation: unavailableFetch,
+      }),
+    ).rejects.toThrow(/HTTP 503/);
+    expect(await readFile(existingPath, "utf8")).toBe("existing-candidate\n");
+    const publishedAfter = await Promise.all(publishedPaths.map((path) => readFile(path)));
+    expect(publishedAfter).toEqual(publishedBefore);
   });
 });

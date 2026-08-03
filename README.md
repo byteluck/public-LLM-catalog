@@ -19,7 +19,7 @@ npm run preview
 生成物同时服务三类消费者：
 
 - 人员访问 CDN 根地址，通过纯静态页面搜索、筛选并查看字段级详情。
-- 模型管理前端以 iframe picker 打开同一页面，通过带 origin/source/session 校验的 postMessage 选择 offering。
+- 模型管理前端直接读取 manifest、搜索索引和按需 provider 分片，用自身组件库渲染列表；独立页面及 iframe picker 作为其他消费者的可选接入方式保留。
 - 程序从 `manifest.json`、`catalog.json` 或 provider 分片读取机器可验证的 JSON。
 
 ## 数据边界

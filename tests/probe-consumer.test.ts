@@ -1,4 +1,3 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, normalize, relative, resolve } from "node:path";
@@ -15,8 +14,7 @@ import type { AggregatedCatalog } from "../src/types.js";
 
 let temporaryRoot: string | undefined;
 let distDirectory: string;
-let baseUrl: string;
-let server: ReturnType<typeof createServer> | undefined;
+const baseUrl = "https://catalog.example/";
 const requestCounts = new Map<string, number>();
 
 function cacheControl(path: string): string {
@@ -44,29 +42,36 @@ function contentType(path: string): string {
   return "application/json; charset=utf-8";
 }
 
-async function serve(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  const requestedPath = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname).replace(/^\//, "");
+const fetchDist: typeof fetch = async (input, init) => {
+  const request = input instanceof Request ? input : undefined;
+  const requestUrl = request?.url ?? String(input);
+  const method = (init?.method ?? request?.method ?? "GET").toUpperCase();
+  const requestHeaders = new Headers(request?.headers);
+  if (init?.headers !== undefined) {
+    new Headers(init.headers).forEach((value, key) => requestHeaders.set(key, value));
+  }
+  const requestedPath = decodeURIComponent(new URL(requestUrl).pathname).replace(/^\//, "");
   const pathname = requestedPath === "" ? "index.html" : requestedPath;
   requestCounts.set(pathname, (requestCounts.get(pathname) ?? 0) + 1);
   const candidate = resolve(distDirectory, normalize(pathname));
   if (relative(distDirectory, candidate).startsWith("..")) {
-    response.writeHead(403).end();
-    return;
+    return new Response(null, { status: 403 });
   }
   try {
     if (!(await stat(candidate)).isFile()) {
-      response.writeHead(404).end();
-      return;
+      return new Response(null, { status: 404 });
     }
     const bytes = await readFile(candidate);
     const etag = `"${sha256(bytes)}"`;
-    if (request.headers["if-none-match"] === etag) {
-      response.writeHead(304, { etag, "cache-control": cacheControl(pathname) }).end();
-      return;
+    if (requestHeaders.get("if-none-match") === etag) {
+      return new Response(null, {
+        status: 304,
+        headers: { etag, "cache-control": cacheControl(pathname) },
+      });
     }
-    const headers: Record<string, string | number> = {
+    const headers: Record<string, string> = {
       "content-type": contentType(pathname),
-      "content-length": bytes.byteLength,
+      "content-length": String(bytes.byteLength),
       "cache-control": cacheControl(pathname),
       etag,
     };
@@ -75,12 +80,11 @@ async function serve(request: IncomingMessage, response: ServerResponse): Promis
     } else if (pathname.endsWith(".br")) {
       headers["content-encoding"] = "br";
     }
-    response.writeHead(200, headers);
-    response.end(request.method === "HEAD" ? undefined : bytes);
+    return new Response(method === "HEAD" ? null : new Uint8Array(bytes), { headers });
   } catch {
-    response.writeHead(404).end();
+    return new Response(null, { status: 404 });
   }
-}
+};
 
 class MemoryCache implements CatalogCache {
   value: {
@@ -111,27 +115,9 @@ beforeAll(async () => {
   temporaryRoot = root;
   distDirectory = join(root, "llm-catalog-dist");
   await buildToDirectory(REPOSITORY_ROOT, distDirectory);
-  const createdServer = createServer((request, response) => {
-    void serve(request, response);
-  });
-  server = createdServer;
-  await new Promise<void>((resolvePromise) =>
-    createdServer.listen(0, "127.0.0.1", resolvePromise),
-  );
-  const address = createdServer.address();
-  if (address === null || typeof address === "string") {
-    throw new Error("test server missing address");
-  }
-  baseUrl = `http://127.0.0.1:${address.port}/`;
 });
 
 afterAll(async () => {
-  if (server?.listening) {
-    const activeServer = server;
-    await new Promise<void>((resolvePromise, reject) =>
-      activeServer.close((error) => (error === undefined ? resolvePromise() : reject(error))),
-    );
-  }
   if (temporaryRoot !== undefined) {
     await rm(temporaryRoot, { recursive: true, force: true });
   }
@@ -144,6 +130,7 @@ describe("国内静态地址与消费缓存", () => {
       repositoryRoot: REPOSITORY_ROOT,
       allowHttp: true,
       parentOrigin: new URL(baseUrl).origin,
+      fetchImplementation: fetchDist,
     });
     const candidateSnapshot = await readJson<{ models: unknown[]; providers: unknown[] }>(
       join(REPOSITORY_ROOT, "upstream/models-dev-2026.json"),
@@ -175,6 +162,7 @@ describe("国内静态地址与消费缓存", () => {
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
       supportedSchemaVersion: "2.4.0",
+      fetchImplementation: fetchDist,
     });
     const afterFirst = requestCounts.get(catalogPath) ?? 0;
     const second = await refreshCatalog({
@@ -183,6 +171,7 @@ describe("国内静态地址与消费缓存", () => {
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
       supportedSchemaVersion: "2.4.0",
+      fetchImplementation: fetchDist,
     });
     const afterSecond = requestCounts.get(catalogPath) ?? 0;
     expect(first.source).toBe("download");
@@ -201,6 +190,7 @@ describe("国内静态地址与消费缓存", () => {
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
       supportedSchemaVersion: "2.4.0",
+      fetchImplementation: fetchDist,
     });
     const unavailableFetch: typeof fetch = () => Promise.reject(new Error("network unavailable"));
     const cached = await refreshCatalog({
@@ -232,6 +222,7 @@ describe("国内静态地址与消费缓存", () => {
       builtinSnapshot: snapshot,
       repositoryRoot: REPOSITORY_ROOT,
       supportedSchemaVersion: "1.0.0",
+      fetchImplementation: fetchDist,
     });
     expect(result).toMatchObject({
       source: "builtin_snapshot",

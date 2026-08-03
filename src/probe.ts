@@ -21,8 +21,12 @@ function urlAt(base: URL, path: string): URL {
   return new URL(path, normalized);
 }
 
-async function conditionalCacheCheck(url: URL, etag: string): Promise<void> {
-  const response = await fetch(url, { headers: { "if-none-match": etag } });
+async function conditionalCacheCheck(
+  url: URL,
+  etag: string,
+  fetchImplementation: typeof fetch,
+): Promise<void> {
+  const response = await fetchImplementation(url, { headers: { "if-none-match": etag } });
   if (response.status !== 304) {
     throw new Error(`${url} 未对 If-None-Match 返回 304（实际 ${response.status}）`);
   }
@@ -36,8 +40,12 @@ function requireHeader(response: Response, name: string, url: URL): string {
   return value;
 }
 
-async function checkHomepageEmbedding(url: URL, parentOrigin?: string): Promise<void> {
-  const response = await fetch(url, { method: "HEAD" });
+async function checkHomepageEmbedding(
+  url: URL,
+  fetchImplementation: typeof fetch,
+  parentOrigin?: string,
+): Promise<void> {
+  const response = await fetchImplementation(url, { method: "HEAD" });
   if (!response.ok) {
     throw new Error(`${url} HEAD HTTP ${response.status}`);
   }
@@ -79,8 +87,9 @@ async function fetchBytesWithCache(
   url: URL,
   expectedHash: string,
   expectedContentType: string,
+  fetchImplementation: typeof fetch,
 ): Promise<Uint8Array> {
-  const response = await fetch(url);
+  const response = await fetchImplementation(url);
   if (!response.ok) {
     throw new Error(`${url} HTTP ${response.status}`);
   }
@@ -94,7 +103,7 @@ async function fetchBytesWithCache(
   if (sha256(bytes) !== expectedHash) {
     throw new Error(`${url} SHA-256 与 manifest 不一致`);
   }
-  await conditionalCacheCheck(url, etag);
+  await conditionalCacheCheck(url, etag, fetchImplementation);
   return bytes;
 }
 
@@ -102,8 +111,9 @@ async function checkEncodedObject(
   url: URL,
   encoding: "gzip" | "br",
   immutable: boolean,
+  fetchImplementation: typeof fetch,
 ): Promise<void> {
-  const response = await fetch(url, { method: "HEAD" });
+  const response = await fetchImplementation(url, { method: "HEAD" });
   if (!response.ok) {
     throw new Error(`${url} HEAD HTTP ${response.status}`);
   }
@@ -122,13 +132,15 @@ export async function probeCatalog(input: {
   repositoryRoot: string;
   allowHttp?: boolean;
   parentOrigin?: string;
+  fetchImplementation?: typeof fetch;
 }): Promise<ProbeResult> {
+  const fetchImplementation = input.fetchImplementation ?? fetch;
   const base = new URL(input.baseUrl);
   if (base.protocol !== "https:" && input.allowHttp !== true) {
     throw new Error("国内发布探测默认要求 HTTPS；本地测试可显式 allowHttp");
   }
   const manifestUrl = urlAt(base, "manifest.json");
-  const manifestResponse = await fetch(manifestUrl);
+  const manifestResponse = await fetchImplementation(manifestUrl);
   if (!manifestResponse.ok) {
     throw new Error(`${manifestUrl} HTTP ${manifestResponse.status}`);
   }
@@ -144,21 +156,22 @@ export async function probeCatalog(input: {
   if (manifestIssues.length > 0) {
     throw new Error(formatValidationIssues(manifestIssues));
   }
-  await conditionalCacheCheck(manifestUrl, manifestEtag);
+  await conditionalCacheCheck(manifestUrl, manifestEtag, fetchImplementation);
 
   const homepageFile = manifest.files.find((file) => file.path === "index.html");
   if (homepageFile === undefined) {
     throw new Error("manifest 缺少 index.html，CDN 无法提供目录浏览首页");
   }
-  await checkHomepageEmbedding(urlAt(base, ""), input.parentOrigin);
+  await checkHomepageEmbedding(urlAt(base, ""), fetchImplementation, input.parentOrigin);
   await fetchBytesWithCache(
     urlAt(base, ""),
     homepageFile.sha256,
     homepageFile.content_type,
+    fetchImplementation,
   );
 
   const immutableManifestUrl = urlAt(base, `${manifest.immutable_base_path}manifest.json`);
-  const immutableManifestResponse = await fetch(immutableManifestUrl);
+  const immutableManifestResponse = await fetchImplementation(immutableManifestUrl);
   if (!immutableManifestResponse.ok) {
     throw new Error(`${immutableManifestUrl} HTTP ${immutableManifestResponse.status}`);
   }
@@ -188,9 +201,10 @@ export async function probeCatalog(input: {
       urlAt(base, file.path),
       file.sha256,
       file.content_type,
+      fetchImplementation,
     );
     const immutableUrl = urlAt(base, file.immutable_path);
-    const immutableResponse = await fetch(immutableUrl);
+    const immutableResponse = await fetchImplementation(immutableUrl);
     if (!immutableResponse.ok) {
       throw new Error(`${immutableUrl} HTTP ${immutableResponse.status}`);
     }
@@ -202,10 +216,30 @@ export async function probeCatalog(input: {
       throw new Error(`${immutableUrl} SHA-256 与 manifest 不一致`);
     }
     await Promise.all([
-      checkEncodedObject(urlAt(base, file.encodings.gzip.path), "gzip", false),
-      checkEncodedObject(urlAt(base, file.encodings.br.path), "br", false),
-      checkEncodedObject(urlAt(base, file.encodings.gzip.immutable_path), "gzip", true),
-      checkEncodedObject(urlAt(base, file.encodings.br.immutable_path), "br", true),
+      checkEncodedObject(
+        urlAt(base, file.encodings.gzip.path),
+        "gzip",
+        false,
+        fetchImplementation,
+      ),
+      checkEncodedObject(
+        urlAt(base, file.encodings.br.path),
+        "br",
+        false,
+        fetchImplementation,
+      ),
+      checkEncodedObject(
+        urlAt(base, file.encodings.gzip.immutable_path),
+        "gzip",
+        true,
+        fetchImplementation,
+      ),
+      checkEncodedObject(
+        urlAt(base, file.encodings.br.immutable_path),
+        "br",
+        true,
+        fetchImplementation,
+      ),
     ]);
     if (file.path === "search-index.json") {
       const parsed = JSON.parse(new TextDecoder().decode(bytes)) as unknown;
